@@ -5,7 +5,7 @@ library(reo)
 Y <- Yp <-  as.matrix(fish)
 Y <- Y[order(rowSums(Y)), ]
 Yp <- Yp[order(rowSums(Yp)), ]
-dfun <- logisticPcaDevfun(Yp, 2, Upenalty = 0, thetaPenalty = 0)
+dfun <- logisticPcaDevfun(Yp, 1, Upenalty = 0, thetaPenalty = 0)
 
 pars <- unlist(as.list(environment(dfun))[c("theta", "phi")])[-1]
 (opt <- optim(pars, dfun, method = "BFGS",

@@ -103,7 +103,7 @@ function(Y, d, Xrow, Xcol, Upenalty, thetaPenalty, Ustart, thetaStart) {
     theta_O <- c(theta_s, theta_t)
     theta <- c(theta_U, theta_O)
     if(!missing(thetaStart)) theta[] <- thetaStart
-
+    
     resp <- new(Class = "glmResp",
                 family = binomial(link="logit"),
                 y = y)
@@ -112,7 +112,10 @@ function(Y, d, Xrow, Xcol, Upenalty, thetaPenalty, Ustart, thetaStart) {
               Zt = Zt,
               Lambdat = Lambdat,
               Lind = Lind,
+              thfun = local({Lind <- Lind; function(theta) theta[Lind]}),
               theta = theta,
+              phi = numeric(0),
+              phifun1 = function(phi) { }, ## no-op
               n = n)
 
     function(pars) {    
@@ -158,7 +161,7 @@ updateInitU <- function(Y1, Y2, U1) {
     ## not done obviously
 }
 
-##' Construct deviance function for logistic principal components analysis
+##' Make logistic PCA model
 ##'
 ##' @param rho environment of the deviance function
 ##' @param opt output of the optimizer
