@@ -210,56 +210,19 @@ plotimage <- function(mat, ...)
           ...)
 par(mfrow = c(1, 6))
 plotimage(Yp, main = "data")
-```
-
-```
-## Error: figure margins too large
-```
-
-```r
 plotimage(plogis(mod2$fit),
           main = "fitted values")
-```
-
-```
-## Error: figure margins too large
-```
-
-```r
 plotimage(plogis(mod2$fitInter),
           main = "intercept")
-```
-
-```
-## Error: figure margins too large
-```
-
-```r
 plotimage(plogis(mod2$fitAxes),
           main = "site-species interactions")
-```
-
-```
-## Error: figure margins too large
-```
-
-```r
 plotimage(plogis(mod2$fitRow),
           main = "main site effect")
-```
-
-```
-## Error: figure margins too large
-```
-
-```r
 plotimage(plogis(mod2$fitCol),
           main = "main species effect")
 ```
 
-```
-## Error: figure margins too large
-```
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
 
 Now we make a biplot,
 
