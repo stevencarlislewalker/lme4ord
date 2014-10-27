@@ -208,20 +208,46 @@ plotimage <- function(mat, ...)
           zlim = c(0, 1),
           col = grey(seq(1, 0, length = 100)),
           ...)
-par(mfcol = c(2, 5), mar = c(3, 3, 1, 1))
-plotimage(Yp)
-plotimage(plogis(mod2$fit))
-plotimage(Yp)
-plotimage(plogis(mod2$fitInter))
-plotimage(Yp)
-plotimage(plogis(mod2$fitAxes))
-plotimage(Yp)
-plotimage(plogis(mod2$fitRow))
-plotimage(Yp)
-plotimage(plogis(mod2$fitCol))
+plotimage(Yp, main = "data")
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-81.png) 
+
+```r
+plotimage(plogis(mod2$fit),
+          main = "fitted values")
+```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-82.png) 
+
+```r
+plotimage(plogis(mod2$fitInter),
+          main = "intercept")
+```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-83.png) 
+
+```r
+plotimage(plogis(mod2$fitAxes),
+          main = "site-species interactions")
+```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-84.png) 
+
+```r
+plotimage(plogis(mod2$fitRow),
+          main = "main site effect")
+```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-85.png) 
+
+```r
+plotimage(plogis(mod2$fitCol),
+          main = "main species effect")
+```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-86.png) 
+
 Now we make a biplot,
 
 ```r
@@ -233,20 +259,12 @@ biplot(mod2$rowScores[rowKeep,c(1, 2)], mod2$colScores[colKeep,c(1, 2)],
        xlab = "Axis I", ylab = "Axis II")
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-91.png) 
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9.png) 
 
-```r
-biplot(mod2$rowScores[rowKeep,c(1, 3)], mod2$colScores[colKeep,c(1, 3)],
-       xlabs = (1:52)[rowKeep], ylabs = colnames(Yp)[colKeep],
-       xlab = "Axis I", ylab = "Axis III")
-```
-
-```
-## Error: subscript out of bounds
-```
+Now we plot the covariance matrix of the logit-scale fitted values among species
 
 ```r
 image(cov2cor(mod2$typeCors))
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-92.png) 
+![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
