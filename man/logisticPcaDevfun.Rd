@@ -3,7 +3,8 @@
 \alias{logisticPcaDevfun}
 \title{Construct deviance function for logistic principal components analysis}
 \usage{
-logisticPcaDevfun(Y, d, Xrow, Xcol, Upenalty, thetaPenalty, Ustart, thetaStart)
+logisticPcaDevfun(Y, d, Xrow, Xcol, Ustart, thetaStart, Upenalty = 0,
+  thetaPenalty = 0)
 }
 \arguments{
 \item{Y}{response matrix}

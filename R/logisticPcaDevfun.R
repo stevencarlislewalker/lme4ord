@@ -12,7 +12,7 @@
 ##' @importFrom lme4 glmerLaplaceHandle
 ##' @export
 logisticPcaDevfun <-
-function(Y, d, Xrow, Xcol, Upenalty, thetaPenalty, Ustart, thetaStart) {
+function(Y, d, Xrow, Xcol, Ustart, thetaStart, Upenalty = 0, thetaPenalty = 0) {
 
     y <- as.numeric(Y)
 
