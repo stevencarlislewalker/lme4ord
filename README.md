@@ -224,7 +224,7 @@ plotimage(plogis(mod2$fitCol),
 
 ![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
 
-Now we make a logit-scale biplot,
+Now we make a logit-scale biplot (with only a few species to reduce clutter),
 
 ```r
 par(mfrow = c(1, 1))
@@ -237,7 +237,9 @@ biplot(mod2$rowScores[rowKeep,c(1, 2)], mod2$colScores[colKeep,c(1, 2)],
 
 ![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9.png) 
 
-Now we plot the covariance matrix among species of the latent variables,
+Note that the two kinds of bass (smallmouth, SB, and largemouth, LB) are orthogonal, indicating that they are relatively uncorrelated.
+
+We can also plot the covariance matrix among species of the latent variables,
 
 ```r
 image(cov2cor(mod2$typeCors))
