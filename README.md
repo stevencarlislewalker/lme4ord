@@ -237,7 +237,7 @@ biplot(mod2$rowScores[rowKeep,c(1, 2)], mod2$colScores[colKeep,c(1, 2)],
 
 ![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9.png) 
 
-Note that the two kinds of bass (smallmouth, SB, and largemouth, LB) are orthogonal, indicating that they are relatively uncorrelated.
+Note that the two kinds of bass (smallmouth, SB, and largemouth, LB) are orthogonal, indicating that they are relatively uncorrelated.  On the other hand, northern redbelly dace, NRD, is negatively correlated with largemouth.
 
 We can also plot the covariance matrix among species of the latent variables,
 
