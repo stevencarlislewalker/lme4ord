@@ -200,7 +200,7 @@ mod1 <- mkMod(environment(dfun1), opt1)
 mod2 <- mkMod(environment(dfun2), opt2)
 ```
 
-Let's plot some results from the two-axis model.  First we plot a series of image plots of observed and fitted site-by-species matrices.  
+Let's plot some results from the two-axis model.  First we plot a series of image plots of observed and fitted site-by-species matrices.  These plots provide a decomposition of the sources of variation in the observed sites by species matrix (FIXME: add residual plot too).
 
 ```r
 plotimage <- function(mat, ...)
@@ -224,7 +224,7 @@ plotimage(plogis(mod2$fitCol),
 
 ![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
 
-Now we make a biplot,
+Now we make a logit-scale biplot,
 
 ```r
 par(mfrow = c(1, 1))
@@ -244,3 +244,12 @@ image(cov2cor(mod2$typeCors))
 ```
 
 ![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
+
+#### TODO
+
+Lots!  Most important things:
+
+1. write up math
+2. user interface
+3. allow arbitrary family
+4. find faster parameterizations
