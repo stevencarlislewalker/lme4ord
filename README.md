@@ -184,3 +184,126 @@ Optimize these deviance functions,
 ## $message
 ## NULL
 ```
+
+
+```
+## [1] 1210
+```
+
+```
+## [1] 1140
+```
+We make easier to understand objects from the results,
+
+```r
+mod1 <- mkMod(environment(dfun1), opt1)
+mod2 <- mkMod(environment(dfun2), opt2)
+```
+
+
+```r
+plotimage <- function(mat, ...)
+    image(1:nrow(mat), 1:ncol(mat), mat, las = 1,
+          zlim = c(0, 1),
+          col = grey(seq(1, 0, length = 100)),
+          ...)
+par(mfcol = c(2, 5), mar = c(3, 3, 1, 1))
+plotimage(Yp)
+plotimage(plogis(mod$fit))
+```
+
+```
+## Error: error in evaluating the argument 'x' in selecting a method for function 'image': Error in plogis(mod$fit) : object 'mod' not found
+## Calls: nrow -> plogis
+```
+
+```r
+plotimage(Yp)
+plotimage(plogis(mod$fitInter))
+```
+
+```
+## Error: error in evaluating the argument 'x' in selecting a method for function 'image': Error in plogis(mod$fitInter) : object 'mod' not found
+## Calls: nrow -> plogis
+```
+
+```r
+plotimage(Yp)
+plotimage(plogis(mod$fitAxes))
+```
+
+```
+## Error: error in evaluating the argument 'x' in selecting a method for function 'image': Error in plogis(mod$fitAxes) : object 'mod' not found
+## Calls: nrow -> plogis
+```
+
+```r
+plotimage(Yp)
+plotimage(plogis(mod$fitRow))
+```
+
+```
+## Error: error in evaluating the argument 'x' in selecting a method for function 'image': Error in plogis(mod$fitRow) : object 'mod' not found
+## Calls: nrow -> plogis
+```
+
+```r
+plotimage(Yp)
+plotimage(plogis(mod$fitCol))
+```
+
+```
+## Error: error in evaluating the argument 'x' in selecting a method for function 'image': Error in plogis(mod$fitCol) : object 'mod' not found
+## Calls: nrow -> plogis
+```
+
+```r
+par(mfrow = c(1, 1))
+```
+
+![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
+
+```r
+rowKeep <- apply(abs(mod$rowScores) > 0, 1, any)
+```
+
+```
+## Error: object 'mod' not found
+```
+
+```r
+colKeep <- apply(abs(mod$colScores) > 0.3, 1, any)
+```
+
+```
+## Error: object 'mod' not found
+```
+
+```r
+biplot(mod$rowScores[rowKeep,c(1, 2)], mod$colScores[colKeep,c(1, 2)],
+       xlabs = (1:52)[rowKeep], ylabs = colnames(Yp)[colKeep],
+       xlab = "Axis I", ylab = "Axis II")
+```
+
+```
+## Error: object 'mod' not found
+```
+
+```r
+biplot(mod$rowScores[rowKeep,c(1, 3)], mod$colScores[colKeep,c(1, 3)],
+       xlabs = (1:52)[rowKeep], ylabs = colnames(Yp)[colKeep],
+       xlab = "Axis I", ylab = "Axis III")
+```
+
+```
+## Error: object 'mod' not found
+```
+
+```r
+image(cov2cor(mod$typeCors))
+```
+
+```
+## Error: error in evaluating the argument 'x' in selecting a method for function 'image': Error in cov2cor(mod$typeCors) : 
+##   error in evaluating the argument 'V' in selecting a method for function 'cov2cor': Error: object 'mod' not found
+```
