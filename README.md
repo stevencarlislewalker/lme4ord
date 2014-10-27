@@ -187,11 +187,11 @@ Optimize these deviance functions,
 
 
 ```
-## [1] 1210
+## [1] 1212
 ```
 
 ```
-## [1] 1140
+## [1] 1144
 ```
 We make easier to understand objects from the results,
 
@@ -200,6 +200,7 @@ mod1 <- mkMod(environment(dfun1), opt1)
 mod2 <- mkMod(environment(dfun2), opt2)
 ```
 
+Let's plot some results from the two-axis model.  First we plot a series of image plots of observed and fitted site-by-species matrices.  
 
 ```r
 plotimage <- function(mat, ...)
@@ -209,101 +210,43 @@ plotimage <- function(mat, ...)
           ...)
 par(mfcol = c(2, 5), mar = c(3, 3, 1, 1))
 plotimage(Yp)
-plotimage(plogis(mod$fit))
-```
-
-```
-## Error: error in evaluating the argument 'x' in selecting a method for function 'image': Error in plogis(mod$fit) : object 'mod' not found
-## Calls: nrow -> plogis
-```
-
-```r
+plotimage(plogis(mod2$fit))
 plotimage(Yp)
-plotimage(plogis(mod$fitInter))
-```
-
-```
-## Error: error in evaluating the argument 'x' in selecting a method for function 'image': Error in plogis(mod$fitInter) : object 'mod' not found
-## Calls: nrow -> plogis
-```
-
-```r
+plotimage(plogis(mod2$fitInter))
 plotimage(Yp)
-plotimage(plogis(mod$fitAxes))
-```
-
-```
-## Error: error in evaluating the argument 'x' in selecting a method for function 'image': Error in plogis(mod$fitAxes) : object 'mod' not found
-## Calls: nrow -> plogis
-```
-
-```r
+plotimage(plogis(mod2$fitAxes))
 plotimage(Yp)
-plotimage(plogis(mod$fitRow))
-```
-
-```
-## Error: error in evaluating the argument 'x' in selecting a method for function 'image': Error in plogis(mod$fitRow) : object 'mod' not found
-## Calls: nrow -> plogis
-```
-
-```r
+plotimage(plogis(mod2$fitRow))
 plotimage(Yp)
-plotimage(plogis(mod$fitCol))
-```
-
-```
-## Error: error in evaluating the argument 'x' in selecting a method for function 'image': Error in plogis(mod$fitCol) : object 'mod' not found
-## Calls: nrow -> plogis
-```
-
-```r
-par(mfrow = c(1, 1))
+plotimage(plogis(mod2$fitCol))
 ```
 
 ![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
+Now we make a biplot,
 
 ```r
-rowKeep <- apply(abs(mod$rowScores) > 0, 1, any)
-```
-
-```
-## Error: object 'mod' not found
-```
-
-```r
-colKeep <- apply(abs(mod$colScores) > 0.3, 1, any)
-```
-
-```
-## Error: object 'mod' not found
-```
-
-```r
-biplot(mod$rowScores[rowKeep,c(1, 2)], mod$colScores[colKeep,c(1, 2)],
+par(mfrow = c(1, 1))
+rowKeep <- apply(abs(mod2$rowScores) > 0, 1, any)
+colKeep <- apply(abs(mod2$colScores) > 0.3, 1, any)
+biplot(mod2$rowScores[rowKeep,c(1, 2)], mod2$colScores[colKeep,c(1, 2)],
        xlabs = (1:52)[rowKeep], ylabs = colnames(Yp)[colKeep],
        xlab = "Axis I", ylab = "Axis II")
 ```
 
-```
-## Error: object 'mod' not found
-```
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-91.png) 
 
 ```r
-biplot(mod$rowScores[rowKeep,c(1, 3)], mod$colScores[colKeep,c(1, 3)],
+biplot(mod2$rowScores[rowKeep,c(1, 3)], mod2$colScores[colKeep,c(1, 3)],
        xlabs = (1:52)[rowKeep], ylabs = colnames(Yp)[colKeep],
        xlab = "Axis I", ylab = "Axis III")
 ```
 
 ```
-## Error: object 'mod' not found
+## Error: subscript out of bounds
 ```
 
 ```r
-image(cov2cor(mod$typeCors))
+image(cov2cor(mod2$typeCors))
 ```
 
-```
-## Error: error in evaluating the argument 'x' in selecting a method for function 'image': Error in cov2cor(mod$typeCors) : 
-##   error in evaluating the argument 'V' in selecting a method for function 'cov2cor': Error: object 'mod' not found
-```
+![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-92.png) 
