@@ -107,17 +107,31 @@ function(Y, d, Xrow, Xcol, Upenalty, thetaPenalty, Ustart, thetaStart) {
     resp <- new(Class = "glmResp",
                 family = binomial(link="logit"),
                 y = y)
-    pp <- new(Class = "merPredD",
-              X = X,
-              Zt = Zt,
-              Lambdat = Lambdat,
-              Lind = Lind,
-              thfun = local({Lind <- Lind; function(theta) theta[Lind]}),
-              theta = theta,
-              phi = numeric(0),
-              phifun1 = function(phi) { }, ## no-op
-              n = n)
-
+                                        # test if on flexLambda branch
+                                        # of lme4.  TODO: eliminate
+                                        # and warn once flexLambda is
+                                        # on CRAN
+    ifl <- !is.character(try(lme4:::isFlexLambda(), TRUE)) 
+    if(ifl){
+        pp <- new(Class = "merPredD",
+                  X = X,
+                  Zt = Zt,
+                  Lambdat = Lambdat,
+                  Lind = Lind,
+                  thfun = local({Lind <- Lind; function(theta) theta[Lind]}),
+                  theta = theta,
+                  phi = numeric(0),
+                  phifun1 = function(phi) { }, ## no-op
+                  n = n)
+    } else {
+        pp <- new(Class = "merPredD",
+                  X = X,
+                  Zt = Zt,
+                  Lambdat = Lambdat,
+                  Lind = Lind,
+                  theta = theta,
+                  n = n)
+    }
     function(pars) {    
         resp$updateMu(pp$linPred(1) + 0)
                                         # zth are the elements of U
