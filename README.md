@@ -237,7 +237,7 @@ biplot(mod2$rowScores[rowKeep,c(1, 2)], mod2$colScores[colKeep,c(1, 2)],
 
 ![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9.png) 
 
-Now we plot the covariance matrix of the logit-scale fitted values among species
+Now we plot the covariance matrix among species of the latent variables,
 
 ```r
 image(cov2cor(mod2$typeCors))
