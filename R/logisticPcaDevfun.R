@@ -144,15 +144,22 @@ function(Y, d, Xrow, Xcol, Ustart, thetaStart, Upenalty = 0, thetaPenalty = 0) {
         pp$setZt(as.double(zx))
         p <- glmerLaplaceHandle(pp$ptr(),
                                 resp$ptr(),
-                                0, 1e-3, 0)
-        ## p <- .Call("glmerLaplace",
-        ##            pp$ptr(),
-        ##            resp$ptr(),
-        ##            0, 1e-3, 0,
-        ##            PACKAGE = "lme4")
+                                0, 1e-3, 30, 0)
         resp$updateWts()
         p + Upenalty*mean(zth^2)
     }
+}
+
+##' Get parameters from deviance function
+##'
+##' @param dfun deviance function created from \code{\link{logisticPcaDevfun}}
+##' @param parms character vectors of parameter names
+##' @return model parameters at their current value
+##' @export
+getParms <- function(dfun, parms = c("theta", "phi"),
+                     .unlist = TRUE) {
+    ans <- as.list(environment(dfun))[parms]
+    if(.unlist) return(unlist(ans)) else return(ans)
 }
 
 ##' Initialize matrix of column scores
@@ -192,7 +199,7 @@ mkMod <- function(rho, opt) {
     X <- rho$pp$X
     Zt <- rho$pp$Zt
     U <- rho$U
-    U@x <- opt$par[-(1:2)]
+    U@x <- opt$par[-(1:3)]
 
     LamU <- Diagonal(t, theta["axis"])
     LamCol <- Diagonal(t, theta["cols"]^2)
