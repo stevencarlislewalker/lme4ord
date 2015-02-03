@@ -1,0 +1,53 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{fullpage}
+
+\newcommand{\mat}{\bm}
+\newcommand{\trans}{^\top}
+\newcommand{\vc}{\mathrm{vec}}
+\newcommand{\dnorm}{\mathcal{N}}
+
+\title{lme4ord model}
+\author{Steve Walker}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+% \begin{equation}
+%   \label{eq:1}
+%   \mat Z = \begin{bmatrix}
+%     \mat U\trans\otimes \mat I_n \\
+%     \mat 1_m\trans\otimes\mat I_n \\
+%     \mat I_m \otimes\mat 1_n\trans \\
+%   \end{bmatrix}\trans
+% \end{equation}
+
+% \begin{equation}
+%   \label{eq:2}
+%   \mat Y = \mat X\mat\beta + \mat b_n\mat 1_m\trans + \mat 1_n\mat b_m\trans + \mat U\mat V\trans
+% \end{equation}
+
+The matrix-valued linear predictor has entries given by,
+\begin{equation}
+  \label{eq:3}
+  \eta_{ij} = \sum_{k = 1}^p x_{ik}\beta_{k} + b_{row, i} + b_{col, j} + \sum_{l = 1}^d u_{il}v_{jl}
+\end{equation}
+with random parameters,
+\begin{equation}
+  \label{eq:4}
+  b_{row, i} \sim \dnorm(0, \theta_{row})
+\end{equation}
+\begin{equation}
+  \label{eq:4}
+  b_{col, j} \sim \dnorm(0, \theta_{col})
+\end{equation}
+\begin{equation}
+  \label{eq:5}
+  v_{jl} \sim \dnorm(0, \theta_{axes})
+\end{equation}
+and where the $x$'s are known and the $\beta$'s and $u$'s are constant parameters.
+
+\end{document}
