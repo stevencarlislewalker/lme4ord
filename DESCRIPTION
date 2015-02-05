@@ -10,4 +10,5 @@ License: GPL-2
 Roxygen: list(wrap = FALSE)
 Imports:
     lme4,
-    Matrix
+    Matrix,
+    multitable
