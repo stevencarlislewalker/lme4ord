@@ -18,4 +18,4 @@ open:
 	$(EDIT) $(SRC)$(VER).tex
 
 clean:
-	rm -r -f *.aux *.log *.bbl *.blg
+	rm -r -f *.aux *.log *.bbl *.blg *.rel

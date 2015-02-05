@@ -30,6 +30,8 @@
 %   \mat Y = \mat X\mat\beta + \mat b_n\mat 1_m\trans + \mat 1_n\mat b_m\trans + \mat U\mat V\trans
 % \end{equation}
 
+\section{The basic model}
+
 The matrix-valued linear predictor has entries given by,
 \begin{equation}
   \label{eq:3}
@@ -49,5 +51,9 @@ with random parameters,
   v_{jl} \sim \dnorm(0, \theta_{axes})
 \end{equation}
 and where the $x$'s are known and the $\beta$'s and $u$'s are constant parameters.
+
+\section{The trouble}
+
+There have to be constraints on the $u$'s to keep the model identifiable. 
 
 \end{document}
