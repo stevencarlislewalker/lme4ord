@@ -9,7 +9,6 @@
 ##' @param Ustart optional initial matrix of column scores
 ##' @param thetaStart optional initial value for theta vector
 ##' @importFrom Matrix t Diagonal rBind sparseMatrix .bdiag bdiag
-##' @importFrom lme4 glmerLaplaceHandle
 ##' @export
 logisticPcaDevfun <-
 function(Y, d, Xrow, Xcol, Ustart, thetaStart, Upenalty = 0, thetaPenalty = 0) {
@@ -111,7 +110,7 @@ function(Y, d, Xrow, Xcol, Ustart, thetaStart, Upenalty = 0, thetaPenalty = 0) {
                                         # of lme4.  TODO: eliminate
                                         # and warn once flexLambda is
                                         # on CRAN
-    ifl <- !is.character(try(lme4:::isFlexLambda(), TRUE)) 
+    ifl <- !is.character(try(lme4::isFlexLambda(), TRUE)) 
     if(ifl){
         pp <- new(Class = "merPredD",
                   X = X,

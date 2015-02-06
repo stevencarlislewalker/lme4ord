@@ -3,13 +3,14 @@ Type: Package
 Title: What the package does (short line)
 Version: 0.0-0
 Date: 2014-06-27
-Author: Who wrote it
-Maintainer: Who to complain to <yourfault@somewhere.net>
+Author: Steve Walker
+Maintainer: Steve Walker <steve.walker@utoronto.ca>
 Description: More about what it does (maybe more than one line)
 License: GPL-2
 Roxygen: list(wrap = FALSE)
 Depends:
-    lme4
+    lme4,
+    methods
 Imports:
-    Matrix,
-    multitable
+    multitable,
+    Matrix

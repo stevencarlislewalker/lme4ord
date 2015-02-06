@@ -11,6 +11,8 @@
 ##' @param loadingPen penalty for the size of the loadings
 ##' @param verbose passed to optimizer
 ##' @param ... arguments to be passed to \code{\link{glFormula}}
+##' @importClassesFrom lme4 merMod glmerMod
+##' @import multitable
 ##' @export
 gblmer <- function(linFormula, bilinFormula,
                    data, family,
@@ -72,8 +74,8 @@ gblmer <- function(linFormula, bilinFormula,
                                         # here is the '-1' again for
                                         # scale bilinear random
                                         # effects
-    opt <- lme4:::optwrap("bobyqa", dfun, c(initLoadings, theta[-1]), 
-                   lower = c(rep(-Inf, dd[1]), lower), verbose = verbose)
+    opt <- lme4::optwrap("bobyqa", dfun, c(initLoadings, theta[-1]), 
+                         lower = c(rep(-Inf, dd[1]), lower), verbose = verbose)
 
     optLoadings <- opt$par[rho$loadInd]
     optTheta <- c(1, opt$par[-rho$loadInd])
@@ -107,11 +109,13 @@ gblmer <- function(linFormula, bilinFormula,
 ##' Class \code{"gblmerMod"} is san S4 class that extends
 ##' \code{"glmerMod"}
 ##' @name gblmerMod-class
+##' @aliases gblmerMod
 ##' @aliases gblmerMod-class
-##' @docType class
-##' @section Slots: in addition to the slots provided by
-##' \code{"glmerMod"}, there is an additional \code{"loadings"} slot
-##' containing the factor loadings
+##' \section{Slots}{
+##'   \describe{
+##'     \item{\code{loadings}:}{factor loadings.}
+##'   }
+##' }
 ##' @keywords classes
 ##' @export
 setClass("gblmerMod",
