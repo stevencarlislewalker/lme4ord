@@ -1,6 +1,8 @@
 lme4ord
 =======
 
+
+
 Ecological mixed-effects ordination with lme4.  This package is not at all stable.
 
 #### Short demo
@@ -67,132 +69,61 @@ pars2 <- unlist(as.list(environment(dfun2))[c("theta", "phi")])[-1]
 Optimize these deviance functions,
 
 ```r
-(opt1 <- optim(pars1, dfun1, method = "BFGS",
-               control = list(maxit = 500, trace = TRUE)))
+opt1 <- optim(pars1, dfun1, method = "BFGS",
+              control = list(maxit = 500, trace = TRUE))
 ```
 
 ```
-## initial  value 1325.538069 
-## iter  10 value 1218.152643
-## iter  20 value 1210.485369
-## iter  30 value 1209.980552
-## final  value 1209.979107 
+## initial  value 1261.432956 
+## iter  10 value 1169.299947
+## iter  20 value 1168.688341
+## iter  30 value 1168.118807
+## iter  40 value 1167.438431
+## final  value 1167.329338 
 ## converged
-```
-
-```
-## $par
-##   theta2   theta3     phi1     phi2     phi3     phi4     phi5     phi6 
-## -0.29581  1.00000  0.07317  1.76878  0.23877 -1.79694 -1.00011 -4.44046 
-##     phi7     phi8     phi9    phi10    phi11    phi12    phi13    phi14 
-## -0.57175 -1.10880  1.07607 -1.12867 -0.80293 -2.62631 -1.44391  3.62983 
-##    phi15    phi16    phi17    phi18    phi19    phi20    phi21    phi22 
-## -0.21751 -0.17868 -3.07928 -0.42625 -1.05684 -1.76395  0.18100  1.89888 
-##    phi23    phi24    phi25    phi26    phi27    phi28    phi29    phi30 
-## -0.01454  0.37915  0.05665 -0.04070  0.74375 -0.19298  0.09923  0.09923 
-## 
-## $value
-## [1] 1210
-## 
-## $counts
-## function gradient 
-##       69       36 
-## 
-## $convergence
-## [1] 0
-## 
-## $message
-## NULL
 ```
 
 ```r
-(opt2 <- optim(pars2, dfun2, method = "BFGS",
-               control = list(maxit = 500, trace = TRUE)))
+opt2 <- optim(pars2, dfun2, method = "BFGS",
+              control = list(maxit = 500, trace = TRUE))
 ```
 
 ```
-## initial  value 1310.689060 
-## iter  10 value 1199.212766
-## iter  20 value 1162.981919
-## iter  30 value 1156.772503
-## iter  40 value 1153.923730
-## iter  50 value 1152.482015
-## iter  60 value 1152.124573
-## iter  70 value 1151.854097
-## iter  80 value 1151.539814
-## iter  90 value 1151.003893
-## iter 100 value 1150.821982
-## iter 110 value 1150.547675
-## iter 120 value 1150.169351
-## iter 130 value 1149.892214
-## iter 140 value 1149.430677
-## iter 150 value 1149.059880
-## iter 160 value 1148.729508
-## iter 170 value 1148.098506
-## iter 180 value 1146.965068
-## iter 190 value 1145.995145
-## iter 200 value 1145.433023
-## iter 210 value 1144.962630
-## iter 220 value 1144.398968
-## iter 230 value 1143.721513
-## iter 240 value 1142.985435
-## iter 250 value 1141.899790
-## iter 260 value 1141.470784
-## iter 270 value 1140.967593
-## iter 280 value 1140.697408
-## iter 290 value 1140.539473
-## iter 300 value 1140.373883
-## final  value 1138.745479 
+## initial  value 1189.855260 
+## iter  10 value 1105.507937
+## iter  20 value 1102.367337
+## iter  30 value 1101.121497
+## iter  40 value 1099.596968
+## iter  50 value 1098.988855
+## iter  60 value 1098.701727
+## iter  70 value 1098.460386
+## iter  80 value 1098.395093
+## iter  90 value 1098.384686
+## iter  90 value 1098.384685
+## final  value 1098.383082 
 ## converged
 ```
+Both models seem to both converge,
+
+```r
+opt1$convergence
+```
 
 ```
-## $par
-##     theta2     theta3       phi1       phi2       phi3       phi4 
-## -2.259e+01  1.000e+00 -5.828e-01 -1.326e+00 -9.161e-04  1.544e+00 
-##       phi5       phi6       phi7       phi8       phi9      phi10 
-##  9.756e-01  3.069e+00  4.712e-01  5.568e-01  1.881e+01  1.066e+00 
-##      phi11      phi12      phi13      phi14      phi15      phi16 
-##  1.159e+00  1.439e+00  2.032e+00 -3.048e+00  3.514e-01  8.046e+00 
-##      phi17      phi18      phi19      phi20      phi21      phi22 
-##  1.873e+00  2.942e+00  2.208e+00  1.594e+00  2.348e+00 -1.167e+00 
-##      phi23      phi24      phi25      phi26      phi27      phi28 
-##  8.556e-01  1.260e+00  3.731e-01  1.879e-01 -1.864e-01  4.987e-01 
-##      phi29      phi30      phi31      phi32      phi33      phi34 
-##  1.265e+00  1.265e+00 -1.469e+00 -3.587e-01  7.248e-01  4.228e-01 
-##      phi35      phi36      phi37      phi38      phi39      phi40 
-##  3.062e+00  6.699e-02  7.580e-01 -5.170e+01  4.045e-01  3.843e-02 
-##      phi41      phi42      phi43      phi44      phi45      phi46 
-##  1.614e+00  3.728e-01 -9.869e-01 -9.676e-02 -5.411e+00  2.249e+00 
-##      phi47      phi48      phi49      phi50      phi51      phi52 
-## -1.265e+00  1.679e-01  9.469e-01 -2.282e+00 -1.245e+00 -8.831e-01 
-##      phi53      phi54      phi55      phi56      phi57      phi58 
-## -2.067e+00 -4.652e-01 -1.443e-01 -7.840e-01 -4.663e-01 -1.107e+00 
-##      phi59 
-## -1.106e+00 
-## 
-## $value
-## [1] 1139
-## 
-## $counts
-## function gradient 
-##     1197      308 
-## 
-## $convergence
 ## [1] 0
-## 
-## $message
-## NULL
 ```
 
-
-```
-## [1] 1212
+```r
+opt2$convergence
 ```
 
 ```
-## [1] 1144
+## [1] 0
 ```
+
+FIXME:  However for the two-axis model, while it gets close quickly, takes hundreds of iterations zeroing in on a solution.  Is this a quasi-convex problem?  That is, is it just skating around on a fairly flat part of the deviance function?  Perhaps we could get a speed up with some kind of penalty?
+
+
 We make easier to understand objects from the results,
 
 ```r
@@ -222,7 +153,7 @@ plotimage(plogis(mod2$fitCol),
           main = "main species effect")
 ```
 
-![plot of chunk unnamed-chunk-8](figure/unnamed-chunk-8.png) 
+![plot of chunk unnamed-chunk-10](misc/README/figure/unnamed-chunk-10-1.png) 
 
 Now we make a logit-scale biplot (with only a few species to reduce clutter),
 
@@ -235,7 +166,7 @@ biplot(mod2$rowScores[rowKeep,c(1, 2)], mod2$colScores[colKeep,c(1, 2)],
        xlab = "Axis I", ylab = "Axis II")
 ```
 
-![plot of chunk unnamed-chunk-9](figure/unnamed-chunk-9.png) 
+![plot of chunk unnamed-chunk-11](misc/README/figure/unnamed-chunk-11-1.png) 
 
 Note that the two kinds of bass (smallmouth, SB, and largemouth, LB) are orthogonal, indicating that they are relatively uncorrelated.  On the other hand, northern redbelly dace, NRD, is negatively correlated with largemouth.
 
@@ -245,7 +176,7 @@ We can also plot the covariance matrix among species of the latent variables,
 image(cov2cor(mod2$typeCors))
 ```
 
-![plot of chunk unnamed-chunk-10](figure/unnamed-chunk-10.png) 
+![plot of chunk unnamed-chunk-12](misc/README/figure/unnamed-chunk-12-1.png) 
 
 #### TODO
 
