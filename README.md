@@ -153,7 +153,7 @@ plotimage(plogis(mod2$fitCol),
           main = "main species effect")
 ```
 
-![plot of chunk unnamed-chunk-10](misc/README/figure/unnamed-chunk-10-1.png) 
+![plot of chunk unnamed-chunk-10](inst/README/figure/unnamed-chunk-10-1.png) 
 
 Now we make a logit-scale biplot (with only a few species to reduce clutter),
 
@@ -166,7 +166,7 @@ biplot(mod2$rowScores[rowKeep,c(1, 2)], mod2$colScores[colKeep,c(1, 2)],
        xlab = "Axis I", ylab = "Axis II")
 ```
 
-![plot of chunk unnamed-chunk-11](misc/README/figure/unnamed-chunk-11-1.png) 
+![plot of chunk unnamed-chunk-11](inst/README/figure/unnamed-chunk-11-1.png) 
 
 Note that the two kinds of bass (smallmouth, SB, and largemouth, LB) are orthogonal, indicating that they are relatively uncorrelated.  On the other hand, northern redbelly dace, NRD, is negatively correlated with largemouth.
 
@@ -176,7 +176,7 @@ We can also plot the covariance matrix among species of the latent variables,
 image(cov2cor(mod2$typeCors))
 ```
 
-![plot of chunk unnamed-chunk-12](misc/README/figure/unnamed-chunk-12-1.png) 
+![plot of chunk unnamed-chunk-12](inst/README/figure/unnamed-chunk-12-1.png) 
 
 #### TODO
 
