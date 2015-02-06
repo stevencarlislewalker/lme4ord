@@ -9,6 +9,8 @@ getParms(dfun, parms = c("theta", "phi"), .unlist = TRUE)
 \item{dfun}{deviance function created from \code{\link{logisticPcaDevfun}}}
 
 \item{parms}{character vectors of parameter names}
+
+\item{.unlist}{should the results be \code{\link{unlist}}ed?}
 }
 \value{
 model parameters at their current value

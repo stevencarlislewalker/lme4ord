@@ -154,6 +154,7 @@ function(Y, d, Xrow, Xcol, Ustart, thetaStart, Upenalty = 0, thetaPenalty = 0) {
 ##'
 ##' @param dfun deviance function created from \code{\link{logisticPcaDevfun}}
 ##' @param parms character vectors of parameter names
+##' @param .unlist should the results be \code{\link{unlist}}ed?
 ##' @return model parameters at their current value
 ##' @export
 getParms <- function(dfun, parms = c("theta", "phi"),

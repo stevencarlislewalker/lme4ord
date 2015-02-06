@@ -10,6 +10,9 @@ gblmer(linFormula, bilinFormula, data, family, latentDims = 0L,
 \item{linFormula}{a mixed model formula for the linear part of the
 model}
 
+\item{bilinFormula}{a mixed model formula for the bilinear part of
+the model}
+
 \item{data}{a \code{\link{data.list}} object}
 
 \item{family}{a \code{\link{family}} object}

@@ -2,6 +2,8 @@
 ##'
 ##' @param linFormula a mixed model formula for the linear part of the
 ##' model
+##' @param bilinFormula a mixed model formula for the bilinear part of
+##' the model
 ##' @param data a \code{\link{data.list}} object
 ##' @param family a \code{\link{family}} object
 ##' @param latentDims number of latent dimensions in the bilinear
@@ -15,16 +17,16 @@ gblmer <- function(linFormula, bilinFormula,
                    latentDims = 0L, loadingPen = 0L,
                    verbose = 0L, ...) {
     if(!any(inherits(data, "data.list"))) stop("data must be a data list")
-    if(length(dim(dl)) != 2L) stop("data list must be two dimensional")
-    dIds <- names(dim(dl))
-    df <- as.data.frame(dims_to_vars(dl))
+    if(length(dim(data)) != 2L) stop("data list must be two dimensional")
+    dIds <- names(dd <- dim(data))
+    df <- as.data.frame(dims_to_vars(data))
     if(latentDims == 0L) {
         warning("no latent variables, calling glmer")
         return(glmer(linFormula, df, family, ...))
     }
     if(latentDims != 1L) stop("code for more than one latent variable not writen")
     # form1 <- formula
-    # form2 <- as.formula(paste(". ~ 0 + (0 + latent |", names(dim(dl))[2], ")"))
+    # form2 <- as.formula(paste(". ~ 0 + (0 + latent |", names(dd[2], ")"))
     bilinFormula[[2]] <- linFormula[[2]] # use same response variables
     parsedLinFormula <- parsedForm <- glFormula(linFormula, df, family, ...)
     parsedBilinFormula <-               glFormula(bilinFormula, df, family, ...)
@@ -38,13 +40,13 @@ gblmer <- function(linFormula, bilinFormula,
 
                                         # which Zt@x elements
                                         # represent loadings
-    rho$Zwhich <- with(rho$pp, Zt@i %in% (seq_len(dim(dl)[2]) - 1))
+    rho$Zwhich <- rho$pp$Zt@i %in% (seq_len(dd[2]) - 1)
                                         # mapping from loadings to the
                                         # Zt@x elements that represent
                                         # loadings
     rho$Zind <- with(rho, pp$Zt@x[Zwhich])
     rho$Ztx <- rho$pp$Zt@x
-    rho$loadInd <- 1:dim(dl)[1]
+    rho$loadInd <- 1:dd[1]
 
     dfunPrefix <- function(pars) {
         theta <- c(1, pars[-loadInd]) # the '1' is is for scalar
@@ -61,17 +63,17 @@ gblmer <- function(linFormula, bilinFormula,
     body(dfun) <- cBody(body(dfunPrefix), body(dfun), body(dfunSuffix))
     formals(dfun) <- setNames(formals(dfun), "pars")
 
-    initLoadings <- svd(scale(t(dl$Y)))$v[,1]
+    initLoadings <- svd(scale(t(data$Y)))$v[,1]
     
     #opt <- optim(c(initLoadings, theta[-1]), dfun, method = "L-BFGS-B",
-    #             lower = c(rep(-Inf, dim(dl)[1]), lower),
+    #             lower = c(rep(-Inf, dd[1]), lower),
     #             control = list(trace = 3))
 
                                         # here is the '-1' again for
                                         # scale bilinear random
                                         # effects
     opt <- lme4:::optwrap("bobyqa", dfun, c(initLoadings, theta[-1]), 
-                   lower = c(rep(-Inf, dim(dl)[1]), lower), verbose = verbose)
+                   lower = c(rep(-Inf, dd[1]), lower), verbose = verbose)
 
     optLoadings <- opt$par[rho$loadInd]
     optTheta <- c(1, opt$par[-rho$loadInd])
@@ -95,7 +97,7 @@ gblmer <- function(linFormula, bilinFormula,
     for(sl in names(getSlots("glmerMod"))) {
         merList[[sl]] <- slot(mer, sl)
     }
-    do.call(new, c(list(Class = "glmerLatentMod"),
+    do.call(new, c(list(Class = "gblmerMod"),
                    merList,
                    list(loadings = optLoadings)), quote = TRUE)
 }
@@ -112,7 +114,7 @@ gblmer <- function(linFormula, bilinFormula,
 ##' containing the factor loadings
 ##' @keywords classes
 ##' @export
-setClass("glmerLatentMod",
+setClass("gblmerMod",
          representation(loadings = "numeric"),
          contains="glmerMod")
 
