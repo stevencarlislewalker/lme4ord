@@ -8,7 +8,8 @@ Maintainer: Who to complain to <yourfault@somewhere.net>
 Description: More about what it does (maybe more than one line)
 License: GPL-2
 Roxygen: list(wrap = FALSE)
+Depends:
+    lme4
 Imports:
-    lme4,
     Matrix,
     multitable
