@@ -1,0 +1,109 @@
+lme4ord
+=======
+
+```{r, echo = FALSE}
+opts_chunk$set(fig.path = "inst/README/figure/")
+```
+
+Ecological mixed-effects ordination with lme4.  This package is not at all stable.
+
+#### Short demo
+
+We need these packages (and their dependencies),
+```{r}
+library("lme4")
+library("lme4ord")
+library("Matrix")
+library("reo") ## install.packages("reo", repos="http://R-Forge.R-project.org")
+```
+Prepare some data,
+```{r}
+Y <- Yp <-  as.matrix(fish)
+Y <- Y[order(rowSums(Y)), ]
+Yp <- Yp[order(rowSums(Yp)), ]
+```
+FIXME:  use more standard data set in more standard package.
+
+Construct deviance functions for one and two axis ordination models,
+```{r}
+dfun1 <- logisticPcaDevfun(Yp, 1)
+dfun2 <- logisticPcaDevfun(Yp, 2)
+```
+Get starting values for the optimization of these deviance functions,
+```{r}
+pars1 <- unlist(as.list(environment(dfun1))[c("theta", "phi")])[-1]
+pars2 <- unlist(as.list(environment(dfun2))[c("theta", "phi")])[-1]
+```
+Optimize these deviance functions,
+```{r, cache = TRUE}
+opt1 <- optim(pars1, dfun1, method = "BFGS",
+              control = list(maxit = 500, trace = TRUE))
+opt2 <- optim(pars2, dfun2, method = "BFGS",
+              control = list(maxit = 500, trace = TRUE))
+```
+Both models seem to both converge,
+```{r}
+opt1$convergence
+opt2$convergence
+```
+
+FIXME:  However for the two-axis model, while it gets close quickly, takes hundreds of iterations zeroing in on a solution.  Is this a quasi-convex problem?  That is, is it just skating around on a fairly flat part of the deviance function?  Perhaps we could get a speed up with some kind of penalty?
+
+```{r, echo = FALSE, results='hide'}
+dfun1(opt1$par)
+rho1 <- environment(dfun1)
+dfun2(opt2$par)
+rho2 <- environment(dfun2)
+```
+We make easier to understand objects from the results,
+```{r}
+mod1 <- mkMod(environment(dfun1), opt1)
+mod2 <- mkMod(environment(dfun2), opt2)
+```
+
+Let's plot some results from the two-axis model.  First we plot a series of image plots of observed and fitted site-by-species matrices.  These plots provide a decomposition of the sources of variation in the observed sites by species matrix (FIXME: add residual plot too).
+```{r, fig.width = 10, fig.height = 3}
+plotimage <- function(mat, ...)
+    image(1:nrow(mat), 1:ncol(mat), mat, las = 1,
+          zlim = c(0, 1),
+          col = grey(seq(1, 0, length = 100)),
+          ...)
+par(mfrow = c(1, 6))
+plotimage(Yp, main = "data")
+plotimage(plogis(mod2$fit),
+          main = "fitted values")
+plotimage(plogis(mod2$fitInter),
+          main = "intercept")
+plotimage(plogis(mod2$fitAxes),
+          main = "site-species interactions")
+plotimage(plogis(mod2$fitRow),
+          main = "main site effect")
+plotimage(plogis(mod2$fitCol),
+          main = "main species effect")
+```
+
+Now we make a logit-scale biplot (with only a few species to reduce clutter),
+```{r}
+par(mfrow = c(1, 1))
+rowKeep <- apply(abs(mod2$rowScores) > 0, 1, any)
+colKeep <- apply(abs(mod2$colScores) > 0.3, 1, any)
+biplot(mod2$rowScores[rowKeep,c(1, 2)], mod2$colScores[colKeep,c(1, 2)],
+       xlabs = (1:52)[rowKeep], ylabs = colnames(Yp)[colKeep],
+       xlab = "Axis I", ylab = "Axis II")
+```
+
+Note that the two kinds of bass (smallmouth, SB, and largemouth, LB) are orthogonal, indicating that they are relatively uncorrelated.  On the other hand, northern redbelly dace, NRD, is negatively correlated with largemouth.
+
+We can also plot the covariance matrix among species of the latent variables,
+```{r}
+image(cov2cor(mod2$typeCors))
+```
+
+#### TODO
+
+Lots!  Most important things:
+
+1. write up math
+2. user interface
+3. allow arbitrary family
+4. find faster parameterizations
