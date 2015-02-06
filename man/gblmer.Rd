@@ -4,7 +4,7 @@
 \title{Generalized bilinear mixed model}
 \usage{
 gblmer(linFormula, bilinFormula, data, family, latentDims = 0L,
-  loadingPen = 0L, ...)
+  loadingPen = 0L, verbose = 0L, ...)
 }
 \arguments{
 \item{linFormula}{a mixed model formula for the linear part of the
@@ -18,6 +18,8 @@ model}
 component of the model}
 
 \item{loadingPen}{penalty for the size of the loadings}
+
+\item{verbose}{passed to optimizer}
 
 \item{...}{arguments to be passed to \code{\link{glFormula}}}
 }
