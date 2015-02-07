@@ -56,24 +56,6 @@ library(reo)
 ```
 
 ```r
-## n <- 50
-## m <- 30
-## x <- rnorm(n)
-## z <- rnorm(m)
-## B <- rmat(2, 2)
-## u <- rnorm(n)
-## v <- rnorm(m)
-
-## eta <-
-##     (cbind(1, x) %*% B %*% rbind(1, z)) +
-##     (cbind(1, x) %*%        rmat(2, m)) +
-##     ( rmat(n, 2) %*%       rbind(1, z)) +
-##     (   cbind(u) %*%          rbind(v))
-
-## Y <- rmat(n, m,
-##           f(rbinom(n, size = 1, prob = plogis(eta))),
-##           eta = eta)
-
 data(fish)
 data(limn)
 Y <- as.matrix(fish)
