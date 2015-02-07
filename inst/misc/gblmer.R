@@ -39,7 +39,7 @@ mod <- gblmer(Y ~ 1 + (1 | species), . ~ 0 + (0 + latent | sites),
               dl, binomial, 1, 1, 2)
 
 mod
-vcov(mod, use.hessian = FALSE)
+
 ranef(mod)$species
 ranef(mod)$sites
 (loadMod <- loadings(mod))
