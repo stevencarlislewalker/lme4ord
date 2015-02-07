@@ -21,12 +21,14 @@ gblmer <- function(linFormula, bilinFormula,
     if(!any(inherits(data, "data.list"))) stop("data must be a data list")
     if(length(dim(data)) != 2L) stop("data list must be two dimensional")
     dIds <- names(dd <- dim(data))
-    df <- as.data.frame(dims_to_vars(data))
     if(latentDims == 0L) {
         warning("no latent variables, calling glmer")
+        df <- as.data.frame(dims_to_vars(data))
         return(glmer(linFormula, df, family, ...))
     }
     if(latentDims != 1L) stop("code for more than one latent variable not writen")
+    data <- data + variable(1:dd[1], dIds[1], "latent")
+    df <- as.data.frame(dims_to_vars(data))
     # form1 <- formula
     # form2 <- as.formula(paste(". ~ 0 + (0 + latent |", names(dd[2], ")"))
     bilinFormula[[2]] <- linFormula[[2]] # use same response variables
@@ -71,11 +73,11 @@ gblmer <- function(linFormula, bilinFormula,
     #             lower = c(rep(-Inf, dd[1]), lower),
     #             control = list(trace = 3))
 
-                                        # here is the '-1' again for
-                                        # scale bilinear random
-                                        # effects
-    opt <- lme4::optwrap("bobyqa", dfun, c(initLoadings, theta[-1]), 
-                         lower = c(rep(-Inf, dd[1]), lower), verbose = verbose)
+                                        # here is the '1' again (with
+                                        # a minus in front) for scale
+                                        # bilinear random effects
+    opt <- lme4:::optwrap("bobyqa", dfun, c(initLoadings, theta[-1]), 
+                          lower = c(rep(-Inf, dd[1]), lower), verbose = verbose)
 
     optLoadings <- opt$par[rho$loadInd]
     optTheta <- c(1, opt$par[-rho$loadInd])
@@ -121,6 +123,22 @@ gblmer <- function(linFormula, bilinFormula,
 setClass("gblmerMod",
          representation(loadings = "numeric"),
          contains="glmerMod")
+
+##' Refactor \code{loadings} into a generic function
+##'
+##' @param x object with loadings to extract
+##' @param ... additional arguments
+##' @export
+loadings <- function(x, ...) {
+    UseMethod("loadings")
+}
+
+##' @export
+loadings.default <- function(x, ...) x$loadings
+
+##' @export
+loadings.gblmerMod <- function(x, ...) x@loadings
+
 
 ##' Concatenate the bodies of functions
 ##'

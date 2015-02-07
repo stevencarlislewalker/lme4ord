@@ -9,8 +9,7 @@ Description: More about what it does (maybe more than one line)
 License: GPL-2
 Roxygen: list(wrap = FALSE)
 Depends:
-    lme4,
-    methods
+    lme4
 Imports:
     multitable,
     Matrix
