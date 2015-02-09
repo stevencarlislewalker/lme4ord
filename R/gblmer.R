@@ -27,7 +27,7 @@ gblmer <- function(formula, data, family,
         warning("no latent variables, returning glmer results")
         return(initGlmer)
     }
-    if(latentDims != 1L) stop("code for more than one latent variable not writen")
+    ## if(latentDims != 1L) stop("code for more than one latent variable not writen")
     U <- try(matrix(0, nrow = dd[loadingsDim], ncol = latentDims))
     if(inherits(U, "try-error")) stop("loadingsDim does not index a dimension of data")    
     nFreeLoadings <- (dd[loadingsDim] * latentDims) - choose(latentDims, 2)
@@ -103,7 +103,8 @@ gblmer <- function(formula, data, family,
     body(dfun) <- cBody(body(dfunPrefix), body(dfun), body(dfunSuffix))
     formals(dfun) <- setNames(formals(dfun), "pars")
 
-    initLoadings <- svd(scale(t(data$Y)))$v[,1]
+    initLoadings <- svd(scale(t(data$Y)))$v[, 1:latentDims, drop = FALSE]
+    initLoadings <- initLoadings[lower.tri(initLoadings, TRUE)]
     
     #opt <- optim(c(initLoadings, theta[-1]), dfun, method = "L-BFGS-B",
     #             lower = c(rep(-Inf, dd[1]), lower),
@@ -116,9 +117,10 @@ gblmer <- function(formula, data, family,
     # initial parameters
     # order: (1) loadings, (2) covariance pars, (3) fixed effect pars
     initPars <- c(initLoadings, theta[-(1:latentDims)], rho$pp$beta(1))
+    optLower <- c(rep(-Inf, length(initLoadings)), rho$lower[-(1:latentDims)])
                                         # optimize
     opt <- lme4:::optwrap("bobyqa", dfun, initPars, 
-                          lower = c(rep(-Inf, dd[1]), lower), verbose = verbose)
+                          lower = optLower, verbose = verbose)
 
     optLoadings <- opt$par[rho$loadInd]
     optNoLoadings <- c(rep(1, latentDims), opt$par[-rho$loadInd])
@@ -249,21 +251,10 @@ joinReTrms <- function(reTrms1, reTrms2) {
     names(reTrms2) <- paste(names(reTrms2), 2, sep = "")
     reTrms <- c(reTrms1, reTrms2)
     with(reTrms, {
-        # ------------------------------------------------------------
-        # copied from mkReTrms (FIXME: break this out for reuse)
-        flist <- as.data.frame(cbind(flist1, flist2))
-        fnms <- names(flist)
-        if (length(fnms) > length(ufn <- unique(fnms))) {
-            flist <- flist[match(ufn, fnms)]
-            asgn <- match(fnms, ufn)
-        } else asgn <- seq_along(flist)
-        names(flist) <- ufn
-        flist <- do.call(data.frame, c(flist, check.names = FALSE))
-        attr(flist, "assign") <- asgn
+        flist <- joinFlist(flist1, flist2)
         q <- c(nrow(Zt1), nrow(Zt2))
         nth <- c(length(theta1), length(theta2))
         nCnms <- c(length(cnms1), length(cnms2))
-        # ------------------------------------------------------------
         list(Zt = rBind(Zt1, Zt2),
              theta = c(theta1, theta2),
              Lind = c(Lind1, Lind2 + max(Lind1)),
@@ -275,6 +266,22 @@ joinReTrms <- function(reTrms1, reTrms2) {
              Ztlist = c(Ztlist1, Ztlist2),
              q = q, nth = nth, nCnms = nCnms)
     })
+}
+
+## ------------------------------------------------------------
+## adpated from mkReTrms
+## ------------------------------------------------------------
+joinFlist <- function(flist1, flist2) {
+    flist <- c(flist1, flist2)
+    fnms <- names(flist)
+    if (length(fnms) > length(ufn <- unique(fnms))) {
+        flist <- flist[match(ufn, fnms)]
+        asgn <- match(fnms, ufn)
+    } else asgn <- seq_along(flist)
+    names(flist) <- ufn
+    flist <- do.call(data.frame, c(flist, check.names = FALSE))
+    attr(flist, "assign") <- asgn
+    return(flist)
 }
 
 ##' Get random effects terms from a fitted \code{merMod} object

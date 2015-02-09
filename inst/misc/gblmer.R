@@ -35,7 +35,8 @@ dl <- data.list(Y = t(Y), x = x,
                 dimids = c("species", "sites"))
 summary(dl)
 
-mod <- gblmer(Y ~ 1 + (1 | species), dl, binomial, 1, 1,
+mod <- gblmer(Y ~ 1 + (1 | species), dl, binomial, 2, 1,
+              loadingPen = 1L,
               verbose = 2L)
 
 
