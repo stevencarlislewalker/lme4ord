@@ -28,8 +28,15 @@ gblmer <- function(formula, data, family,
         return(initGlmer)
     }
     ## if(latentDims != 1L) stop("code for more than one latent variable not writen")
+    if(loadingsDim == 2L) {
+        datY <- data$Y
+    } else if(loadingsDim == 1L) {
+        datY <- t(data$Y)
+    } else {
+        stop("loadingsDim neight 1 nor 2")
+    }
     U <- try(matrix(0, nrow = dd[loadingsDim], ncol = latentDims))
-    if(inherits(U, "try-error")) stop("loadingsDim does not index a dimension of data")    
+    if(inherits(U, "try-error")) stop("loadingsDim does not index a dimension of data")
     nFreeLoadings <- (dd[loadingsDim] * latentDims) - choose(latentDims, 2)
     U[lower.tri(U, TRUE)] <- 1:nFreeLoadings
     latentVarNames <- paste(latentName, 1:latentDims, sep = "")
@@ -51,29 +58,13 @@ gblmer <- function(formula, data, family,
 
       parsedLinFormula <- parsedForm <- glFormula(  linFormula, df, family, ...)
     parsedBilinFormula <-               glFormula(bilinFormula, df, family, ...)
-    reTrms <- joinReTrms(parsedBilinFormula$reTrms, parsedLinFormula$reTrms) # getReTrms(initGlmer)) # 
+    reTrms <- joinReTrms(parsedBilinFormula$reTrms, parsedLinFormula$reTrms)
     parsedForm$reTrms <- reTrms
 
     theta <- reTrms$theta
     lower <- reTrms$lower
     dfun <- do.call(mkGlmerDevfun, parsedForm)
     dfun <- updateGlmerDevfun(dfun, reTrms)
-    ## dfun
-    ## function (pars) 
-    ##     {
-    ##         resp$setOffset(baseOffset)
-    ##         resp$updateMu(lp0)
-    ##         pp$setTheta(as.double(pars[dpars]))
-    ##         spars <- as.numeric(pars[-dpars])
-    ##         offset <- if (length(spars) == 0) 
-    ##             baseOffset
-    ##         else baseOffset + pp$X %*% spars
-    ##         resp$setOffset(offset)
-    ##         p <- pwrssUpdate(pp, resp, tolPwrss, GQmat, compDev, fac, 
-    ##                          verbose)
-    ##         resp$updateWts()
-    ##         p
-    ##     }    
     rho <- environment(dfun)
 
                                         # which Zt@x elements
@@ -103,7 +94,7 @@ gblmer <- function(formula, data, family,
     body(dfun) <- cBody(body(dfunPrefix), body(dfun), body(dfunSuffix))
     formals(dfun) <- setNames(formals(dfun), "pars")
 
-    initLoadings <- svd(scale(t(data$Y)))$v[, 1:latentDims, drop = FALSE]
+    initLoadings <- svd(scale(datY))$v[, 1:latentDims, drop = FALSE]
     initLoadings <- initLoadings[lower.tri(initLoadings, TRUE)]
     
     #opt <- optim(c(initLoadings, theta[-1]), dfun, method = "L-BFGS-B",
