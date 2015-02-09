@@ -14,54 +14,90 @@
 ##' @importClassesFrom lme4 merMod glmerMod
 ##' @import multitable
 ##' @export
-gblmer <- function(linFormula, bilinFormula,
-                   data, family,
-                   latentDims = 0L, loadingPen = 0L,
+gblmer <- function(formula, data, family,
+                   latentDims = 0L, loadingsDim = 1L, latentName = "latent",
+                   loadingPen = 0L,
                    verbose = 0L, ...) {
     if(!any(inherits(data, "data.list"))) stop("data must be a data list")
     if(length(dim(data)) != 2L) stop("data list must be two dimensional")
     dIds <- names(dd <- dim(data))
+    df <- as.data.frame(dims_to_vars(data))
+    initGlmer <- glmer(formula, df, family, ...)
     if(latentDims == 0L) {
-        warning("no latent variables, calling glmer")
-        df <- as.data.frame(dims_to_vars(data))
-        return(glmer(linFormula, df, family, ...))
+        warning("no latent variables, returning glmer results")
+        return(initGlmer)
     }
     if(latentDims != 1L) stop("code for more than one latent variable not writen")
-    data <- data + variable(1:dd[1], dIds[1], "latent")
+    U <- try(matrix(0, nrow = dd[loadingsDim], ncol = latentDims))
+    if(inherits(U, "try-error")) stop("loadingsDim does not index a dimension of data")    
+    nFreeLoadings <- (dd[loadingsDim] * latentDims) - choose(latentDims, 2)
+    U[lower.tri(U, TRUE)] <- 1:nFreeLoadings
+    latentVarNames <- paste(latentName, 1:latentDims, sep = "")
+    U <- setNames(as.data.frame(U), latentVarNames)
+    latentData <- data.list(U, drop = FALSE, dimids = dIds[loadingsDim])
+    data <- data + latentData
     df <- as.data.frame(dims_to_vars(data))
+
     # form1 <- formula
     # form2 <- as.formula(paste(". ~ 0 + (0 + latent |", names(dd[2], ")"))
+    linFormula <- formula
+    latentForm <- paste(latentVarNames, collapse = " + ")
+    bilinFormula <- as.formula(paste(". ~ 0 + (0 + ", latentForm, " ||",
+                                     dIds[-loadingsDim], ")"))
+                                        # FIXME: replace -tv with more
+                                        # general removal strategy
+                                        # (e.g. with characters etc)
     bilinFormula[[2]] <- linFormula[[2]] # use same response variables
-    parsedLinFormula <- parsedForm <- glFormula(linFormula, df, family, ...)
+
+      parsedLinFormula <- parsedForm <- glFormula(  linFormula, df, family, ...)
     parsedBilinFormula <-               glFormula(bilinFormula, df, family, ...)
-    reTrms <- joinReTrms(parsedBilinFormula$reTrms, parsedLinFormula$reTrms)
+    reTrms <- joinReTrms(parsedBilinFormula$reTrms, parsedLinFormula$reTrms) # getReTrms(initGlmer)) # 
     parsedForm$reTrms <- reTrms
 
     theta <- reTrms$theta
     lower <- reTrms$lower
     dfun <- do.call(mkGlmerDevfun, parsedForm)
+    dfun <- updateGlmerDevfun(dfun, reTrms)
+    ## dfun
+    ## function (pars) 
+    ##     {
+    ##         resp$setOffset(baseOffset)
+    ##         resp$updateMu(lp0)
+    ##         pp$setTheta(as.double(pars[dpars]))
+    ##         spars <- as.numeric(pars[-dpars])
+    ##         offset <- if (length(spars) == 0) 
+    ##             baseOffset
+    ##         else baseOffset + pp$X %*% spars
+    ##         resp$setOffset(offset)
+    ##         p <- pwrssUpdate(pp, resp, tolPwrss, GQmat, compDev, fac, 
+    ##                          verbose)
+    ##         resp$updateWts()
+    ##         p
+    ##     }    
     rho <- environment(dfun)
 
                                         # which Zt@x elements
                                         # represent loadings
-    rho$Zwhich <- rho$pp$Zt@i %in% (seq_len(dd[2]) - 1)
+    rho$Zwhich <- rho$pp$Zt@i %in% (seq_len(dd[-loadingsDim]) - 1)
                                         # mapping from loadings to the
                                         # Zt@x elements that represent
                                         # loadings
     rho$Zind <- with(rho, pp$Zt@x[Zwhich])
     rho$Ztx <- rho$pp$Zt@x
-    rho$loadInd <- 1:dd[1]
+    rho$loadInd <- 1:nFreeLoadings
 
     dfunPrefix <- function(pars) {
-        theta <- c(1, pars[-loadInd]) # the '1' is is for scalar
-                                      # bilinear random effects
-                                      # (FIXME: be more general)
-        Ztx[Zwhich] <- pars[loadInd][Zind]
+        loadings <- pars[loadInd]
+        Ztx[Zwhich] <- loadings[Zind]
         trash <- pp$setZt(Ztx)
+        pars <- c(rep(1, latentDims), pars[-loadInd])
+                                        # the '1' is is for scalar
+                                        # bilinear random effects
+                                        # (FIXME: be more general)
     }
 
     dfunSuffix <- function(pars) {
-        p + loadingPen * sum(pars[loadInd]^2)
+        p + loadingPen * sum(loadings^2)
     }
 
     body(dfun) <- cBody(body(dfunPrefix), body(dfun), body(dfunSuffix))
@@ -76,22 +112,27 @@ gblmer <- function(linFormula, bilinFormula,
                                         # here is the '1' again (with
                                         # a minus in front) for scale
                                         # bilinear random effects
-    opt <- lme4:::optwrap("bobyqa", dfun, c(initLoadings, theta[-1]), 
+
+    # initial parameters
+    # order: (1) loadings, (2) covariance pars, (3) fixed effect pars
+    initPars <- c(initLoadings, theta[-(1:latentDims)], rho$pp$beta(1))
+                                        # optimize
+    opt <- lme4:::optwrap("bobyqa", dfun, initPars, 
                           lower = c(rep(-Inf, dd[1]), lower), verbose = verbose)
 
     optLoadings <- opt$par[rho$loadInd]
-    optTheta <- c(1, opt$par[-rho$loadInd])
+    optNoLoadings <- c(rep(1, latentDims), opt$par[-rho$loadInd])
 
     ## rho$control <- attr(opt,"control")
-    rho$nAGQ <- 0
-    opt$par <- optTheta
+    # rho$nAGQ <- 0
+    opt$par <- optNoLoadings
 
-    body(dfun) <- body(dfun)[c(1, 5:9)]
-    formals(dfun) <- setNames(formals(dfun), "theta")
+    # body(dfun) <- body(dfun)[c(1, 5:9)]
+    # formals(dfun) <- setNames(formals(dfun), "theta")
 
     ## opt <- optimizeGlmer(dfun) # optimize without updating loadings
     ## opt$par <- optTheta
-    dfun(optTheta)
+    # dfun(optTheta)
 
     mer <- mkMerMod(environment(dfun), opt, parsedForm$reTrms, parsedForm$fr)
 
@@ -123,6 +164,53 @@ gblmer <- function(linFormula, bilinFormula,
 setClass("gblmerMod",
          representation(loadings = "numeric"),
          contains="glmerMod")
+
+##' Variance-covariance matrix of the (co)variance parameters and
+##' loadings (and sometimes of fixed effects)
+##'
+##' @param object a \code{\link{gblmerMod}} object
+##' @param correlation should the correlation matrix be computed too?
+##' @param ... not used
+##' @export
+vcov.gblmerMod <- function(object, correlation = TRUE, ...) {
+                                        # calc.vcov.hess is a function
+                                        # from vcov.merMod (FIXME:
+                                        # breakout of vcov.merMod and
+                                        # expose?)
+    calc.vcov.hess <- function(h) {
+	## ~= forceSymmetric(solve(h/2)[i,i]) : solve(h/2) = 2*solve(h)
+        h <- tryCatch(solve(h),
+                      error=function(e) matrix(NA,nrow=nrow(h),ncol=ncol(h)))
+        ## i <- -seq_len(ntheta)
+	## h <- h[i,i]
+	forceSymmetric(h + t(h))
+    }
+    h <- object@optinfo$derivs$Hessian
+    V.hess <- calc.vcov.hess(h)
+    bad.V.hess <- any(is.na(V.hess))
+    if (!bad.V.hess) {
+        e.hess <- eigen(V.hess,symmetric = TRUE,only.values = TRUE)$values
+        if (min(e.hess) <= 0) bad.V.hess <- TRUE
+    }
+    if (!bad.V.hess) {
+        V <- V.hess
+    } else {
+        stop("variance-covariance matrix computed ",
+             "from finite-difference Hessian is\n",
+             "not positive definite or contains NA values")
+    }
+    rr <- tryCatch(as(V, "dpoMatrix"), error = function(e)e)
+    if (inherits(rr, "error")) {
+	warning(gettextf("Computed variance-covariance matrix problem: %s;\nreturning NA matrix",
+                         rr$message), domain = NA)
+        rr <- matrix(NA,nrow(V),ncol(V))
+    }
+    if(correlation)
+	rr@factors$correlation <-
+	    as(rr, "corMatrix") else rr # (is NA anyway)
+    rr
+}
+
 
 ##' Refactor \code{loadings} into a generic function
 ##'
@@ -172,6 +260,9 @@ joinReTrms <- function(reTrms1, reTrms2) {
         names(flist) <- ufn
         flist <- do.call(data.frame, c(flist, check.names = FALSE))
         attr(flist, "assign") <- asgn
+        q <- c(nrow(Zt1), nrow(Zt2))
+        nth <- c(length(theta1), length(theta2))
+        nCnms <- c(length(cnms1), length(cnms2))
         # ------------------------------------------------------------
         list(Zt = rBind(Zt1, Zt2),
              theta = c(theta1, theta2),
@@ -181,6 +272,17 @@ joinReTrms <- function(reTrms1, reTrms2) {
              Lambdat = .bdiag(list(Lambdat1, Lambdat2)),
              flist = flist,
              cnms = c(cnms1, cnms2),
-             Ztlist = c(Ztlist1, Ztlist2))
+             Ztlist = c(Ztlist1, Ztlist2),
+             q = q, nth = nth, nCnms = nCnms)
     })
+}
+
+##' Get random effects terms from a fitted \code{merMod} object
+##'
+##' @param object \code{\link{merMod}} object
+##' @return see \code{\link{mkReTrms}}
+##' @export
+getReTrms <- function(object, ...) {
+    rts <- c("Zt", "Lambdat", "Lind", "theta", "lower", "flist", "cnms")
+    getME(object, rts)
 }

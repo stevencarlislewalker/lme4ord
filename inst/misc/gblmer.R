@@ -35,16 +35,36 @@ dl <- data.list(Y = t(Y), x = x,
                 dimids = c("species", "sites"))
 summary(dl)
 
-mod <- gblmer(Y ~ 1 + (1 | species), . ~ 0 + (0 + latent | sites),
-              dl, binomial, 1, 1, 2)
+mod <- gblmer(Y ~ 1 + (1 | species), dl, binomial, 1, 1,
+              verbose = 2L)
+
+
+## dl <- dl + variable(1:dim(dl)[1], "species", "latent")
+## df <- as.data.frame(dims_to_vars(dl))
+##   linFormula <- Y ~ 1 + (1          | species)
+## bilinFormula <- Y ~ 0 + (0 + latent | sites  )
+##   parsedLinFormula <- glFormula(  linFormula, df, binomial)
+## parsedBilinFormula <- glFormula(bilinFormula, df, binomial)
+## reTrms <- joinReTrms(parsedBilinFormula$reTrms, parsedLinFormula$reTrms)
+## dfun <- mkGblmerDevfun(parsedLinFormula$fr, parsedLinFormula$X,
+##                          parsedLinFormula$reTrms,
+##                        parsedBilinFormula$reTrms, binomial)
+## rho <- environment(dfun)
+## rho$pp$Zt@i %in% (seq_len(rho$q[1]) - 1)
+
+## mod <- gblmer(Y ~ 1 + (1 | species), . ~ 0 + (0 + latent | sites),
+##               dl, binomial, 1, 1, 2)
 
 mod
+summary(mod)
 
 ranef(mod)$species
 ranef(mod)$sites
 (loadMod <- loadings(mod))
 latentCov <- Matrix(loadMod %*% t(loadMod)) + diag(VarCorr(mod)$species[1], m, m)
 image(cov2cor(latentCov))
+image(vcov(mod)@factors$correlation)
+
 
 fitY <- matrix(getME(mod, "mu"), n, m, byrow = TRUE)
 boxplot(fitY ~ Y, las = 1, horizontal = TRUE)
@@ -55,10 +75,10 @@ boxplot(fitY ~ Y, las = 1, horizontal = TRUE)
 # plot(u, getME(mod, "b")[1:n])
 # plot(v, mod@loadings)
 
-j <- 21
+j <- 14
 b <- getME(mod, "b")[1:n]
 bb <- seq(min(b), max(b), length = 100)
 plot(b, Y[,j])
-lines(bb, plogis(mod@loadings[j]*bb))
+lines(bb, plogis(loadings(mod)[j]*bb))
 
 

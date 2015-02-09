@@ -3,8 +3,8 @@
 \alias{gblmer}
 \title{Generalized bilinear mixed model}
 \usage{
-gblmer(linFormula, bilinFormula, data, family, latentDims = 0L,
-  loadingPen = 0L, verbose = 0L, ...)
+gblmer(formula, data, family, latentDims = 0L, loadingsDim = 1L,
+  latentName = "latent", loadingPen = 0L, verbose = 0L, ...)
 }
 \arguments{
 \item{linFormula}{a mixed model formula for the linear part of the
