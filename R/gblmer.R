@@ -122,9 +122,12 @@ gblmer <- function(formula, data, family,
     opt <- lme4:::optwrap("bobyqa", dfun, initPars, 
                           lower = optLower, verbose = verbose)
 
-    optLoadings <- opt$par[rho$loadInd]
     optNoLoadings <- c(rep(1, latentDims), opt$par[-rho$loadInd])
-
+    optLoadings <- matrix(0, dd[loadingsDim], latentDims)
+    optLoadings[lower.tri(optLoadings, TRUE)] <- opt$par[rho$loadInd]
+    dim(optLoadings) <- c(dd[loadingsDim], latentDims)
+    colnames(optLoadings) <- latentVarNames
+    
     ## rho$control <- attr(opt,"control")
     # rho$nAGQ <- 0
     opt$par <- optNoLoadings
@@ -164,7 +167,7 @@ gblmer <- function(formula, data, family,
 ##' @keywords classes
 ##' @export
 setClass("gblmerMod",
-         representation(loadings = "numeric"),
+         representation(loadings = "matrix"),
          contains="glmerMod")
 
 ##' Variance-covariance matrix of the (co)variance parameters and
@@ -229,7 +232,6 @@ loadings.default <- function(x, ...) x$loadings
 ##' @export
 loadings.gblmerMod <- function(x, ...) x@loadings
 
-
 ##' Concatenate the bodies of functions
 ##'
 ##' @param ... function bodies to combine
@@ -252,6 +254,8 @@ joinReTrms <- function(reTrms1, reTrms2) {
     reTrms <- c(reTrms1, reTrms2)
     with(reTrms, {
         flist <- joinFlist(flist1, flist2)
+        attr(flist, "assign") <- c(match(names(cnms1), names(flist)),
+                                   match(names(cnms2), names(flist)))
         q <- c(nrow(Zt1), nrow(Zt2))
         nth <- c(length(theta1), length(theta2))
         nCnms <- c(length(cnms1), length(cnms2))
@@ -280,7 +284,6 @@ joinFlist <- function(flist1, flist2) {
     } else asgn <- seq_along(flist)
     names(flist) <- ufn
     flist <- do.call(data.frame, c(flist, check.names = FALSE))
-    attr(flist, "assign") <- asgn
     return(flist)
 }
 
