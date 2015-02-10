@@ -2,14 +2,19 @@
 \usepackage{amsmath}
 \usepackage{bm}
 \usepackage{fullpage}
+\usepackage{mathrsfs}
+
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
 
 \newcommand{\mat}{\bm}
 \newcommand{\trans}{^\top}
 \newcommand{\vc}{\mathrm{vec}}
 \newcommand{\dnorm}{\mathcal{N}}
+\newcommand{\dexpfam}{\mathcal{D}}
 
-\title{lme4ord model}
-\author{Steve Walker}
+\title{Extending the generalized linear mixed model for community
+  ecologists: computational challenges, solutions, and advice}
+\author{Steve Walker and Ben Bolker}
 \date{}
 
 \begin{document}
@@ -30,30 +35,79 @@
 %   \mat Y = \mat X\mat\beta + \mat b_n\mat 1_m\trans + \mat 1_n\mat b_m\trans + \mat U\mat V\trans
 % \end{equation}
 
-\section{The basic model}
+\section{The model}
 
-The matrix-valued linear predictor has entries given by,
-\begin{equation}
-  \label{eq:3}
-  \eta_{ij} = \sum_{k = 1}^p x_{ik}\beta_{k} + b_{row, i} + b_{col, j} + \sum_{l = 1}^d u_{il}v_{jl}
-\end{equation}
-with random parameters,
-\begin{equation}
-  \label{eq:4}
-  b_{row, i} \sim \dnorm(0, \theta_{row})
-\end{equation}
-\begin{equation}
-  \label{eq:4}
-  b_{col, j} \sim \dnorm(0, \theta_{col})
-\end{equation}
-\begin{equation}
-  \label{eq:5}
-  v_{jl} \sim \dnorm(0, \theta_{axes})
-\end{equation}
-and where the $x$'s are known and the $\beta$'s and $u$'s are constant parameters.
+\subsection{The standard generalized linear mixed model}
 
-\section{The trouble}
+The generalized linear mixed model takes the form,
+\begin{equation}
+  \label{eq:6}
+  \bm\eta = \bm X\bm\beta + \bm Z\bm b
+\end{equation}
+\begin{equation}
+  \label{eq:10}
+  \bm b = \bm\Lambda_{\bm\theta}\bm u
+\end{equation}
+\begin{equation}
+  \label{eq:7}
+  \bm u \sim \dnorm(0, \bm I)
+\end{equation}
+\begin{equation}
+  \label{eq:8}
+  \bm y \sim \dexpfam (\bm\eta, \bm\phi)
+\end{equation}
+where ...  
 
-There have to be constraints on the $u$'s to keep the model identifiable. 
+\subsection{The extended model}
+
+GLMMs are suitable for modelling a wide variety of data.  However, in
+community ecology the response variables are often species abundances
+or species presence-absence, and such data are often characterized by
+correlations between species even after the effects of environmental,
+phylogenetic, and space are accounted for.  These correlations among
+species are typically due to either unmeasured site and species
+characteristics and species interactions.  These correlations can be
+accounted for by allowing $\bm Z$ to depend on a vector of parameters,
+$\bm\psi$.  Therefore the model that we will be using is given by,
+\begin{equation}
+  \label{eq:6}
+  \bm\eta = \bm X\bm\beta + \bm Z_{\bm\psi}\bm\Lambda_{\bm\theta}\bm u
+\end{equation}
+
+\subsection{Ecological structure in $\bm Z_{\bm\psi}$ and
+  $\bm\Lambda_{\bm\theta}$}
+
+\begin{equation}
+  \label{eq:11}
+  \bm Z_{\bm\psi} =
+  \begin{bmatrix}
+    \bm Z_{\mathrm{FA}} & \bm Z_{\mathrm{phylo}} & \bm
+    Z_{\mathrm{space}} \\
+  \end{bmatrix}
+\end{equation}
+
+
+
+
+% The matrix-valued linear predictor has entries given by,
+% \begin{equation}
+%   \label{eq:3}
+%   \eta_{ij} = \sum_{k = 1}^p x_{ik}\beta_{k} + b_{row, i} + b_{col, j} + \sum_{l = 1}^d u_{il}v_{jl}
+% \end{equation}
+% with random parameters,
+% \begin{equation}
+%   \label{eq:4}
+%   b_{row, i} \sim \dnorm(0, \theta_{row})
+% \end{equation}
+% \begin{equation}
+%   \label{eq:4}
+%   b_{col, j} \sim \dnorm(0, \theta_{col})
+% \end{equation}
+% \begin{equation}
+%   \label{eq:5}
+%   v_{jl} \sim \dnorm(0, \theta_{axes})
+% \end{equation}
+% and where the $x$'s are known and the $\beta$'s and $u$'s are constant parameters.
+
 
 \end{document}

@@ -31,14 +31,15 @@ Y <- as.matrix(fish)
 n <- nrow(Y)
 m <- ncol(Y)
 x <- as.vector(scale(limn$pH))
-dl <- data.list(Y = t(Y), x = x,
-                dimids = c("species", "sites"))
+dl <- data.list(Y = Y, x = x,
+                dimids = c("sites", "species"))
 summary(dl)
 
-mod <- gblmer(Y ~ 1 + (1 | species), dl, binomial, 2, 1,
+mod <- gblmer(Y ~ 1 + (1 | species), dl, binomial,
+              loadingsDim = 2,
+              latentDim = 2,
               loadingPen = 1L,
               verbose = 2L)
-
 
 ## dl <- dl + variable(1:dim(dl)[1], "species", "latent")
 ## df <- as.data.frame(dims_to_vars(dl))
