@@ -15,8 +15,8 @@
 ##' @import multitable
 ##' @export
 gblmer <- function(formula, data, family,
-                   latentDims = 0L, loadingsDim = 1L, latentName = "latent",
-                   loadingPen = 0L,
+                   latentName = "latent", latentDims = 0L,
+                   loadingsDim = 1L, loadingPen = 0L,
                    verbose = 0L, ...) {
     if(!any(inherits(data, "data.list"))) stop("data must be a data list")
     if(length(dim(data)) != 2L) stop("data list must be two dimensional")
@@ -107,21 +107,25 @@ gblmer <- function(formula, data, family,
 
     # initial parameters
     # order: (1) loadings, (2) covariance pars, (3) fixed effect pars
+    parPointer <- setNames(cumsum(c(0, length(initLoadings),
+                                    length(theta) - latentDims)) + 1,
+                           c("loadings", "theta", "fixef"))
     initPars <- c(initLoadings, theta[-(1:latentDims)], rho$pp$beta(1))
     optLower <- c(rep(-Inf, length(initLoadings)), rho$lower[-(1:latentDims)])
                                         # optimize
     opt <- lme4:::optwrap("bobyqa", dfun, initPars, 
                           lower = optLower, verbose = verbose)
 
+    optPar <- opt$par
     optNoLoadings <- c(rep(1, latentDims), opt$par[-rho$loadInd])
     optLoadings <- matrix(0, dd[loadingsDim], latentDims)
-    optLoadings[lower.tri(optLoadings, TRUE)] <- opt$par[rho$loadInd]
+    optLoadings[lower.tri(optLoadings, TRUE)] <- optPar[rho$loadInd]
     dim(optLoadings) <- c(dd[loadingsDim], latentDims)
     colnames(optLoadings) <- latentVarNames
-    
+    opt$par <- optNoLoadings    
+
     ## rho$control <- attr(opt,"control")
     # rho$nAGQ <- 0
-    opt$par <- optNoLoadings
 
     # body(dfun) <- body(dfun)[c(1, 5:9)]
     # formals(dfun) <- setNames(formals(dfun), "theta")
@@ -140,7 +144,9 @@ gblmer <- function(formula, data, family,
     }
     do.call(new, c(list(Class = "gblmerMod"),
                    merList,
-                   list(loadings = optLoadings)), quote = TRUE)
+                   list(  loadings = optLoadings,
+                            optPar = optPar,
+                        parPointer = parPointer)), quote = TRUE)
 }
 
 ##' Class "gblmerMod"
@@ -158,7 +164,9 @@ gblmer <- function(formula, data, family,
 ##' @keywords classes
 ##' @export
 setClass("gblmerMod",
-         representation(loadings = "matrix"),
+         representation(  loadings = "matrix",
+                            optPar = "numeric",
+                        parPointer = "numeric"),
          contains="glmerMod")
 
 ##' Variance-covariance matrix of the (co)variance parameters and
@@ -181,8 +189,10 @@ vcov.gblmerMod <- function(object, correlation = TRUE, ...) {
 	## h <- h[i,i]
 	forceSymmetric(h + t(h))
     }
-    h <- object@optinfo$derivs$Hessian
+    fixefIndices <- object@parPointer[3]:length(object@optPar)
+    h <- object@optinfo$derivs$Hessian[fixefIndices, fixefIndices, drop = FALSE]
     V.hess <- calc.vcov.hess(h)
+    
     bad.V.hess <- any(is.na(V.hess))
     if (!bad.V.hess) {
         e.hess <- eigen(V.hess,symmetric = TRUE,only.values = TRUE)$values
