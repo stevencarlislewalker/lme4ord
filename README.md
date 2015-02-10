@@ -8,7 +8,11 @@ evolving [mission statement](https://github.com/stevencarlislewalker/lme4ord/iss
 
 This package is not at all stable.
 
-#### New function: gblmer
+#### Newer function: `mkGeneralGlmerDevfun`
+
+$$ \sin(x) = \sqrt{1 - 2x} $$
+
+#### New function: `gblmer`
 
 
 ```r
