@@ -5,7 +5,10 @@ lme4ord (l-m-e-ford)
 opts_chunk$set(fig.path = "inst/README/figure/")
 ```
 
-Ecological mixed-effects ordination with lme4.  This package is not at all stable.
+Mixed-effects models for community ecologists.  See the currently
+evolving [mission statement](#1).
+
+This package is not at all stable.
 
 #### New function: gblmer
 
