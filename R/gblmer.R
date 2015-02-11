@@ -69,7 +69,7 @@ gblmer <- function(formula, data, family,
 
                                         # which Zt@x elements
                                         # represent loadings
-    rho$Zwhich <- rho$pp$Zt@i %in% (seq_len(dd[-loadingsDim]) - 1)
+    rho$Zwhich <- rho$pp$Zt@i %in% (seq_len(latentDims * dd[-loadingsDim]) - 1)
                                         # mapping from loadings to the
                                         # Zt@x elements that represent
                                         # loadings
@@ -122,6 +122,7 @@ gblmer <- function(formula, data, family,
     optLoadings[lower.tri(optLoadings, TRUE)] <- optPar[rho$loadInd]
     dim(optLoadings) <- c(dd[loadingsDim], latentDims)
     colnames(optLoadings) <- latentVarNames
+    rownames(optLoadings) <- dimnames(data)[[loadingsDim]]
     opt$par <- optNoLoadings    
 
     ## rho$control <- attr(opt,"control")
