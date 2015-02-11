@@ -10,8 +10,6 @@ This package is not at all stable.
 
 #### Newer function: `mkGeneralGlmerDevfun`
 
-$$ \sin(x) = \sqrt{1 - 2x} $$
-
 #### New function: `gblmer`
 
 
