@@ -1,0 +1,683 @@
+\documentclass[12pt]{article}\usepackage[]{graphicx}\usepackage[]{color}
+%% maxwidth is the original width if it is less than linewidth
+%% otherwise use linewidth (to make sure the graphics do not exceed the margin)
+\makeatletter
+\def\maxwidth{ %
+  \ifdim\Gin@nat@width>\linewidth
+    \linewidth
+  \else
+    \Gin@nat@width
+  \fi
+}
+\makeatother
+
+\definecolor{fgcolor}{rgb}{0.345, 0.345, 0.345}
+\newcommand{\hlnum}[1]{\textcolor[rgb]{0.686,0.059,0.569}{#1}}%
+\newcommand{\hlstr}[1]{\textcolor[rgb]{0.192,0.494,0.8}{#1}}%
+\newcommand{\hlcom}[1]{\textcolor[rgb]{0.678,0.584,0.686}{\textit{#1}}}%
+\newcommand{\hlopt}[1]{\textcolor[rgb]{0,0,0}{#1}}%
+\newcommand{\hlstd}[1]{\textcolor[rgb]{0.345,0.345,0.345}{#1}}%
+\newcommand{\hlkwa}[1]{\textcolor[rgb]{0.161,0.373,0.58}{\textbf{#1}}}%
+\newcommand{\hlkwb}[1]{\textcolor[rgb]{0.69,0.353,0.396}{#1}}%
+\newcommand{\hlkwc}[1]{\textcolor[rgb]{0.333,0.667,0.333}{#1}}%
+\newcommand{\hlkwd}[1]{\textcolor[rgb]{0.737,0.353,0.396}{\textbf{#1}}}%
+
+\usepackage{framed}
+\makeatletter
+\newenvironment{kframe}{%
+ \def\at@end@of@kframe{}%
+ \ifinner\ifhmode%
+  \def\at@end@of@kframe{\end{minipage}}%
+  \begin{minipage}{\columnwidth}%
+ \fi\fi%
+ \def\FrameCommand##1{\hskip\@totalleftmargin \hskip-\fboxsep
+ \colorbox{shadecolor}{##1}\hskip-\fboxsep
+     % There is no \\@totalrightmargin, so:
+     \hskip-\linewidth \hskip-\@totalleftmargin \hskip\columnwidth}%
+ \MakeFramed {\advance\hsize-\width
+   \@totalleftmargin\z@ \linewidth\hsize
+   \@setminipage}}%
+ {\par\unskip\endMakeFramed%
+ \at@end@of@kframe}
+\makeatother
+
+\definecolor{shadecolor}{rgb}{.97, .97, .97}
+\definecolor{messagecolor}{rgb}{0, 0, 0}
+\definecolor{warningcolor}{rgb}{1, 0, 1}
+\definecolor{errorcolor}{rgb}{1, 0, 0}
+\newenvironment{knitrout}{}{} % an empty environment to be redefined in TeX
+
+\usepackage{alltt}
+\usepackage{amsmath}
+\usepackage{bm}
+\usepackage{fullpage}
+\usepackage{mathrsfs}
+
+\DeclareMathAlphabet{\mathpzc}{OT1}{pzc}{m}{it}
+
+\newcommand{\mat}{\bm}
+\newcommand{\trans}{^\top}
+\newcommand{\vc}{\mathrm{vec}}
+\newcommand{\dnorm}{\mathcal{N}}
+\newcommand{\dexpfam}{\mathcal{D}}
+
+\author{Steve Walker}
+\title{Making general deviance functions for mixed/factor models in lme4}
+\date{}
+\IfFileExists{upquote.sty}{\usepackage{upquote}}{}
+\begin{document}
+
+\maketitle
+\tableofcontents
+
+\section{Introduction}
+
+The generalized linear mixed model (GLMM) in \texttt{lme4} takes the
+form,
+\begin{equation}
+  \label{eq:6}
+  \bm\eta = \bm X\bm\beta + \bm Z\bm b
+\end{equation}
+\begin{equation}
+  \label{eq:10}
+  \bm b = \bm\Lambda_{\bm\theta}\bm u
+\end{equation}
+\begin{equation}
+  \label{eq:7}
+  \bm u \sim \dnorm(0, \bm I)
+\end{equation}
+\begin{equation}
+  \label{eq:8}
+  \bm y \sim \dexpfam (\bm\eta, \bm\phi)
+\end{equation}
+where $\dexpfam$ is an exponential family distribution. This GLMM is
+suitable for modelling a wide variety of data.  However, in community
+ecology the response variables are often species abundances or species
+presence-absence, and such data are often characterized by
+correlations between species even after the effects of environmental,
+phylogenetic, and space are accounted for.  These correlations among
+species are typically due to either unmeasured site and species
+characteristics and species interactions.  These correlations can be
+accounted for by allowing $\bm Z$ to depend on a vector of parameters,
+$\bm\psi$.  Therefore the model that we will be using is given by,
+\begin{equation}
+  \label{eq:6}
+  \bm\eta = \bm X\bm\beta + \bm Z_{\bm\psi}\bm\Lambda_{\bm\theta}\bm u
+\end{equation}
+We now have three parameter vectors:
+\begin{itemize}
+\item covariance parameters, $\bm\theta$, \texttt{covar}
+\item fixed effect parameters, $\bm\beta$, \texttt{fixef}
+\item general factor loadings, $\bm\psi$, \texttt{loads}
+\end{itemize}
+Here I illustrate a function, \texttt{mkGeneralGlmerDevfun}, in the
+\texttt{lme4ord} package, which can be used to fit such models.
+
+\section{Model specification}
+
+\subsection{Factor models}
+
+\subsection{Covariance template models}
+
+Suppose that $\bm V = \bm L\bm L^\top$ is a covariance matrix over the
+levels of a grouping factor (e.g. a phylogenetic covariance over
+species), where $\bm L$ is a Cholesky factor.  Suppose that this
+grouping factor is crossed with another grouping factor (e.g. species
+are crossed with sites).  There are two immediate possible models for
+the structure of covariance over the site-species combinations: a
+dense model and a block-diagonal model.  To illustrate them we
+consider two sites for simplicity.  The dense model assumes that
+species are phylogenetically correlated both within and among sites,
+\begin{equation}
+  \label{eq:2}
+  \bm\Sigma_\theta = \bm\Lambda_\theta\bm\Lambda_\theta^\top =
+  \theta^2\begin{bmatrix}
+    \bm L & \bm 0 \\
+    \bm L & \bm 0 \\
+  \end{bmatrix}
+  \begin{bmatrix}
+    \bm L^\top & \bm L^\top \\
+    \bm 0      & \bm 0      \\
+  \end{bmatrix} = 
+  \theta^2\begin{bmatrix}
+    \bm V & \bm V \\
+    \bm V & \bm V \\
+  \end{bmatrix}
+\end{equation}
+whereas the block-diagonal model assumes phylogenetic correlation only
+within sites,
+\begin{equation}
+  \label{eq:2}
+  \bm\Sigma_\theta = \bm\Lambda_\theta\bm\Lambda_\theta^\top =
+  \theta^2\begin{bmatrix}
+    \bm L & \bm 0 \\
+    \bm 0 & \bm L \\
+  \end{bmatrix}
+  \begin{bmatrix}
+    \bm L^\top & \bm 0      \\
+    \bm 0      & \bm L^\top \\
+  \end{bmatrix} = 
+  \theta^2\begin{bmatrix}
+    \bm V & \bm 0 \\
+    \bm 0 & \bm V \\
+  \end{bmatrix}
+\end{equation}
+Interestingly, given that \texttt{lme4} parameterizes covariance
+models by Cholesky factors, both models require the same amount of
+structural zeros in the parameterization (because each requires one
+$\bm L$ per site) even though the covariance matrices themselves
+differ strongly in the number structural zeros.  That is, the dense
+model is only dense on the covariance scale, not on the Cholesky
+scale.
+
+Suppose that an explanatory variable, $\bm x$, is measured at each
+site, and that it has a phylogenetically correlated effect given by
+one of the above models.  Let $\bm D$ be the matrix with $\bm x$ on
+the diagonal and $\bm I$ be an identity matrix of size equal to the
+number of species.  The random effects model matrix would then
+be given by the diagonal matrix
+\begin{equation}
+  \label{eq:3}
+  \bm Z = \bm D \otimes \bm I
+\end{equation}
+
+Note that it is always possible to put the Cholesky factors in the
+model matrix.  In this case we have,
+\begin{equation}
+  \label{eq:4}
+  \bm\Lambda_\theta = \theta\bm I
+\end{equation}
+and,
+\begin{equation}
+  \label{eq:5}
+  \bm Z =
+  (\bm D \otimes \bm I)
+  \begin{bmatrix}
+    \bm L & \bm 0 \\
+    \bm L & \bm 0 \\
+  \end{bmatrix}
+\end{equation}
+or
+\begin{equation}
+  \label{eq:5}
+  \bm Z =
+  (\bm D \otimes \bm I)
+  \begin{bmatrix}
+    \bm L & \bm 0 \\
+    \bm 0 & \bm L \\
+  \end{bmatrix}
+\end{equation}
+because $\bm Z\bm\Lambda_\theta$ remains unchanged by this
+redefinition.
+
+Note also that this model does not allow for phylogenetic correlations
+among explanatory variables.
+
+%% \subsubsection{Dense templates}
+
+%% The idea is to let the relative covariance factor be,
+%% \begin{equation}
+%%   \label{eq:1}
+%%     \Lambda_\theta =
+%%     \begin{bmatrix}
+%%       \theta\bm T & \theta\bm T & \cdots & \theta\bm T \\
+%%       \theta\bm T & \theta\bm T & \cdots & \theta\bm T \\
+%%       \vdots      & \vdots      & \ddots & \vdots \\
+%%       \theta\bm T & \theta\bm T & \cdots & \theta\bm T \\
+%%     \end{bmatrix} = 
+%%     \theta\begin{bmatrix}
+%%       \bm T  & \bm T  & \cdots & \bm T \\
+%%       \bm T  & \bm T  & \cdots & \bm T \\
+%%       \vdots & \vdots & \ddots & \vdots \\
+%%       \bm T  & \bm T  & \cdots & \bm T \\
+%%     \end{bmatrix}
+%% \end{equation}
+%% where $\bm T$ is an \emph{a priori} known triangular matrix
+%% (e.g. Cholesky factor of a phylogenetic covariance matrix).
+
+%% To specify this model 
+
+%% \subsubsection{Block diagonal repeating templates}
+
+%% \begin{equation}
+%%   \label{eq:1}
+%%     \Lambda_\theta =
+%%     \theta\begin{bmatrix}
+%%       \bm T  & \bm 0  & \cdots & \bm 0 \\
+%%       \bm 0  & \bm T  & \cdots & \bm 0 \\
+%%       \vdots & \vdots & \ddots & \vdots \\
+%%       \bm 0  & \bm 0  & \cdots & \bm T \\
+%%     \end{bmatrix}
+%% \end{equation}
+
+\subsubsection{Multiparameter template models}
+
+For the future.  The idea is to take a singular value decomposition of
+the triangular template, $\bm T = \bm U \bm D \bm V^\top$.  The
+simple template model can be expressed as $\theta\bm T = \bm U
+(\theta\bm D) \bm V^\top$.  Therefore, the simple template model can be
+generalized by letting the singular values be a function of a
+parameter vector, $\bm\theta$.
+
+\section{Examples}
+
+\subsection{Simple simulation example}
+
+
+
+I simulate a small data set with the following dimensions.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{n} \hlkwb{<-} \hlnum{60} \hlcom{# samples }
+\hlstd{p} \hlkwb{<-} \hlnum{2}  \hlcom{# fixed effects}
+\hlstd{q} \hlkwb{<-} \hlnum{30} \hlcom{# random effects}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+The covariance factor, $\Lambda_{\bm\theta}^\top$, is dense (although
+we must specify it with a sparse structure).
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{covTemplate} \hlkwb{<-} \hlkwd{as}\hlstd{(}\hlkwd{chol}\hlstd{(}\hlkwd{cov}\hlstd{(}\hlkwd{matrix}\hlstd{(}\hlkwd{rnorm}\hlstd{((q}\hlopt{+}\hlnum{1}\hlstd{)}\hlopt{*}\hlstd{q), q} \hlopt{+} \hlnum{1}\hlstd{, q))),}
+                  \hlstr{"sparseMatrix"}\hlstd{)}
+\hlstd{Lambdat} \hlkwb{<-} \hlstd{covTemplate}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+This structure could represent a phylogenetic covariance matrix for
+example.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{image}\hlstd{(Lambdat)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/viewLambdat-1} 
+
+\end{knitrout}
+The transposed random effects model matrix and fixed effects model
+matrix are given by the following.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{Zt} \hlkwb{<-} \hlkwd{sparseMatrix}\hlstd{(}\hlkwc{i} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlopt{:}\hlstd{q,} \hlnum{6}\hlstd{),}
+                   \hlkwc{j} \hlstd{=} \hlkwd{as.vector}\hlstd{(}\hlkwd{outer}\hlstd{(}\hlkwd{rep}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{,} \hlnum{3}\hlstd{),} \hlkwd{seq}\hlstd{(}\hlnum{0}\hlstd{,} \hlnum{50}\hlstd{,} \hlnum{10}\hlstd{),} \hlstr{"+"}\hlstd{)),}
+                   \hlkwc{x} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlkwd{rnorm}\hlstd{(}\hlnum{10}\hlstd{),} \hlnum{18}\hlstd{))}
+\hlstd{X} \hlkwb{<-} \hlkwd{matrix}\hlstd{(}\hlkwd{rnorm}\hlstd{(n} \hlopt{*} \hlstd{p), n, p)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+The matrix has the following pattern.  I don't know what this might
+represent, but I just wanted to show that essentially any structure
+will be fine.  For real examples, one may freely compute Kronecker
+products and prewhiten, etc.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{image}\hlstd{(Zt)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/viewZt-1} 
+
+\end{knitrout}
+Then we simulate the response vector, weights, and offset.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{eta} \hlkwb{<-} \hlkwd{as.numeric}\hlstd{(X} \hlopt{%*%} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{1}\hlstd{)} \hlopt{+} \hlkwd{t}\hlstd{(Zt)} \hlopt{%*%} \hlkwd{t}\hlstd{(Lambdat)} \hlopt{%*%} \hlkwd{rnorm}\hlstd{(q))}
+\hlstd{y} \hlkwb{<-} \hlkwd{rbinom}\hlstd{(n,} \hlnum{1}\hlstd{,} \hlkwd{plogis}\hlstd{(eta))}
+\hlstd{weights} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{, n); offset} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{0}\hlstd{, n)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\subsubsection{Organize the parameter vector}
+
+To fit this model we need to use a general nonlinear optimizer, which
+usually require a single parameter vector.  Therefore, I put all three
+types of parameters in a single vector.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{initPars} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlkwc{covar} \hlstd{=} \hlnum{1}\hlstd{,}
+              \hlkwc{fixef} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,} \hlnum{0}\hlstd{),}
+              \hlkwc{loads} \hlstd{=} \hlkwd{rnorm}\hlstd{(}\hlnum{10}\hlstd{))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+Importantly, the deviance function needs to know how to find the
+different types of parameters, and one specifies this with a list of
+indices.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{parInds} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwc{covar} \hlstd{=} \hlnum{1}\hlstd{,}
+                \hlkwc{fixef} \hlstd{=} \hlnum{2}\hlopt{:}\hlnum{3}\hlstd{,}
+                \hlkwc{loads} \hlstd{=} \hlnum{4}\hlopt{:}\hlnum{13}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+Because this is a general approach, we must specify functions that
+take the parameter vectors and update the various objects.  In
+particular, we need a function to map the \texttt{covar} parameters
+into the nonzero values of \texttt{Lambdat} (stored in
+\texttt{Lambdat@x}).  Similarly, we need to map the factor loadings,
+\texttt{loads}, into the nonzero values of \texttt{Zt}.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{mapToCovFact} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{covar}\hlstd{) covar} \hlopt{*} \hlstd{covTemplate}\hlopt{@}\hlkwc{x}
+\hlstd{mapToModMat} \hlkwb{<-} \hlkwa{function}\hlstd{(}\hlkwc{loads}\hlstd{)} \hlkwd{rep}\hlstd{(loads,} \hlnum{18}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+Note that the covariance factor is updated as though it were a
+Brownian motion model with parameter \texttt{covar} controlling the
+rate of evolution.  Here I use the covariance factor for introducing
+phylogenetic information, but the random effects model matrix could
+also be used.  In this case however, I wanted to illustrate the
+possibility of including factor loadings, which should be in the model
+matrix.  In this illustrative example, the parameters have an effect
+on every nonzero element of the matrices.  However, often (usually)
+there are no factor loadings and in this case, \texttt{mapToModMat}
+should just return the same nonzero values for any value of the
+loadings.  Here is an example of using the mapping functions to update
+the two sparse matrices.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{Lambdat}\hlopt{@}\hlkwc{x} \hlkwb{<-} \hlkwd{mapToCovFact}\hlstd{(initPars[parInds}\hlopt{$}\hlstd{covar])}
+\hlstd{Zt}\hlopt{@}\hlkwc{x} \hlkwb{<-} \hlkwd{mapToModMat}\hlstd{(initPars[parInds}\hlopt{$}\hlstd{loads])}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\subsubsection{Construct the deviance function}
+
+The interesting thing to report here is that once all of these
+structures and mappings are produced, the computation of the deviance
+function is now quite straightforward.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{devfun} \hlkwb{<-} \hlkwd{mkGeneralGlmerDevfun}\hlstd{(y, X, Zt, Lambdat,}
+                               \hlstd{weights, offset,}
+                               \hlstd{initPars, parInds,}
+                               \hlstd{mapToCovFact, mapToModMat)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+Here is an example of evaluating it.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{devfun}\hlstd{(initPars)}
+\end{alltt}
+\begin{verbatim}
+## [1] 75.54379
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsubsection{Optimize the deviance function}
+
+We may now use any nonlinear optimizer.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{opt} \hlkwb{<-} \hlstd{minqa}\hlopt{:::}\hlkwd{bobyqa}\hlstd{(initPars, devfun)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+And here are the optimum parameter values.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{setNames}\hlstd{(opt}\hlopt{$}\hlstd{par,} \hlkwd{names}\hlstd{(initPars))}
+\end{alltt}
+\begin{verbatim}
+##        covar       fixef1       fixef2       loads1       loads2 
+##  1.441776793  1.007301286  1.550757741  0.030357567 -0.034476705 
+##       loads3       loads4       loads5       loads6       loads7 
+##  0.092620213 -1.949066080 -0.084550637 -0.483218872  0.965505110 
+##       loads8       loads9      loads10 
+##  1.604436279 -0.455579333 -0.008039395
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\subsection{A latent factor model}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{library}\hlstd{(reo)}
+\hlkwd{library}\hlstd{(multitable)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+Here is an example with Don Jackson's Masters thesis.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{data}\hlstd{(fish)}
+\hlkwd{data}\hlstd{(limn)}
+\hlstd{Y} \hlkwb{<-} \hlkwd{as.matrix}\hlstd{(fish)}
+\hlstd{n} \hlkwb{<-} \hlkwd{nrow}\hlstd{(Y)}
+\hlstd{m} \hlkwb{<-} \hlkwd{ncol}\hlstd{(Y)}
+\hlstd{x} \hlkwb{<-} \hlkwd{as.vector}\hlstd{(}\hlkwd{scale}\hlstd{(limn}\hlopt{$}\hlstd{pH))}
+\hlstd{dl} \hlkwb{<-} \hlkwd{data.list}\hlstd{(}\hlkwc{Y} \hlstd{= Y,} \hlkwc{x} \hlstd{= x,}
+                \hlkwc{dimids} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"sites"}\hlstd{,} \hlstr{"species"}\hlstd{))}
+\hlstd{dl} \hlkwb{<-} \hlkwd{dims_to_vars}\hlstd{(dl)}
+\hlkwd{summary}\hlstd{(dl)}
+\end{alltt}
+\begin{verbatim}
+##            Y     x sites species
+## sites   TRUE  TRUE  TRUE   FALSE
+## species TRUE FALSE FALSE    TRUE
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+I use the \texttt{multitable} package to organize multivariate data
+(could put traits in there too).  Convert it to long format,
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlkwd{head}\hlstd{(df} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(dl))}
+\end{alltt}
+\begin{verbatim}
+##                Y          x       sites species
+## 3 Island.PS    0  0.1843841    3 Island      PS
+## Austin.PS      0 -0.8325221      Austin      PS
+## Bear.PS        1  0.8277329        Bear      PS
+## Bentshoe.PS    1 -0.8532753    Bentshoe      PS
+## Big East.PS    1 -0.6249903    Big East      PS
+## Big Orillia.PS 1  0.2051373 Big Orillia      PS
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+The response vector.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{y} \hlkwb{<-} \hlstd{df}\hlopt{$}\hlstd{Y}
+\hlstd{weights} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{,} \hlkwd{length}\hlstd{(y)); offset} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{0}\hlstd{,} \hlkwd{length}\hlstd{(y))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+The fixed effects design matrix.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{X} \hlkwb{<-} \hlkwd{model.matrix}\hlstd{(Y} \hlopt{~} \hlstd{x, df)[,]}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+The random effects design matrix.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{Jspecies} \hlkwb{<-} \hlkwd{t}\hlstd{(}\hlkwd{as}\hlstd{(}\hlkwd{as.factor}\hlstd{(df}\hlopt{$}\hlstd{species),} \hlkwc{Class} \hlstd{=} \hlstr{"sparseMatrix"}\hlstd{))}
+\hlstd{Zt} \hlkwb{<-} \hlkwd{KhatriRao}\hlstd{(}\hlkwd{t}\hlstd{(Jspecies),} \hlkwd{t}\hlstd{(X))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+Now this design matrix only contains `traditional' random effects, not
+factor loadings.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{nFreeLoadings} \hlkwb{<-} \hlstd{m}
+\hlstd{U} \hlkwb{<-} \hlkwd{matrix}\hlstd{(}\hlnum{1}\hlopt{:}\hlstd{nFreeLoadings,} \hlkwc{nrow} \hlstd{= m,} \hlkwc{ncol} \hlstd{=} \hlnum{1}\hlstd{)}
+\hlstd{latentVarNames} \hlkwb{<-} \hlstr{"latent"}
+\hlstd{U} \hlkwb{<-} \hlkwd{setNames}\hlstd{(}\hlkwd{as.data.frame}\hlstd{(U), latentVarNames)}
+\hlstd{latentData} \hlkwb{<-} \hlkwd{data.list}\hlstd{(U,} \hlkwc{drop} \hlstd{=} \hlnum{FALSE}\hlstd{,} \hlkwc{dimids} \hlstd{=} \hlstr{"species"}\hlstd{)}
+\hlstd{df} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(dl} \hlopt{+} \hlstd{latentData)}
+\hlstd{Jsites} \hlkwb{<-} \hlkwd{with}\hlstd{(df,} \hlkwd{t}\hlstd{(}\hlkwd{as}\hlstd{(}\hlkwd{as.factor}\hlstd{(sites),} \hlkwc{Class} \hlstd{=} \hlstr{"sparseMatrix"}\hlstd{)))}
+\hlstd{Zt} \hlkwb{<-} \hlkwd{rBind}\hlstd{(}\hlkwd{KhatriRao}\hlstd{(}\hlkwd{t}\hlstd{(Jsites),} \hlkwd{t}\hlstd{(}\hlkwd{model.matrix}\hlstd{(Y} \hlopt{~} \hlnum{0} \hlopt{+} \hlstd{latent, df))), Zt)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{templateFact} \hlkwb{<-} \hlkwd{sparseMatrix}\hlstd{(}\hlkwc{i} \hlstd{=} \hlnum{1}\hlopt{:}\hlstd{n,} \hlkwc{j} \hlstd{=} \hlnum{1}\hlopt{:}\hlstd{n,} \hlkwc{x} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlstd{, n))}
+\hlstd{ii} \hlkwb{<-} \hlkwd{rep}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{2}\hlstd{,} \hlnum{1}\hlopt{:}\hlnum{2}\hlstd{); jj} \hlkwb{<-} \hlkwd{sequence}\hlstd{(}\hlnum{1}\hlopt{:}\hlnum{2}\hlstd{)}
+\hlstd{templateRanef} \hlkwb{<-} \hlkwd{sparseMatrix}\hlstd{(}\hlkwc{i} \hlstd{= ii,} \hlkwc{j} \hlstd{= jj,} \hlkwc{x} \hlstd{=} \hlnum{1} \hlopt{*} \hlstd{(ii} \hlopt{==} \hlstd{jj))}
+\hlstd{Lambdat} \hlkwb{<-} \hlkwd{.bdiag}\hlstd{(}\hlkwd{c}\hlstd{(}\hlkwd{list}\hlstd{(templateFact),}
+                    \hlkwd{rep}\hlstd{(}\hlkwd{list}\hlstd{(templateRanef), m)))}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{mapToModMat} \hlkwb{<-} \hlkwd{local}\hlstd{(\{}
+    \hlstd{Ztx} \hlkwb{<-} \hlstd{Zt}\hlopt{@}\hlkwc{x}
+    \hlstd{Zwhich} \hlkwb{<-} \hlstd{Zt}\hlopt{@}\hlkwc{i} \hlopt{%in%} \hlstd{(}\hlkwd{seq_len}\hlstd{(n)} \hlopt{-} \hlnum{1}\hlstd{)}
+    \hlstd{Zind} \hlkwb{<-} \hlstd{Zt}\hlopt{@}\hlkwc{x}\hlstd{[Zwhich]}
+    \hlstd{loadInd} \hlkwb{<-} \hlnum{1}\hlopt{:}\hlstd{nFreeLoadings}
+    \hlkwa{function}\hlstd{(}\hlkwc{loads}\hlstd{) \{}
+        \hlstd{Ztx[Zwhich]} \hlkwb{<-} \hlstd{loads[Zind]}
+        \hlkwd{return}\hlstd{(Ztx)}
+    \hlstd{\}}
+\hlstd{\})}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{mapToCovFact} \hlkwb{<-} \hlkwd{local}\hlstd{(\{}
+    \hlstd{Lambdatx} \hlkwb{<-} \hlstd{Lambdat}\hlopt{@}\hlkwc{x}
+    \hlstd{LambdaWhich} \hlkwb{<-} \hlstd{(n}\hlopt{+}\hlnum{1}\hlstd{)}\hlopt{:}\hlkwd{length}\hlstd{(Lambdatx)}
+    \hlstd{LindTemplate} \hlkwb{<-} \hlstd{ii} \hlopt{+} \hlnum{2} \hlopt{*} \hlstd{(jj} \hlopt{-} \hlnum{1}\hlstd{)} \hlopt{-} \hlkwd{choose}\hlstd{(jj,} \hlnum{2}\hlstd{)}
+    \hlstd{Lind} \hlkwb{<-} \hlkwd{rep}\hlstd{(LindTemplate, m)}
+    \hlkwa{function}\hlstd{(}\hlkwc{covar}\hlstd{) \{}
+        \hlstd{Lambdatx[LambdaWhich]} \hlkwb{<-} \hlstd{covar[Lind]}
+        \hlkwd{return}\hlstd{(Lambdatx)}
+    \hlstd{\}}
+\hlstd{\})}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{initPars} \hlkwb{<-} \hlkwd{c}\hlstd{(}\hlkwc{covar} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{1}\hlstd{,} \hlnum{0}\hlstd{,} \hlnum{1}\hlstd{),}
+              \hlkwc{fixef} \hlstd{=} \hlkwd{c}\hlstd{(}\hlnum{0}\hlstd{,} \hlnum{0}\hlstd{),}
+              \hlkwc{loads} \hlstd{=} \hlkwd{rep}\hlstd{(}\hlnum{0}\hlstd{, m))}
+\hlstd{parInds} \hlkwb{<-} \hlkwd{list}\hlstd{(}\hlkwc{covar} \hlstd{=} \hlnum{1}\hlopt{:}\hlnum{3}\hlstd{,}
+                \hlkwc{fixef} \hlstd{=} \hlnum{4}\hlopt{:}\hlnum{5}\hlstd{,}
+                \hlkwc{loads} \hlstd{= (}\hlnum{1}\hlopt{:}\hlstd{m)}\hlopt{+}\hlnum{5}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{devfun} \hlkwb{<-} \hlkwd{mkGeneralGlmerDevfun}\hlstd{(y, X, Zt, Lambdat,}
+                               \hlstd{weights, offset,}
+                               \hlstd{initPars, parInds,}
+                               \hlstd{mapToCovFact, mapToModMat)}
+\end{alltt}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{opt} \hlkwb{<-} \hlstd{minqa}\hlopt{:::}\hlkwd{bobyqa}\hlstd{(initPars, devfun)}
+\end{alltt}
+
+
+{\ttfamily\noindent\color{warningcolor}{\#\# Warning in commonArgs(par, fn, control, environment()): maxfun < 10 * length(par)\textasciicircum{}2 is not recommended.}}\begin{alltt}
+\hlkwd{setNames}\hlstd{(opt}\hlopt{$}\hlstd{par,} \hlkwd{names}\hlstd{(initPars))}
+\end{alltt}
+\begin{verbatim}
+##      covar1      covar2      covar3      fixef1      fixef2      loads1 
+##  1.96405248 -1.47457951  0.56376024 -2.26248775  0.81707347 -0.29383447 
+##      loads2      loads3      loads4      loads5      loads6      loads7 
+##  0.16413041 -0.39519344 -4.90990508 -1.32109526 -0.91997268 -0.98342366 
+##      loads8      loads9     loads10     loads11     loads12     loads13 
+##  0.11042682 -0.29120583 -0.73886605 -0.96269062 -0.53656420 -1.32888318 
+##     loads14     loads15     loads16     loads17     loads18     loads19 
+##  3.00980086 -0.36394912 -3.47314050 -0.22687037 -2.54996759 -1.28776228 
+##     loads20     loads21     loads22     loads23     loads24     loads25 
+## -0.35752948 -3.01398890  3.01361676 -1.22801409 -2.63378068  0.10737366 
+##     loads26     loads27     loads28     loads29     loads30 
+## -0.09197036  1.02311855 -0.20881364 -2.17348057 -2.17346329
+\end{verbatim}
+\end{kframe}
+\end{knitrout}
+
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{siteScores} \hlkwb{<-} \hlkwd{cbind}\hlstd{(}\hlkwc{pH} \hlstd{= x,}
+                    \hlkwc{latent} \hlstd{=} \hlkwd{environment}\hlstd{(devfun)}\hlopt{$}\hlstd{pp}\hlopt{$}\hlkwd{b}\hlstd{(}\hlnum{1}\hlstd{)[}\hlnum{1}\hlopt{:}\hlstd{n])}
+\hlstd{speciesScores} \hlkwb{<-} \hlkwd{cbind}\hlstd{(}\hlkwc{pH} \hlstd{=} \hlkwd{environment}\hlstd{(devfun)}\hlopt{$}\hlstd{pp}\hlopt{$}\hlkwd{b}\hlstd{(}\hlnum{1}\hlstd{)[}\hlopt{-}\hlstd{(}\hlnum{1}\hlopt{:}\hlstd{(n}\hlopt{+}\hlstd{m))],}
+                       \hlkwc{latent} \hlstd{= opt}\hlopt{$}\hlstd{par[parInds}\hlopt{$}\hlstd{loads])}
+\hlkwd{rownames}\hlstd{(siteScores)} \hlkwb{<-} \hlkwd{rownames}\hlstd{(Y)}
+\hlkwd{rownames}\hlstd{(speciesScores)} \hlkwb{<-} \hlkwd{colnames}\hlstd{(Y)}
+\hlkwd{biplot}\hlstd{(siteScores, speciesScores,} \hlkwc{cex} \hlstd{=} \hlnum{0.5}\hlstd{)}
+\end{alltt}
+\end{kframe}
+\includegraphics[width=\maxwidth]{figure/ordination_diagram-1} 
+
+\end{knitrout}
+
+\subsection{A simple phylogenetic example}
+
+Working on example in the `pglmer` helpfile.  Going well ...
+
+
+\section{Discussion}
+
+An important point is that \texttt{mkGeneralGlmerDevfun} deals with
+model fitting only.  However, in any application a model specification
+module and model presentation/inference module must also be provided.
+At this point, I have spent way way way too too too long thinking
+about how to do this in a general way.  I need to get on with
+community ecology, and so the way forward is to have this general
+approach to model fitting and then treat specification and
+presentation separately.
+
+As always, lot's to worry about.
+\begin{itemize}
+\item I'm expecting lots of bugs at this point
+\item Starting values?
+\item Control parameters?  Can \texttt{glmerControl} be leveraged?
+  Probably.
+\end{itemize}
+
+\end{document}
