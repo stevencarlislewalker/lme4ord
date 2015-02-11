@@ -64,8 +64,155 @@ We now have three parameter vectors:
 Here I illustrate a function, \texttt{mkGeneralGlmerDevfun}, in the
 \texttt{lme4ord} package, which can be used to fit such models.
 
+\section{Model specification}
 
-\section{Simple simulation example}
+\subsection{Factor models}
+
+\subsection{Covariance template models}
+
+Suppose that $\bm V = \bm L\bm L^\top$ is a covariance matrix over the
+levels of a grouping factor (e.g. a phylogenetic covariance over
+species), where $\bm L$ is a Cholesky factor.  Suppose that this
+grouping factor is crossed with another grouping factor (e.g. species
+are crossed with sites).  There are two immediate possible models for
+the structure of covariance over the site-species combinations: a
+dense model and a block-diagonal model.  To illustrate them we
+consider two sites for simplicity.  The dense model assumes that
+species are phylogenetically correlated both within and among sites,
+\begin{equation}
+  \label{eq:2}
+  \bm\Sigma_\theta = \bm\Lambda_\theta\bm\Lambda_\theta^\top =
+  \theta^2\begin{bmatrix}
+    \bm L & \bm 0 \\
+    \bm L & \bm 0 \\
+  \end{bmatrix}
+  \begin{bmatrix}
+    \bm L^\top & \bm L^\top \\
+    \bm 0      & \bm 0      \\
+  \end{bmatrix} = 
+  \theta^2\begin{bmatrix}
+    \bm V & \bm V \\
+    \bm V & \bm V \\
+  \end{bmatrix}
+\end{equation}
+whereas the block-diagonal model assumes phylogenetic correlation only
+within sites,
+\begin{equation}
+  \label{eq:2}
+  \bm\Sigma_\theta = \bm\Lambda_\theta\bm\Lambda_\theta^\top =
+  \theta^2\begin{bmatrix}
+    \bm L & \bm 0 \\
+    \bm 0 & \bm L \\
+  \end{bmatrix}
+  \begin{bmatrix}
+    \bm L^\top & \bm 0      \\
+    \bm 0      & \bm L^\top \\
+  \end{bmatrix} = 
+  \theta^2\begin{bmatrix}
+    \bm V & \bm 0 \\
+    \bm 0 & \bm V \\
+  \end{bmatrix}
+\end{equation}
+Interestingly, given that \texttt{lme4} parameterizes covariance
+models by Cholesky factors, both models require the same amount of
+structural zeros in the parameterization (because each requires one
+$\bm L$ per site) even though the covariance matrices themselves
+differ strongly in the number structural zeros.  That is, the dense
+model is only dense on the covariance scale, not on the Cholesky
+scale.
+
+Suppose that an explanatory variable, $\bm x$, is measured at each
+site, and that it has a phylogenetically correlated effect given by
+one of the above models.  Let $\bm D$ be the matrix with $\bm x$ on
+the diagonal and $\bm I$ be an identity matrix of size equal to the
+number of species.  The random effects model matrix would then
+be given by the diagonal matrix
+\begin{equation}
+  \label{eq:3}
+  \bm Z = \bm D \otimes \bm I
+\end{equation}
+
+Note that it is always possible to put the Cholesky factors in the
+model matrix.  In this case we have,
+\begin{equation}
+  \label{eq:4}
+  \bm\Lambda_\theta = \theta\bm I
+\end{equation}
+and,
+\begin{equation}
+  \label{eq:5}
+  \bm Z =
+  (\bm D \otimes \bm I)
+  \begin{bmatrix}
+    \bm L & \bm 0 \\
+    \bm L & \bm 0 \\
+  \end{bmatrix}
+\end{equation}
+or
+\begin{equation}
+  \label{eq:5}
+  \bm Z =
+  (\bm D \otimes \bm I)
+  \begin{bmatrix}
+    \bm L & \bm 0 \\
+    \bm 0 & \bm L \\
+  \end{bmatrix}
+\end{equation}
+because $\bm Z\bm\Lambda_\theta$ remains unchanged by this
+redefinition.
+
+Note also that this model does not allow for phylogenetic correlations
+among explanatory variables.
+
+%% \subsubsection{Dense templates}
+
+%% The idea is to let the relative covariance factor be,
+%% \begin{equation}
+%%   \label{eq:1}
+%%     \Lambda_\theta =
+%%     \begin{bmatrix}
+%%       \theta\bm T & \theta\bm T & \cdots & \theta\bm T \\
+%%       \theta\bm T & \theta\bm T & \cdots & \theta\bm T \\
+%%       \vdots      & \vdots      & \ddots & \vdots \\
+%%       \theta\bm T & \theta\bm T & \cdots & \theta\bm T \\
+%%     \end{bmatrix} = 
+%%     \theta\begin{bmatrix}
+%%       \bm T  & \bm T  & \cdots & \bm T \\
+%%       \bm T  & \bm T  & \cdots & \bm T \\
+%%       \vdots & \vdots & \ddots & \vdots \\
+%%       \bm T  & \bm T  & \cdots & \bm T \\
+%%     \end{bmatrix}
+%% \end{equation}
+%% where $\bm T$ is an \emph{a priori} known triangular matrix
+%% (e.g. Cholesky factor of a phylogenetic covariance matrix).
+
+%% To specify this model 
+
+%% \subsubsection{Block diagonal repeating templates}
+
+%% \begin{equation}
+%%   \label{eq:1}
+%%     \Lambda_\theta =
+%%     \theta\begin{bmatrix}
+%%       \bm T  & \bm 0  & \cdots & \bm 0 \\
+%%       \bm 0  & \bm T  & \cdots & \bm 0 \\
+%%       \vdots & \vdots & \ddots & \vdots \\
+%%       \bm 0  & \bm 0  & \cdots & \bm T \\
+%%     \end{bmatrix}
+%% \end{equation}
+
+\subsubsection{Multiparameter template models}
+
+For the future.  The idea is to take a singular value decomposition of
+the triangular template, $\bm T = \bm U \bm D \bm V^\top$.  The
+simple template model can be expressed as $\theta\bm T = \bm U
+(\theta\bm D) \bm V^\top$.  Therefore, the simple template model can be
+generalized by letting the singular values be a function of a
+parameter vector, $\bm\theta$.
+
+\section{Examples}
+
+\subsection{Simple simulation example}
 
 <<prelim, message = FALSE, results = 'hide', echo = FALSE>>=
 library("lme4ord")
@@ -111,7 +258,7 @@ y <- rbinom(n, 1, plogis(eta))
 weights <- rep(1, n); offset <- rep(0, n)
 @ %
 
-\subsection{Organize the parameter vector}
+\subsubsection{Organize the parameter vector}
 
 To fit this model we need to use a general nonlinear optimizer, which
 usually require a single parameter vector.  Therefore, I put all three
@@ -156,7 +303,7 @@ Lambdat@x <- mapToCovFact(initPars[parInds$covar])
 Zt@x <- mapToModMat(initPars[parInds$loads])
 @ %
 
-\subsection{Construct the deviance function}
+\subsubsection{Construct the deviance function}
 
 The interesting thing to report here is that once all of these
 structures and mappings are produced, the computation of the deviance
@@ -172,7 +319,7 @@ Here is an example of evaluating it.
 devfun(initPars)
 @ %
 
-\subsection{Optimize the deviance function}
+\subsubsection{Optimize the deviance function}
 
 We may now use any nonlinear optimizer.
 <<optimize the deviance function>>=
@@ -183,7 +330,7 @@ And here are the optimum parameter values.
 setNames(opt$par, names(initPars))
 @ %
 
-\section{A latent factor model}
+\subsection{A latent factor model}
 
 <<more packages, message = FALSE>>=
 library(reo)
@@ -286,7 +433,7 @@ devfun <- mkGeneralGlmerDevfun(y, X, Zt, Lambdat,
                                mapToCovFact, mapToModMat)
 @ %
 
-<<opt fish>>=
+<<opt fish, eval = TRUE>>=
 opt <- minqa:::bobyqa(initPars, devfun)
 setNames(opt$par, names(initPars))
 @ %
@@ -301,9 +448,10 @@ rownames(speciesScores) <- colnames(Y)
 biplot(siteScores, speciesScores, cex = 0.5)
 @ %
 
-\section{A simple phylogenetic example}
+\subsection{A simple phylogenetic example}
 
 Working on example in the `pglmer` helpfile.  Going well ...
+
 
 \section{Discussion}
 
