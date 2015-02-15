@@ -19,7 +19,7 @@ Zt <- sparseMatrix(i = rep(1:q, 6),
                                         # fixed effects model matrix
 X <- matrix(rnorm(n * p), n, p)
                                         # response vector
-oeta <- as.numeric(X %*% c(1, 1) + t(Zt) %*% t(Lambdat) %*% rnorm(q))
+eta <- as.numeric(X %*% c(1, 1) + t(Zt) %*% t(Lambdat) %*% rnorm(q))
 y <- rbinom(n, 1, plogis(eta))
 weights <- rep(1, n)
 offset <- rep(0, n)

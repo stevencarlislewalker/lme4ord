@@ -107,7 +107,7 @@ re.4 <- list(dat$X, sp = dat$sp, covar = Vphy)
 # random effect for site
 re.site <- list(1, site = dat$site, covar = diag(nsite))
 
-dl <- dims_to_vars(data.list(Y = t(Y), X = as.numeric(X),
+dl <- dims_to_vars(data.list(Y = t(Y), X = as.numeric(X), const = rep("const", nrow(Y)),
                              dimids = c("sites", "species")))
 df <- as.data.frame(dl)
 df$sites <- factor(df$sites, levels = unique(as.character(df$sites)))
@@ -118,36 +118,74 @@ weights <- rep(1, length(y)); offset <- rep(0, length(y))
 
 M <- model.matrix(Y ~ X, df)
 
-Jspecies <- as(df$species, "sparseMatrix")
+ordV <- order(rownames(Vphy))
+VphyOrd <- Vphy[ordV, ordV]
+dimnames(VphyOrd) <- rep(list(levels(df$species)), 2)
 
+modMat <- c(rep(list(model.matrix(Y ~ 1, df)), 2),
+            rep(list(model.matrix(Y ~ 0 + X, df)), 2),
+            list(model.matrix(Y ~ 1, df)))
+grpFac1 <- c(rep(list(df$species), 4), list(df$sites))
+grpFac2 <- rep(list(df$const), 5)
+covMat1 <- list(diag(nspp), VphyOrd, diag(nspp), VphyOrd, diag(nsite))
+covMat2 <- rep(list(matrix(1, 1, 1)), 5)
+
+ret <- mkTemplateReTrms(modMat, grpFac1, grpFac2, covMat1, covMat2)
+image(ret$Zt)
+image(ret$Lambdat)
+
+initPars <- c(covar = rep(1, 5), fixef = rep(0, 2))
+parInds <- list(covar = 1:5, fixef = 6:7, loads = NULL)
+dfun <- mkGeneralGlmerDevfun(y, M, ret$Zt, ret$Lambdat,
+                             rep(1, nspp * nsite), rep(0, nspp * nsite),
+                             initPars, parInds,
+                             ret$mapToCovFact, function(loads) NULL)
+dfun(initPars)
+opt <- optim(initPars, dfun, method = "L-BFGS-B",
+             lower = c(rep(0, 5), rep(-Inf, 2)),
+             control = list(trace = 0L))
+dfun(opt$par)
+image(environment(dfun)$pp$Lambdat)
+
+## Jspecies <- as(df$species, "sparseMatrix")
+## Jsites <- as(df$sites, "sparseMatrix")
+## image(Jsites)
+## image(Jspecies)
+## image(KhatriRao(KhatriRao(Jsites, Jspecies), t(df$X)))
+## image(KhatriRao(KhatriRao(Jspecies, Jsites), t(df$X)))
+## image(KhatriRao(Jspecies, t(df$X)))
+## image(Jspecies)
+## image(Jsites)
+
+# image(mkTemplateTermLambdat(re.4$covar, 10))
                             
-Ztlist <- list(KhatriRao(Jspecies, t(M[,1])),
-               KhatriRao(Jspecies, t(M[,1])),
-               KhatriRao(Jspecies, t(M[,2])),
-               KhatriRao(Jspecies, t(M[,2])))
-Zt <- do.call(rBind, Ztlist)
+## Ztlist <- list(KhatriRao(Jspecies, t(M[,1])),
+##                KhatriRao(Jspecies, t(M[,1])),
+##                KhatriRao(Jspecies, t(M[,2])),
+##                KhatriRao(Jspecies, t(M[,2])))
+## Zt <- do.call(rBind, Ztlist)
 
-Lambdatlist <- list(as(t(chol(re.1$covar)), Class="sparseMatrix"),
-                    as(t(chol(re.2$covar)), Class="sparseMatrix"),
-                    as(t(chol(re.3$covar)), Class="sparseMatrix"),
-                    as(t(chol(re.4$covar)), Class="sparseMatrix"))
-Lambdat <- .bdiag(Lambdatlist)
+## Lambdatlist <- list(as(t(chol(re.1$covar)), Class="sparseMatrix"),
+##                     as(t(chol(re.2$covar)), Class="sparseMatrix"),
+##                     as(t(chol(re.3$covar)), Class="sparseMatrix"),
+##                     as(t(chol(re.4$covar)), Class="sparseMatrix"))
+## Lambdat <- .bdiag(Lambdatlist)
 
-Zt <- Zt[46:60, ]
-Lambdat <- Lambdat[46:60, 46:60]
+## Zt <- Zt[46:60, ]
+## Lambdat <- Lambdat[46:60, 46:60]
 
-image(as(kronecker(matrix(1, 10, 15), t(chol(re.2$covar))), Class = "sparseMatrix"))
+## image(as(kronecker(matrix(1, 10, 15), t(chol(re.2$covar))), Class = "sparseMatrix"))
 
-image(Lambdat)
-image(Zt)
-image(Lambdat %*% Zt %*% t(Zt) %*% t(Lambdat))
-image(t(Zt) %*% t(Lambdat) %*% Lambdat %*% Zt)
+## image(Lambdat)
+## image(Zt)
+## image(Lambdat %*% Zt %*% t(Zt) %*% t(Lambdat))
+## image(t(Zt) %*% t(Lambdat) %*% Lambdat %*% Zt)
 
-mapToModMat <- local({
-    Ztx <- Zt@x
-    function(loads) Ztx
-})
+## mapToModMat <- local({
+##     Ztx <- Zt@x
+##     function(loads) Ztx
+## })
 
-mapToCovFact <- local({
+## mapToCovFact <- local({
     
-})
+## })

@@ -17,6 +17,7 @@
 ##' @param mapToModMat function taking the \code{loads} parameters and
 ##' returning the values of the non-zero elements of \code{Zt}
 ##' (i.e. the \code{x} slot of \code{Zt})
+##' @param family \code{\link{family}}
 ##' @param tolPwrss tolerance for penalized weighted residual sum of
 ##' squares
 ##' @param verbose verbose
@@ -26,13 +27,14 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                                  weights, offset,
                                  initPars, parInds,
                                  mapToCovFact, mapToModMat,
+                                 family = binomial(),
                                  tolPwrss = 1e-3,
                                  verbose = 0L) {
     devfun <- local({
         Lind <- seq_along(Lambdat@x)
         pp <- merPredD$new(X = X, Zt = Zt, Lambdat = Lambdat, Lind = Lind,
                            theta = as.double(Lambdat@x), n = nrow(X))
-        resp <- glmResp$new(y = y, family = binomial(), weights = weights)
+        resp <- glmResp$new(y = y, family = family, weights = weights)
         lp0 <- pp$linPred(1)
         baseOffset <- offset
         tolPwrss <- 1e-3
@@ -40,11 +42,14 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
         compDev <- TRUE
         fac <- NULL
         verbose <- 0L
+        setCovar <- !is.null(parInds$covar)
+        setLoads <- !is.null(parInds$loads)
+        setFixef <- !is.null(parInds$fixef)
         function(pars) {
             resp$setOffset(baseOffset)
             resp$updateMu(lp0)
-            pp$setTheta(as.double(mapToCovFact(pars[parInds$covar])))
-            pp$setZt(as.double(mapToModMat(pars[parInds$loads])))
+            if(setCovar) pp$setTheta(as.double(mapToCovFact(pars[parInds$covar])))
+            if(setLoads) pp$setZt(as.double(mapToModMat(pars[parInds$loads])))
             spars <- as.numeric(pars[parInds$fixef])
             offset <- if (length(spars)==0) baseOffset else baseOffset + pp$X %*% spars
             resp$setOffset(offset)
@@ -61,5 +66,4 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
 
     return(devfun)
 }
-
 
