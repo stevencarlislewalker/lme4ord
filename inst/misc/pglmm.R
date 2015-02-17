@@ -1,14 +1,58 @@
 library(pez)
 library(lme4ord)
 library(minqa)
+library(plotrix)
 
 n <- 10
 m <- 30
-dl <- dims_to_vars(data.list(Y = 1 * (rmat(n, m) > 0),
+dl <- dims_to_vars(data.list(y = 1 * (rmat(n, m) > 0),
                              x = rnorm(n), z = rnorm(m),
-                             const = rep("const", n),
                              dimids = c("sites", "species")))
 df <- as.data.frame(dl)
+head(df)
+covList <- list(species = stanCov(cov(matrix(rnorm(m * (m + 1)), m + 1, m))))
+
+parsedForm <- levelsCovFormula(y ~ x + (x | species), df, covList = covList)
+
+parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(c(0.5, -0.2, 0.5)))
+
+X <- model.matrix(y ~ x, df)
+Z <- t(parsedForm$Lambdat %*% parsedForm$Zt)
+beta <- rnorm(ncol(X))
+u <- rnorm(ncol(Z))
+p <- plogis(as.numeric(X %*% beta + Z %*% u))
+dl$y <- rbinom(nrow(df), 1, p)
+
+hist(p)
+
+parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(c(1, 0, 1)))
+
+color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
+
+image(parsedForm$Lambdat)
+
+df <- as.data.frame(dl)
+
+parInds <- list(covar = 1:3, fixef = 4:5, loads = NULL)
+initPars <- c(covar = c(1, 0, 1), fixef = c(0, 0))
+dfun <- mkGeneralGlmerDevfun(parsedForm$y, parsedForm$X,
+                             parsedForm$Zt, parsedForm$Lambdat,
+                             rep(1, nrow(df)), rep(0, nrow(df)),
+                             initPars, parInds,
+                             parsedForm$mapToCovFact, function(loads) NULL)
+dfun(initPars)
+
+opt <- bobyqa(initPars, dfun, lower = c(0, -Inf, 0, -Inf, -Inf),
+              control = list(iprint = 4L))
+names(opt$par) <- names(initPars)
+opt$par
+
+
+
+
+
+
+
 
 modMat  <- list(model.matrix( ~ 0 + x, df),
                 model.matrix( ~ 1, df))
@@ -19,20 +63,33 @@ covMat1 <- list(crossprod(rmat(n + 1, n)),
 covMat2 <- list(matrix(1, 1, 1),
                 matrix(1, 1, 1))
 
+ret <- mkTemplateReTrms(list(model.matrix( ~ x, df)),
+                        list(df$species),
+                        list(df$const),
+                        list(crossprod(rmat(m + 1, m))),
+                        list(matrix(1, 1, 1)))
+
 for(i in 1:3) dev.new()
 
-ret <- mkTemplateReTrms(modMat, grpFac1, grpFac2, covMat1, covMat2)
-ret <- within(ret, Lambdat@x[] <- mapToCovFact(c(1, 0.5)))
+#ret <- mkTemplateReTrms(modMat, grpFac1, grpFac2, covMat1, covMat2)
+#ret <- within(ret, Lambdat@x[] <- mapToCovFact(c(1, 0.5)))
+
+ret <- within(ret, Lambdat@x[] <- mapToCovFact(c(0.1, -0.05, 0.1)))
 
 X <- model.matrix(Y ~ x, df)
 Z <- t(ret$Lambdat %*% ret$Zt)
 beta <- rnorm(ncol(X))
 u <- rnorm(ncol(Z))
-dl$Y <- rbinom(nrow(df), 1, plogis(as.numeric(X %*% beta + Z %*% u)))
+p <- plogis(as.numeric(X %*% beta + Z %*% u))
+dl$Y <- rbinom(nrow(df), 1, p)
 
-ret <- within(ret, Lambdat@x[] <- mapToCovFact(c(1, 0)))
+hist(p)
+
+ret <- within(ret, Lambdat@x[] <- mapToCovFact(c(1, 0, 1)))
 
 image(dl$Y)
+color2D.matplot(dl$Y, xlab = "species", ylab = "sites", main = "abundance")
+
 image(ret$Lambdat)
 
 df <- as.data.frame(dl)
@@ -47,8 +104,8 @@ df <- as.data.frame(dl)
 ## dev.set(4)
 ## image(crossprod(ret$Lambdat %*% ret$Zt))
 
-parInds <- list(covar = 1:2, fixef = 3:4, loads = NULL)
-initPars <- c(covar = c(1, 1), fixef = c(0, 0))
+parInds <- list(covar = 1:3, fixef = 4:5, loads = NULL)
+initPars <- c(covar = c(1, 0, 1), fixef = c(0, 0))
 dfun <- mkGeneralGlmerDevfun(df$Y, X,
                              ret$Zt, ret$Lambdat,
                              rep(1, nrow(df)), rep(0, nrow(df)),
@@ -56,7 +113,7 @@ dfun <- mkGeneralGlmerDevfun(df$Y, X,
                              ret$mapToCovFact, function(loads) NULL)
 dfun(initPars)
 
-opt <- bobyqa(initPars, dfun, lower = c(0, 0, -Inf, -Inf),
+opt <- bobyqa(initPars, dfun, lower = c(0, -Inf, 0, -Inf, -Inf),
               control = list(iprint = 4L))
 names(opt$par) <- names(initPars)
 
@@ -66,42 +123,10 @@ rho <- environment(dfun)
 image(rho$pp$Lambdat)
 image(ret$Lambdat)
 
-ret$Lambdat@x[] <- ret$mapToCovFact(c(0.8, 0.9))
+ret$Lambdat@x[] <- ret$mapToCovFact(opt$par)
 
-
-
-
-
-cbind(.bdiag(ret$LambdatTheta)@x,
-      .bdiag(ret$LambdatLind)@x,
-      ret$Lambdat@x,
-      ret$theta[ret$Lind])
-
-plot(cbind(.bdiag(ret$LambdatBaseline)@x, ret$Lambdat@x))
-plot(ret$Lambdat@x, ret$LambdatxBaseline * ret$theta[ret$Lind])
-plot(ret$Lambdat@x, .bdiag(ret$LambdatBaseline)@x * ret$theta[ret$Lind])
-
-as.vector(outer(outer(paste("species", 1:3),
-                      paste("variable", 1:2), paste),
-                      paste("species", 1:2), paste))
-
-names(ret)
-ret$Lambda <- t(ret$Lambdat)
-
-image(ret$Zt)
-
+covEta <- t(ret$Zt) %*% crossprod(ret$Lambdat) %*% ret$Zt
+image(cov2cor(covEta))
+image(covEta)
+image(ret$Lambdat)
 image(crossprod(ret$Lambdat))
-0.4 * 0.8 - 0.2 * 0.2
-
-with(ret, cbind(Lambdat@x, Lind, theta[Lind], LambdatxBaseline))
-cbind(ret$Lambdat@x, ret$theta[ret$Lind] * ret$LambdatxBaseline)
-abline(0, 1)
-
-ret2 <- mkTemplateReTrm(modMat[[2]], grpFac2[[2]], grpFac1[[2]], covMat2[[2]], covMat1[[2]])
-ret2 <- within(ret2, Lambdat@x[] <- LambdatxBaseline * theta[Lind])
-image(ret2$Lambdat)
-
-
-ret1 <- mkTemplateReTrm(modMat[[1]], grpFac2[[1]], grpFac1[[1]], covMat2[[1]], covMat1[[1]])
-ret1 <- within(ret1, Lambdat@x[] <- LambdatxBaseline * theta[Lind])
-image(ret1$Lambdat)
