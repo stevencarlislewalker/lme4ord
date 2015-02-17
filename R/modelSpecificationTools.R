@@ -9,7 +9,10 @@
 mkTemplateReTrm <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
 
                                         # use consistent Matrix
-                                        # classes
+                                        # classes (Triplet-form Sparse
+                                        # Matrix -- i, j, x -- not
+                                        # Compressed-form Sparse
+                                        # Matrix)
     matClass <- "TsparseMatrix"
     giveCsparse <- FALSE
 
@@ -22,7 +25,7 @@ mkTemplateReTrm <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
                                         # sure levels of grpFac's are
                                         # in the same order as the
                                         # dimnames of the covMat's)
-    J1 <- as(as(grpFac1, "sparseMatrix"), matClass) 
+    J1 <- as(as(grpFac1, "sparseMatrix"), matClass)
     J2 <- as(as(grpFac2, "sparseMatrix"), matClass)
     Zt <- KhatriRao(KhatriRao(J2, t(modMat)), J1)
 
@@ -79,7 +82,7 @@ mkTemplateReTrms <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
                                        modMat, grpFac1, grpFac2, covMat1, covMat2,
                                        SIMPLIFY = FALSE))
 
-    if(length(reTrmsList$Zt) == 1L) return(reTrmsList[[1]])
+    ## if(length(reTrmsList$Zt) == 1L) return(reTrmsList[[1]])
     for(i in 2:length(reTrmsList$LambdatLind)) {
         j <- i - 1
         reTrmsList$LambdatLind[[i]]@x <-
