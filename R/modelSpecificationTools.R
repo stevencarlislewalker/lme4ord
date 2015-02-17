@@ -8,6 +8,11 @@
 ##' @export
 mkTemplateReTrm <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
 
+    badDims <-
+        (length(levels(grpFac1)) != nrow(covMat1)) ||
+        (length(levels(grpFac2)) != nrow(covMat2))
+    if(badDims) stop("covariance matrix incompatible with its grouping factor")
+
                                         # use consistent Matrix
                                         # classes (Triplet-form Sparse
                                         # Matrix -- i, j, x -- not
@@ -82,11 +87,12 @@ mkTemplateReTrms <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
                                        modMat, grpFac1, grpFac2, covMat1, covMat2,
                                        SIMPLIFY = FALSE))
 
-    ## if(length(reTrmsList$Zt) == 1L) return(reTrmsList[[1]])
-    for(i in 2:length(reTrmsList$LambdatLind)) {
-        j <- i - 1
-        reTrmsList$LambdatLind[[i]]@x <-
-            reTrmsList$LambdatLind[[i]]@x + max(reTrmsList$LambdatLind[[j]]@x)
+    if(!(length(reTrmsList$Zt) == 1L)) {
+        for(i in 2:length(reTrmsList$LambdatLind)) {
+            j <- i - 1
+            reTrmsList$LambdatLind[[i]]@x <-
+                reTrmsList$LambdatLind[[i]]@x + max(reTrmsList$LambdatLind[[j]]@x)
+        }
     }
     within(reTrmsList, {
         Zt <- do.call(rBind, Zt)
