@@ -4,7 +4,8 @@
 \title{Make a general (Laplace) glmer deviance function}
 \usage{
 mkGeneralGlmerDevfun(y, X, Zt, Lambdat, weights, offset, initPars, parInds,
-  mapToCovFact, mapToModMat, tolPwrss = 0.001, verbose = 0L)
+  mapToCovFact, mapToModMat, family = binomial(), tolPwrss = 0.001,
+  verbose = 0L)
 }
 \arguments{
 \item{y}{response vector}
@@ -33,6 +34,8 @@ and returning the values of the non-zero elements of
 \item{mapToModMat}{function taking the \code{loads} parameters and
 returning the values of the non-zero elements of \code{Zt}
 (i.e. the \code{x} slot of \code{Zt})}
+
+\item{family}{\code{\link{family}}}
 
 \item{tolPwrss}{tolerance for penalized weighted residual sum of
 squares}

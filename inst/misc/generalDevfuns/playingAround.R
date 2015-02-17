@@ -54,8 +54,12 @@ if (signal.B1 == TRUE) {
 
 # Simulate species abundances among sites to give matrix Y that
 # contains species in rows and sites in columns
-y <- matrix(outer(b0, array(1, dim = c(1, nsite))), nrow = nspp,
-ncol = nsite) + matrix(outer(b1, X), nrow = nspp, ncol = nsite)
+y <- matrix(outer(b0, array(1, dim = c(1, nsite))),
+            nrow = nspp,
+            ncol = nsite) +
+    matrix(outer(b1, X),
+           nrow = nspp,
+           ncol = nsite)
 e <- rnorm(nspp * nsite, sd = sd.resid)
 y <- y + matrix(e, nrow = nspp, ncol = nsite)
 y <- matrix(y, nrow = nspp * nsite, ncol = 1)
@@ -82,8 +86,9 @@ YY <- matrix(Y, nrow = nspp * nsite, ncol = 1)
 XX <- matrix(kronecker(X, matrix(1, nrow = nspp, ncol = 1)), nrow =
 nspp * nsite, ncol = 1)
 
-site <- matrix(kronecker(1:nsite, matrix(1, nrow = nspp, ncol =
-1)), nrow = nspp * nsite, ncol = 1)
+site <- matrix(kronecker(1:nsite,
+                         matrix(1, nrow = nspp, ncol = 1)),
+               nrow = nspp * nsite, ncol = 1)
 sp <- matrix(kronecker(matrix(1, nrow = nsite, ncol = 1), 1:nspp),
 nrow = nspp * nsite, ncol = 1)
 
@@ -118,16 +123,16 @@ weights <- rep(1, length(y)); offset <- rep(0, length(y))
 
 M <- model.matrix(Y ~ X, df)
 
-ordV <- order(rownames(Vphy))
-VphyOrd <- Vphy[ordV, ordV]
-dimnames(VphyOrd) <- rep(list(levels(df$species)), 2)
+#ordV <- order(rownames(Vphy))
+#VphyOrd <- Vphy[ordV, ordV]
+dimnames(Vphy) <- rep(list(levels(df$species)), 2)
 
 modMat <- c(rep(list(model.matrix(Y ~ 1, df)), 2),
             rep(list(model.matrix(Y ~ 0 + X, df)), 2),
             list(model.matrix(Y ~ 1, df)))
 grpFac1 <- c(rep(list(df$species), 4), list(df$sites))
 grpFac2 <- rep(list(df$const), 5)
-covMat1 <- list(diag(nspp), VphyOrd, diag(nspp), VphyOrd, diag(nsite))
+covMat1 <- list(diag(nspp), Vphy, diag(nspp), Vphy, diag(nsite))
 covMat2 <- rep(list(matrix(1, 1, 1)), 5)
 
 ret <- mkTemplateReTrms(modMat, grpFac1, grpFac2, covMat1, covMat2)
@@ -145,7 +150,21 @@ opt <- optim(initPars, dfun, method = "L-BFGS-B",
              lower = c(rep(0, 5), rep(-Inf, 2)),
              control = list(trace = 0L))
 dfun(opt$par)
+pars <- opt$par
+pars[c(1, 3)] <- c(1, 1)
+dfun(pars)
 image(environment(dfun)$pp$Lambdat)
+image(environment(dfun)$pp$Zt)
+with(environment(dfun), image(t(pp$Lambdat) %*% pp$Lambdat))
+with(environment(dfun)$pp, image(t(Zt) %*% t(Lambdat) %*% Lambdat %*% Zt))
+with(environment(dfun)$pp, t(Zt) %*% t(Lambdat) %*% Lambdat %*% Zt)[1:5, 1:5]
+
+library(pez)
+z.binary <- communityPGLMM(Y ~ X, data = dat, family = "binomial",
+sp = dat$sp, site = dat$site, random.effects = list(re.1, re.2,
+re.3, re.4), REML = TRUE, verbose = FALSE)
+image(z.binary$iV)
+z.binary$iV[1:5, 1:5]
 
 ## Jspecies <- as(df$species, "sparseMatrix")
 ## Jsites <- as(df$sites, "sparseMatrix")
