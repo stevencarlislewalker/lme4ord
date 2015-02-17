@@ -70,6 +70,8 @@
 \maketitle
 \tableofcontents
 
+
+
 \section{Introduction}
 
 The generalized linear mixed model (GLMM) in \texttt{lme4} takes the
@@ -119,99 +121,133 @@ Here I illustrate a function, \texttt{mkGeneralGlmerDevfun}, in the
 
 \subsection{Covariance template models}
 
-Suppose that $\bm V = \bm L\bm L^\top$ is a covariance matrix over the
-levels of a grouping factor (e.g. a phylogenetic covariance over
-species), where $\bm L$ is a Cholesky factor.  Suppose that this
-grouping factor is crossed with another grouping factor (e.g. species
-are crossed with sites).  There are two immediate possible models for
-the structure of covariance over the site-species combinations: a
-dense model and a block-diagonal model.  To illustrate them we
-consider two sites for simplicity.  The dense model assumes that
-species are phylogenetically correlated both within and among sites,
+Consider an \texttt{lmer} model with the following random effects term,
 \begin{equation}
-  \label{eq:2}
-  \bm\Sigma_\theta = \bm\Lambda_\theta\bm\Lambda_\theta^\top =
-  \theta^2\begin{bmatrix}
-    \bm L & \bm 0 \\
-    \bm L & \bm 0 \\
-  \end{bmatrix}
-  \begin{bmatrix}
-    \bm L^\top & \bm L^\top \\
-    \bm 0      & \bm 0      \\
-  \end{bmatrix} = 
-  \theta^2\begin{bmatrix}
-    \bm V & \bm V \\
-    \bm V & \bm V \\
-  \end{bmatrix}
-\end{equation}
-whereas the block-diagonal model assumes phylogenetic correlation only
-within sites,
-\begin{equation}
-  \label{eq:2}
-  \bm\Sigma_\theta = \bm\Lambda_\theta\bm\Lambda_\theta^\top =
-  \theta^2\begin{bmatrix}
-    \bm L & \bm 0 \\
-    \bm 0 & \bm L \\
-  \end{bmatrix}
-  \begin{bmatrix}
-    \bm L^\top & \bm 0      \\
-    \bm 0      & \bm L^\top \\
-  \end{bmatrix} = 
-  \theta^2\begin{bmatrix}
-    \bm V & \bm 0 \\
-    \bm 0 & \bm V \\
-  \end{bmatrix}
-\end{equation}
-Interestingly, given that \texttt{lme4} parameterizes covariance
-models by Cholesky factors, both models require the same amount of
-structural zeros in the parameterization (because each requires one
-$\bm L$ per site) even though the covariance matrices themselves
-differ strongly in the number structural zeros.  That is, the dense
-model is only dense on the covariance scale, not on the Cholesky
-scale.
-
-Suppose that an explanatory variable, $\bm x$, is measured at each
-site, and that it has a phylogenetically correlated effect given by
-one of the above models.  Let $\bm D$ be the matrix with $\bm x$ on
-the diagonal and $\bm I$ be an identity matrix of size equal to the
-number of species.  The random effects model matrix would then
-be given by the diagonal matrix
-\begin{equation}
-  \label{eq:3}
-  \bm Z = \bm D \otimes \bm I
+  \label{eq:9}
+  \mathtt{(0 + explVar:grpFac1 | grpFac2)}
 \end{equation}
 
-Note that it is always possible to put the Cholesky factors in the
-model matrix.  In this case we have,
-\begin{equation}
-  \label{eq:4}
-  \bm\Lambda_\theta = \theta\bm I
-\end{equation}
-and,
-\begin{equation}
-  \label{eq:5}
-  \bm Z =
-  (\bm D \otimes \bm I)
-  \begin{bmatrix}
-    \bm L & \bm 0 \\
-    \bm L & \bm 0 \\
-  \end{bmatrix}
-\end{equation}
-or
-\begin{equation}
-  \label{eq:5}
-  \bm Z =
-  (\bm D \otimes \bm I)
-  \begin{bmatrix}
-    \bm L & \bm 0 \\
-    \bm 0 & \bm L \\
-  \end{bmatrix}
-\end{equation}
-because $\bm Z\bm\Lambda_\theta$ remains unchanged by this
-redefinition.
+\begin{knitrout}
+\definecolor{shadecolor}{rgb}{0.969, 0.969, 0.969}\color{fgcolor}\begin{kframe}
+\begin{alltt}
+\hlstd{form} \hlkwb{<-} \hlstd{y} \hlopt{~} \hlnum{1} \hlopt{+} \hlstd{(}\hlnum{0} \hlopt{+} \hlstd{x}\hlopt{:}\hlstd{g1} \hlopt{|} \hlstd{g2)}
+\hlstd{dl} \hlkwb{<-} \hlkwd{data.list}\hlstd{(}\hlkwc{y} \hlstd{=} \hlkwd{matrix}\hlstd{(}\hlkwd{rnorm}\hlstd{(}\hlnum{10} \hlopt{*} \hlnum{1}\hlstd{),} \hlnum{10}\hlstd{,} \hlnum{1}\hlstd{),} \hlkwc{x} \hlstd{=} \hlkwd{rnorm}\hlstd{(}\hlnum{10}\hlstd{),}
+                \hlkwc{g1} \hlstd{= letters[}\hlnum{1}\hlopt{:}\hlnum{10}\hlstd{],} \hlkwc{g2} \hlstd{= LETTERS[}\hlnum{1}\hlstd{],}
+                \hlkwc{dimids} \hlstd{=} \hlkwd{c}\hlstd{(}\hlstr{"g1"}\hlstd{,} \hlstr{"g2"}\hlstd{))}
+\hlstd{df} \hlkwb{<-} \hlkwd{as.data.frame}\hlstd{(dl)}
+\hlstd{m} \hlkwb{<-} \hlkwd{lmer}\hlstd{(form, df,} \hlkwc{control} \hlstd{=} \hlkwd{lmerControl}\hlstd{(}
+                        \hlkwc{check.nobs.vs.nRE} \hlstd{=} \hlstr{"ignore"}\hlstd{,}
+                        \hlkwc{check.nlev.gtr.1} \hlstd{=} \hlstr{"ignore"}\hlstd{))}
+\end{alltt}
 
-Note also that this model does not allow for phylogenetic correlations
-among explanatory variables.
+
+{\ttfamily\noindent\color{warningcolor}{\#\# Warning in commonArgs(par, fn, control, environment()): maxfun < 10 * length(par)\textasciicircum{}2 is not recommended.}}
+
+{\ttfamily\noindent\color{warningcolor}{\#\# Warning in optwrap(optimizer, devfun, getStart(start, rho\$lower, rho\$pp), : convergence code 1 from bobyqa: bobyqa -- maximum number of function evaluations exceeded}}
+
+{\ttfamily\noindent\color{warningcolor}{\#\# Warning in commonArgs(par, fn, control, environment()): maxfun < 10 * length(par)\textasciicircum{}2 is not recommended.}}
+
+{\ttfamily\noindent\color{warningcolor}{\#\# Warning in optwrap(optimizer, devfun, opt\$par, lower = rho\$lower, control = control, : convergence code 1 from bobyqa: bobyqa -- maximum number of function evaluations exceeded}}
+
+{\ttfamily\noindent\color{warningcolor}{\#\# Warning in checkConv(attr(opt, "{}derivs"{}), opt\$par, ctrl = control\$checkConv, : Model failed to converge with max|grad| = 0.769167 (tol = 0.002, component 1)}}
+
+{\ttfamily\noindent\color{warningcolor}{\#\# Warning in checkConv(attr(opt, "{}derivs"{}), opt\$par, ctrl = control\$checkConv, : Model failed to converge: degenerate\ \ Hessian with 1 negative eigenvalues}}\end{kframe}
+\end{knitrout}
+
+
+%% Suppose that $\bm V = \bm L\bm L^\top$ is a covariance matrix over the
+%% levels of a grouping factor (e.g. a phylogenetic covariance over
+%% species), where $\bm L$ is a Cholesky factor.  Suppose that this
+%% grouping factor is crossed with another grouping factor (e.g. species
+%% are crossed with sites).  There are two immediate possible models for
+%% the structure of covariance over the site-species combinations: a
+%% dense model and a block-diagonal model.  To illustrate them we
+%% consider two sites for simplicity.  The dense model assumes that
+%% species are phylogenetically correlated both within and among sites,
+%% \begin{equation}
+%%   \label{eq:2}
+%%   \bm\Sigma_\theta = \bm\Lambda_\theta\bm\Lambda_\theta^\top =
+%%   \theta^2\begin{bmatrix}
+%%     \bm L & \bm 0 \\
+%%     \bm L & \bm 0 \\
+%%   \end{bmatrix}
+%%   \begin{bmatrix}
+%%     \bm L^\top & \bm L^\top \\
+%%     \bm 0      & \bm 0      \\
+%%   \end{bmatrix} = 
+%%   \theta^2\begin{bmatrix}
+%%     \bm V & \bm V \\
+%%     \bm V & \bm V \\
+%%   \end{bmatrix}
+%% \end{equation}
+%% whereas the block-diagonal model assumes phylogenetic correlation only
+%% within sites,
+%% \begin{equation}
+%%   \label{eq:2}
+%%   \bm\Sigma_\theta = \bm\Lambda_\theta\bm\Lambda_\theta^\top =
+%%   \theta^2\begin{bmatrix}
+%%     \bm L & \bm 0 \\
+%%     \bm 0 & \bm L \\
+%%   \end{bmatrix}
+%%   \begin{bmatrix}
+%%     \bm L^\top & \bm 0      \\
+%%     \bm 0      & \bm L^\top \\
+%%   \end{bmatrix} = 
+%%   \theta^2\begin{bmatrix}
+%%     \bm V & \bm 0 \\
+%%     \bm 0 & \bm V \\
+%%   \end{bmatrix}
+%% \end{equation}
+%% Interestingly, given that \texttt{lme4} parameterizes covariance
+%% models by Cholesky factors, both models require the same amount of
+%% structural zeros in the parameterization (because each requires one
+%% $\bm L$ per site) even though the covariance matrices themselves
+%% differ strongly in the number structural zeros.  That is, the dense
+%% model is only dense on the covariance scale, not on the Cholesky
+%% scale.
+
+%% Suppose that an explanatory variable, $\bm x$, is measured at each
+%% site, and that it has a phylogenetically correlated effect given by
+%% one of the above models.  Let $\bm D$ be the matrix with $\bm x$ on
+%% the diagonal and $\bm I$ be an identity matrix of size equal to the
+%% number of species.  The random effects model matrix would then
+%% be given by the diagonal matrix
+%% \begin{equation}
+%%   \label{eq:3}
+%%   \bm Z = \bm D \otimes \bm I
+%% \end{equation}
+
+%% Note that it is always possible to put the Cholesky factors in the
+%% model matrix.  In this case we have,
+%% \begin{equation}
+%%   \label{eq:4}
+%%   \bm\Lambda_\theta = \theta\bm I
+%% \end{equation}
+%% and,
+%% \begin{equation}
+%%   \label{eq:5}
+%%   \bm Z =
+%%   (\bm D \otimes \bm I)
+%%   \begin{bmatrix}
+%%     \bm L & \bm 0 \\
+%%     \bm L & \bm 0 \\
+%%   \end{bmatrix}
+%% \end{equation}
+%% or
+%% \begin{equation}
+%%   \label{eq:5}
+%%   \bm Z =
+%%   (\bm D \otimes \bm I)
+%%   \begin{bmatrix}
+%%     \bm L & \bm 0 \\
+%%     \bm 0 & \bm L \\
+%%   \end{bmatrix}
+%% \end{equation}
+%% because $\bm Z\bm\Lambda_\theta$ remains unchanged by this
+%% redefinition.
+
+%% Note also that this model does not allow for phylogenetic correlations
+%% among explanatory variables.
 
 %% \subsubsection{Dense templates}
 
@@ -262,8 +298,6 @@ parameter vector, $\bm\theta$.
 \section{Examples}
 
 \subsection{Simple simulation example}
-
-
 
 I simulate a small data set with the following dimensions.
 \begin{knitrout}
@@ -416,7 +450,7 @@ Here is an example of evaluating it.
 \hlkwd{devfun}\hlstd{(initPars)}
 \end{alltt}
 \begin{verbatim}
-## [1] 75.54379
+## [1] 81.67293
 \end{verbatim}
 \end{kframe}
 \end{knitrout}
@@ -438,12 +472,12 @@ And here are the optimum parameter values.
 \hlkwd{setNames}\hlstd{(opt}\hlopt{$}\hlstd{par,} \hlkwd{names}\hlstd{(initPars))}
 \end{alltt}
 \begin{verbatim}
-##        covar       fixef1       fixef2       loads1       loads2 
-##  1.441776793  1.007301286  1.550757741  0.030357567 -0.034476705 
-##       loads3       loads4       loads5       loads6       loads7 
-##  0.092620213 -1.949066080 -0.084550637 -0.483218872  0.965505110 
-##       loads8       loads9      loads10 
-##  1.604436279 -0.455579333 -0.008039395
+##      covar     fixef1     fixef2     loads1     loads2     loads3 
+##  0.6838425  1.1446008  1.4815679 -0.2306627  0.4113720 -0.7232882 
+##     loads4     loads5     loads6     loads7     loads8     loads9 
+## -2.7754969  0.5963942  0.8395375 -0.2539937  1.6463548 -0.2929479 
+##    loads10 
+##  0.5309963
 \end{verbatim}
 \end{kframe}
 \end{knitrout}

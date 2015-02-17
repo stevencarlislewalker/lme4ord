@@ -81,57 +81,5 @@ $\bm\psi$.  Therefore the model that we will be using is given by,
   \bm\eta = \bm X\bm\beta + \bm Z_{\bm\psi}\bm\Lambda_{\bm\theta}\bm u
 \end{equation}
 
-\subsection{Ecological structure in $\bm Z_{\bm\psi}$ and
-  $\bm\Lambda_{\bm\theta}$}
-
-\begin{equation}
-  \label{eq:11}
-  \bm Z_{\bm\psi} =
-  \begin{bmatrix}
-    \bm Z_{\mathrm{FA}} & \bm Z_{\mathrm{phylo}} & \bm
-    Z_{\mathrm{space}} \\
-  \end{bmatrix}
-\end{equation}
-
-\begin{equation}
-  \label{eq:9}
-  \bm\eta = \bm X\bm\beta + 
-  \begin{bmatrix}
-    \bm Z_{\bm\psi_1} & \bm Z_{\bm\psi_2} & ... & \bm Z_{\bm\psi_k} \\
-  \end{bmatrix}
-  \begin{bmatrix}
-    \bm\Lambda_{\bm\theta_1} & \bm 0 & \cdots & \bm 0 \\
-    \bm 0 & \bm\Lambda_{\bm\theta_2} & \cdots & \bm 0 \\
-    \vdots   & \vdots & \ddots & \vdots \\
-    \bm 0 & \bm 0 & \cdots & \bm\Lambda_{\bm\theta_k} \\
-  \end{bmatrix}
-  \begin{bmatrix}
-    \bm u_1 \\ \bm u_2 \\ ... \\ \bm u_k \\
-  \end{bmatrix}
-\end{equation}
-
-
-
-
-% The matrix-valued linear predictor has entries given by,
-% \begin{equation}
-%   \label{eq:3}
-%   \eta_{ij} = \sum_{k = 1}^p x_{ik}\beta_{k} + b_{row, i} + b_{col, j} + \sum_{l = 1}^d u_{il}v_{jl}
-% \end{equation}
-% with random parameters,
-% \begin{equation}
-%   \label{eq:4}
-%   b_{row, i} \sim \dnorm(0, \theta_{row})
-% \end{equation}
-% \begin{equation}
-%   \label{eq:4}
-%   b_{col, j} \sim \dnorm(0, \theta_{col})
-% \end{equation}
-% \begin{equation}
-%   \label{eq:5}
-%   v_{jl} \sim \dnorm(0, \theta_{axes})
-% \end{equation}
-% and where the $x$'s are known and the $\beta$'s and $u$'s are constant parameters.
-
 
 \end{document}

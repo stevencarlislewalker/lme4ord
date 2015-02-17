@@ -21,6 +21,13 @@
 \maketitle
 \tableofcontents
 
+<<prelim, message = FALSE, results = 'hide', echo = FALSE, cache = FALSE>>=
+library("lme4ord")
+library("lme4")
+library("multitable")
+opts_chunk$set(cache = TRUE)
+@ %
+
 \section{Introduction}
 
 The generalized linear mixed model (GLMM) in \texttt{lme4} takes the
@@ -70,99 +77,127 @@ Here I illustrate a function, \texttt{mkGeneralGlmerDevfun}, in the
 
 \subsection{Covariance template models}
 
-Suppose that $\bm V = \bm L\bm L^\top$ is a covariance matrix over the
-levels of a grouping factor (e.g. a phylogenetic covariance over
-species), where $\bm L$ is a Cholesky factor.  Suppose that this
-grouping factor is crossed with another grouping factor (e.g. species
-are crossed with sites).  There are two immediate possible models for
-the structure of covariance over the site-species combinations: a
-dense model and a block-diagonal model.  To illustrate them we
-consider two sites for simplicity.  The dense model assumes that
-species are phylogenetically correlated both within and among sites,
+Consider an \texttt{lmer} model with the following random effects term,
 \begin{equation}
-  \label{eq:2}
-  \bm\Sigma_\theta = \bm\Lambda_\theta\bm\Lambda_\theta^\top =
-  \theta^2\begin{bmatrix}
-    \bm L & \bm 0 \\
-    \bm L & \bm 0 \\
-  \end{bmatrix}
-  \begin{bmatrix}
-    \bm L^\top & \bm L^\top \\
-    \bm 0      & \bm 0      \\
-  \end{bmatrix} = 
-  \theta^2\begin{bmatrix}
-    \bm V & \bm V \\
-    \bm V & \bm V \\
-  \end{bmatrix}
-\end{equation}
-whereas the block-diagonal model assumes phylogenetic correlation only
-within sites,
-\begin{equation}
-  \label{eq:2}
-  \bm\Sigma_\theta = \bm\Lambda_\theta\bm\Lambda_\theta^\top =
-  \theta^2\begin{bmatrix}
-    \bm L & \bm 0 \\
-    \bm 0 & \bm L \\
-  \end{bmatrix}
-  \begin{bmatrix}
-    \bm L^\top & \bm 0      \\
-    \bm 0      & \bm L^\top \\
-  \end{bmatrix} = 
-  \theta^2\begin{bmatrix}
-    \bm V & \bm 0 \\
-    \bm 0 & \bm V \\
-  \end{bmatrix}
-\end{equation}
-Interestingly, given that \texttt{lme4} parameterizes covariance
-models by Cholesky factors, both models require the same amount of
-structural zeros in the parameterization (because each requires one
-$\bm L$ per site) even though the covariance matrices themselves
-differ strongly in the number structural zeros.  That is, the dense
-model is only dense on the covariance scale, not on the Cholesky
-scale.
-
-Suppose that an explanatory variable, $\bm x$, is measured at each
-site, and that it has a phylogenetically correlated effect given by
-one of the above models.  Let $\bm D$ be the matrix with $\bm x$ on
-the diagonal and $\bm I$ be an identity matrix of size equal to the
-number of species.  The random effects model matrix would then
-be given by the diagonal matrix
-\begin{equation}
-  \label{eq:3}
-  \bm Z = \bm D \otimes \bm I
+  \label{eq:9}
+  \mathtt{(0 + explVar:grpFac1 | grpFac2)}
 \end{equation}
 
-Note that it is always possible to put the Cholesky factors in the
-model matrix.  In this case we have,
-\begin{equation}
-  \label{eq:4}
-  \bm\Lambda_\theta = \theta\bm I
-\end{equation}
-and,
-\begin{equation}
-  \label{eq:5}
-  \bm Z =
-  (\bm D \otimes \bm I)
-  \begin{bmatrix}
-    \bm L & \bm 0 \\
-    \bm L & \bm 0 \\
-  \end{bmatrix}
-\end{equation}
-or
-\begin{equation}
-  \label{eq:5}
-  \bm Z =
-  (\bm D \otimes \bm I)
-  \begin{bmatrix}
-    \bm L & \bm 0 \\
-    \bm 0 & \bm L \\
-  \end{bmatrix}
-\end{equation}
-because $\bm Z\bm\Lambda_\theta$ remains unchanged by this
-redefinition.
+<<simLmer>>=
+library("lme4ord")
+library("lme4")
+library("multitable")
+form <- y ~ 1 + (0 + x:g1 | g2)
+covMat <- crossprod(rmat(11, 10))
+covMat <- covMat / (det(covMat)^(1/10))
+dimnames(covMat) <- rep(list(letters[1:10]))
+g1 <- factorCov(letters[1:10])
 
-Note also that this model does not allow for phylogenetic correlations
-among explanatory variables.
+dl <- data.list(y = matrix(rnorm(10 * 1), 10, 1), x = rnorm(10), 
+                g1 = letters[1:10], g2 = LETTERS[1])
+
+variable(covMat, c("D1", "D1"), check = FALSE)
+
+
+dl <- dl + variable(covMat, c("g1", "g1"), "covMat")
+df <- as.data.frame(dl)
+m <- lmer(form, df, control = dontStopLmer())
+@ %
+
+
+%% Suppose that $\bm V = \bm L\bm L^\top$ is a covariance matrix over the
+%% levels of a grouping factor (e.g. a phylogenetic covariance over
+%% species), where $\bm L$ is a Cholesky factor.  Suppose that this
+%% grouping factor is crossed with another grouping factor (e.g. species
+%% are crossed with sites).  There are two immediate possible models for
+%% the structure of covariance over the site-species combinations: a
+%% dense model and a block-diagonal model.  To illustrate them we
+%% consider two sites for simplicity.  The dense model assumes that
+%% species are phylogenetically correlated both within and among sites,
+%% \begin{equation}
+%%   \label{eq:2}
+%%   \bm\Sigma_\theta = \bm\Lambda_\theta\bm\Lambda_\theta^\top =
+%%   \theta^2\begin{bmatrix}
+%%     \bm L & \bm 0 \\
+%%     \bm L & \bm 0 \\
+%%   \end{bmatrix}
+%%   \begin{bmatrix}
+%%     \bm L^\top & \bm L^\top \\
+%%     \bm 0      & \bm 0      \\
+%%   \end{bmatrix} = 
+%%   \theta^2\begin{bmatrix}
+%%     \bm V & \bm V \\
+%%     \bm V & \bm V \\
+%%   \end{bmatrix}
+%% \end{equation}
+%% whereas the block-diagonal model assumes phylogenetic correlation only
+%% within sites,
+%% \begin{equation}
+%%   \label{eq:2}
+%%   \bm\Sigma_\theta = \bm\Lambda_\theta\bm\Lambda_\theta^\top =
+%%   \theta^2\begin{bmatrix}
+%%     \bm L & \bm 0 \\
+%%     \bm 0 & \bm L \\
+%%   \end{bmatrix}
+%%   \begin{bmatrix}
+%%     \bm L^\top & \bm 0      \\
+%%     \bm 0      & \bm L^\top \\
+%%   \end{bmatrix} = 
+%%   \theta^2\begin{bmatrix}
+%%     \bm V & \bm 0 \\
+%%     \bm 0 & \bm V \\
+%%   \end{bmatrix}
+%% \end{equation}
+%% Interestingly, given that \texttt{lme4} parameterizes covariance
+%% models by Cholesky factors, both models require the same amount of
+%% structural zeros in the parameterization (because each requires one
+%% $\bm L$ per site) even though the covariance matrices themselves
+%% differ strongly in the number structural zeros.  That is, the dense
+%% model is only dense on the covariance scale, not on the Cholesky
+%% scale.
+
+%% Suppose that an explanatory variable, $\bm x$, is measured at each
+%% site, and that it has a phylogenetically correlated effect given by
+%% one of the above models.  Let $\bm D$ be the matrix with $\bm x$ on
+%% the diagonal and $\bm I$ be an identity matrix of size equal to the
+%% number of species.  The random effects model matrix would then
+%% be given by the diagonal matrix
+%% \begin{equation}
+%%   \label{eq:3}
+%%   \bm Z = \bm D \otimes \bm I
+%% \end{equation}
+
+%% Note that it is always possible to put the Cholesky factors in the
+%% model matrix.  In this case we have,
+%% \begin{equation}
+%%   \label{eq:4}
+%%   \bm\Lambda_\theta = \theta\bm I
+%% \end{equation}
+%% and,
+%% \begin{equation}
+%%   \label{eq:5}
+%%   \bm Z =
+%%   (\bm D \otimes \bm I)
+%%   \begin{bmatrix}
+%%     \bm L & \bm 0 \\
+%%     \bm L & \bm 0 \\
+%%   \end{bmatrix}
+%% \end{equation}
+%% or
+%% \begin{equation}
+%%   \label{eq:5}
+%%   \bm Z =
+%%   (\bm D \otimes \bm I)
+%%   \begin{bmatrix}
+%%     \bm L & \bm 0 \\
+%%     \bm 0 & \bm L \\
+%%   \end{bmatrix}
+%% \end{equation}
+%% because $\bm Z\bm\Lambda_\theta$ remains unchanged by this
+%% redefinition.
+
+%% Note also that this model does not allow for phylogenetic correlations
+%% among explanatory variables.
 
 %% \subsubsection{Dense templates}
 
@@ -213,10 +248,6 @@ parameter vector, $\bm\theta$.
 \section{Examples}
 
 \subsection{Simple simulation example}
-
-<<prelim, message = FALSE, results = 'hide', echo = FALSE>>=
-library("lme4ord")
-@ %
 
 I simulate a small data set with the following dimensions.
 <<simulate params>>=

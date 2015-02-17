@@ -1,6 +1,20 @@
 
-## ----prelim, message = FALSE, results = 'hide', echo = FALSE-------------
+## ----prelim, message = FALSE, results = 'hide', echo = FALSE, cache = FALSE----
 library("lme4ord")
+library("lme4")
+library("multitable")
+opts_chunk$set(cache = TRUE)
+
+
+## ----simLmer-------------------------------------------------------------
+form <- y ~ 1 + (0 + x:g1 | g2)
+dl <- data.list(y = matrix(rnorm(10 * 1), 10, 1), x = rnorm(10), 
+                g1 = letters[1:10], g2 = LETTERS[1],
+                dimids = c("g1", "g2"))
+df <- as.data.frame(dl)
+m <- lmer(form, df, control = lmerControl(
+                        check.nobs.vs.nRE = "ignore",
+                        check.nlev.gtr.1 = "ignore"))
 
 
 ## ----simulate params-----------------------------------------------------
