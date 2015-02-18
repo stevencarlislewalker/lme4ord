@@ -3,9 +3,12 @@ library("minqa")
 library("plotrix")
 library("ape")
 
-                                        # initial simulation (will
-                                        # change y below to have
-                                        # structure)
+                                        # initial simulation of one
+                                        # binary sites by species
+                                        # matrix, with environmental
+                                        # variable, x, and functional
+                                        # trait, z (will change y
+                                        # below to have structure)
 set.seed(10)
 n <- 10
 m <- 30
@@ -14,7 +17,6 @@ dl <- dims_to_vars(data.list(y = 1 * (rmat(n, m) > 0),
                              dimids = c("sites", "species")))
 df <- as.data.frame(dl)
 head(df)
-
 
                                         # make up some silly
                                         # phylogeny
@@ -52,11 +54,15 @@ covList <- list(species = Vphy)
 
                                         # formula interface! this
                                         # model has a fixed
-                                        # (environmental) slope and
-                                        # intercept, a random slope
-                                        # and intercept with
-                                        # correlations across species.
-form <- y ~ x + (x | species)
+                                        # interaction between the
+                                        # environment and the trait
+                                        # (with intercept and main
+                                        # effects too), a random
+                                        # environmental slope and
+                                        # intercept with
+                                        # (phylogenetic) correlations
+                                        # across species.
+form <- y ~ x*z + (x | species)
 
                                         # combine this formula with
                                         # the data and covariance
@@ -78,7 +84,7 @@ parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim))
 
                                         # update simulations to
                                         # reflect the new structure
-X <- model.matrix(y ~ x, df) # fixed effects design matrix
+X <- model.matrix(nobars(form), df) # fixed effects design matrix
 Z <- t(parsedForm$Lambdat %*% parsedForm$Zt) # random effects design
                                              # matrix with
                                              # phylogenetic
@@ -164,8 +170,8 @@ hist(p)
 color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 
                                         # initial parameters
-parInds <- list(covar = 1:3, fixef = 4:5, loads = NULL)
-initPars <- c(covar = c(1, 0, 1), fixef = c(0, 0))
+parInds <- list(covar = 1:3, fixef = 4:7, loads = NULL)
+initPars <- c(covar = c(1, 0, 1), fixef = rep(0, 4))
 
                                         # make the deviance function
 dfun <- mkGeneralGlmerDevfun(df$y, parsedForm$X,
@@ -178,12 +184,10 @@ dfun <- mkGeneralGlmerDevfun(df$y, parsedForm$X,
 dfun(initPars)
 
                                         # optimize
-opt <- bobyqa(initPars, dfun, lower = c(0, -Inf, 0, -Inf, -Inf),
+opt <- bobyqa(initPars, dfun, lower = c(0, -Inf, 0, rep(-Inf, 4)),
               control = list(iprint = 4L))
 names(opt$par) <- names(initPars)
 
-                                        # compare with truth -- works
-                                        # ok, but certainly not all
-                                        # the time -- e.g. set.seed(1)
-opt$par # estimated parameters
-c(covar = covarSim, fixef = fixefSim) # true parameters
+                                        # compare with truth
+cbind(estimated = opt$par, # estimated parameters
+      true = c(covar = covarSim, fixef = fixefSim)) # true parameters
