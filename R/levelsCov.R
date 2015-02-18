@@ -1,3 +1,12 @@
+##' Parse mixed model formula for levels-covariance model
+##'
+##' @param formula mixed model formula
+##' @param data data
+##' @param family family
+##' @param covList list of covariance matrices for random effects
+##' grouping factors in \code{formula}
+##' @param ... not used yet
+##' @export
 levelsCovFormula <- function(formula, data = NULL, family = binomial, covList, ...) {
     reTrmsList <- lapply(findbars(formula), getModMatAndGrpFac, fr = data)
     names(reTrmsList) <- sapply(reTrmsList, "[[", "grpName")
