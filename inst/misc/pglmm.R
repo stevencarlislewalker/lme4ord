@@ -15,43 +15,146 @@ dl <- dims_to_vars(data.list(y = 1 * (rmat(n, m) > 0),
 df <- as.data.frame(dl)
 head(df)
 
+
                                         # make up some silly
-                                        # covariance matrix over the
-                                        # species
+                                        # phylogeny
 phy <- rtree(n = m)
 phy <- compute.brlen(phy, method = "Grafen", power = 0.5)
+
+                                        # estimate a phylogenetic
+                                        # covariance matrix,
+                                        # standardized to unit
+                                        # determinant
 Vphy <- stanCov(vcv(phy))
-covList <- list(species = Vphy)
+dimnames(Vphy) <- rep(list(1:m), 2)
+
+                                        # here's the phylogeny (forget
+                                        # the species names)
 plot(phy)
 
-                                        # formula interface!
-parsedForm <- levelsCovFormula(y ~ x + (x | species), df, covList = covList)
+                                        # and here's the associated
+                                        # covariance matrix
+image(as(Vphy, "sparseMatrix"))
+
+                                        # put the covariance matrix in
+                                        # a list, for model-input
+                                        # purposes -- the idea is that
+                                        # there might be other
+                                        # covariance matrix (e.g. a
+                                        # spatial one say).  it is
+                                        # important that the list
+                                        # element gets the name
+                                        # `species` because this is
+                                        # the name of the grouping
+                                        # factor used in the model
+                                        # formula below
+covList <- list(species = Vphy)
+
+                                        # formula interface! this
+                                        # model has a fixed
+                                        # (environmental) slope and
+                                        # intercept, a random slope
+                                        # and intercept with
+                                        # correlations across species.
+form <- y ~ x + (x | species)
+
+                                        # combine this formula with
+                                        # the data and covariance
+                                        # matrix to construct the
+                                        # matrices and structures
+                                        # required to create a
+                                        # deviance function for
+                                        # estimating the parameters of
+                                        # the associated mixed model
+parsedForm <- levelsCovFormula(form, df, covList = covList)
 
                                         # set the covariance
                                         # parameters to something more
                                         # interesting (i.e. with a
                                         # covariance between slope and
                                         # intercept)
-thetaSim <- c(0.5, -0.2, 0.5)
-parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(thetaSim))
-
-                                        # here's the cholesky factor
-                                        # of the species covariance
-image(parsedForm$Lambdat)
-
-                                        # here's the transposed random
-                                        # effects model matrix
-image(parsedForm$Zt)
+covarSim <- c(0.5, -0.2, 0.5)
+parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim))
 
                                         # update simulations to
                                         # reflect the new structure
-X <- model.matrix(y ~ x, df)
-Z <- t(parsedForm$Lambdat %*% parsedForm$Zt)
-beta <- rnorm(ncol(X))
-u <- rnorm(ncol(Z))
-p <- plogis(as.numeric(X %*% beta + Z %*% u))
-dl$y <- rbinom(nrow(df), 1, p)
-df <- as.data.frame(dl)
+X <- model.matrix(y ~ x, df) # fixed effects design matrix
+Z <- t(parsedForm$Lambdat %*% parsedForm$Zt) # random effects design
+                                             # matrix with
+                                             # phylogenetic
+                                             # covariances
+fixefSim <- rnorm(ncol(X)) # fixed effects
+u <- rnorm(ncol(Z)) # whitened random effects
+p <- plogis(as.numeric(X %*% fixefSim + Z %*% u)) # probability of observation
+dl$y <- rbinom(nrow(df), 1, p) # presence-absence data
+df <- as.data.frame(dl) # reconstruct the data frame with new
+                        # structured response
+
+                                        # now look at the interesting
+                                        # structure.  here's the
+                                        # cholesky factor of the
+                                        # species covariance
+image(parsedForm$Lambdat)
+
+                                        # and the species covariance
+                                        # matrix itself.  The big four
+                                        # blocks represent the 2-by-2
+                                        # covariance between intercept
+                                        # and slope.  The covariances
+                                        # within these blocks
+                                        # represent phylogenetic
+                                        # covariance.  the pattern
+                                        # here is more closely related
+                                        # species have more similar
+                                        # intercepts and slopes (red
+                                        # blocks on the diagonal) but
+                                        # more closely related species
+                                        # also have stronger negative
+                                        # correlations between slope
+                                        # and intercept (blue blocks
+                                        # on off diagonal)
+image(crossprod(parsedForm$Lambdat))
+
+                                        # here's the transposed random
+                                        # effects model matrix.  those
+                                        # are 1's for the intercepts
+                                        # in the first 30 rows and the
+                                        # environmental variable in
+                                        # the second 30
+image(parsedForm$Zt)
+
+                                        # here's the full covariance
+                                        # matrix (the large scale
+                                        # blocks reflect phylogenetic
+                                        # correlations and the
+                                        # patterns within each block
+                                        # are due to the environmental
+                                        # variable)
+image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% parsedForm$Zt)
+
+                                        # here's a closeup of one of
+                                        # the blocks
+image(fullCov[1:10, 1:10])
+
+                                        # a potential problem is that
+                                        # this block is singular!
+eigen(fullCov[1:10, 1:10])$values
+
+                                        # in fact the rank of the full
+                                        # 300 by 300 matrix is only 60
+                                        # = 30 species times 2 column
+                                        # model matrix
+rankMatrix(fullCov)[1]
+
+                                        # but then again so is the
+                                        # standard non-phylogenetic
+                                        # glmer model
+gm <- glmer(form, df, binomial)
+with(getME(gm, c("Zt", "Lambdat")), {
+    covMatGm <- t(Zt) %*% crossprod(Lambdat) %*% Zt
+    print(rankMatrix(covMatGm)[1])
+    dim(covMatGm)
+})
 
                                         # distribution of underlying
                                         # probabilities of occurrence
@@ -82,5 +185,5 @@ names(opt$par) <- names(initPars)
                                         # compare with truth -- works
                                         # ok, but certainly not all
                                         # the time -- e.g. set.seed(1)
-opt$par
-c(covar = thetaSim, fixef = beta)
+opt$par # estimated parameters
+c(covar = covarSim, fixef = fixefSim) # true parameters
