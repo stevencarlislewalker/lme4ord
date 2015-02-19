@@ -12,3 +12,6 @@ copy: README.md
 
 README.html: README.md
 	pandoc README.md -o README.html
+
+README.R: README.Rmd
+	Rscript -e "library(knitr); purl(\"README.Rmd\")"
