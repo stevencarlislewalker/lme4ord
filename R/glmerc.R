@@ -1,4 +1,11 @@
-##' Phylogenetic generalized linear mixed model
+##' Generalized linear mixed model with custom covariance over grouping factor levels
+##'
+##' When fitting generalized linear mixed model with
+##' \code{\link{glmer}}, the covariance structure over the grouping
+##' factor levels is assumed to be an identity matrix.  That is,
+##' random effects are sampled indepedently over the grouping factor
+##' levels.  With \code{glmerc}, one may specify the covariance over
+##' the levels, up to a fitted parameter.
 ##'
 ##' @param formula formula
 ##' @param data data
@@ -7,7 +14,7 @@
 ##' @param optControl optControl
 ##' @param ... ...
 ##' @export
-pglmer <- function(formula, data = NULL, family = binomial, covList = list(),
+glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
                    optControl = list(iprint = 0L), ...) {
 
     data <- as.data.frame(data)
@@ -26,8 +33,7 @@ pglmer <- function(formula, data = NULL, family = binomial, covList = list(),
                                  parsedForm$Zt, parsedForm$Lambdat,
                                  rep(1, nrow(data)), rep(0, nrow(data)),
                                  initPars, parInds,
-                                 parsedForm$mapToCovFact, function(loads) NULL,
-                                 family = family())
+                                 parsedForm$mapToCovFact, function(loads) NULL)
     dfun(initPars)
     lower <- ifelse(covar, 0, -Inf)
     opt <- bobyqa(initPars, dfun, lower = lower,

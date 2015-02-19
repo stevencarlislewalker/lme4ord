@@ -1,4 +1,4 @@
-##' Generalized bilinear mixed model
+##' Generalized linear mixed model with factor loadings
 ##'
 ##' @param linFormula a mixed model formula for the linear part of the
 ##' model
@@ -14,7 +14,7 @@
 ##' @importClassesFrom lme4 merMod glmerMod
 ##' @import multitable
 ##' @export
-gblmer <- function(formula, data, family,
+glmerf <- function(formula, data, family,
                    latentName = "latent", latentDims = 0L,
                    loadingsDim = 1L, loadingPen = 0L,
                    verbose = 0L, ...) {
