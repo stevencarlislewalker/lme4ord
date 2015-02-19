@@ -4,6 +4,13 @@ library("ape")
 library("minqa")
 library("tony")
 
+#------------------------------------------------------------
+# this example leads to lots of fits on the boundary.
+# but tony's code and lme4 give _similar_ answers.
+# we shouldn't expect _exact_ answers because tony's
+# code uses PQL and lme4 uses Laplace approximation
+#------------------------------------------------------------
+
 # Generate simulated data for nspp species and nsite sites
 nspp <- 15
 nsite <- 10
