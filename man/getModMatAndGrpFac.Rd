@@ -6,7 +6,7 @@
 getModMatAndGrpFac(bar, fr)
 }
 \arguments{
-\item{bar}{random effect language object}
+\item{bar}{random effect language object (e.g. \code{x | g})}
 
 \item{fr}{model frame}
 }
@@ -14,6 +14,7 @@ getModMatAndGrpFac(bar, fr)
 list with model matrix and grouping factor
 }
 \description{
-Get model matrix and grouping factor
+This is kind of like \code{\link{model.matrix}} but for random
+effects terms.
 }
 

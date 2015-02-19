@@ -97,6 +97,10 @@ form <- y ~ x*z + (x | species)
 parsedForm <- levelsCovFormula(form, df, covList = covList)
 ```
 
+```
+## Error in eval(expr, envir, enclos): could not find function "levelsCovFormula"
+```
+
 Set the covariance parameters to something more interesting (i.e. with
 a covariance between the slope and intercept).
 
@@ -104,18 +108,50 @@ a covariance between the slope and intercept).
 covarSim <- c(0.5, -0.2, 0.5)
 parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim))
 ```
+
+```
+## Error in within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim)): object 'parsedForm' not found
+```
 Update the simulations to reflect the new structure.
 
 ```r
 X <- model.matrix(nobars(form), df) # fixed effects design matrix
 Z <- t(parsedForm$Lambdat %*% parsedForm$Zt) # random effects design
+```
+
+```
+## Error in t(parsedForm$Lambdat %*% parsedForm$Zt): error in evaluating the argument 'x' in selecting a method for function 't': Error: object 'parsedForm' not found
+```
+
+```r
                                              # matrix with
                                              # phylogenetic
                                              # covariances
 fixefSim <- rnorm(ncol(X)) # fixed effects
 u <- rnorm(ncol(Z)) # whitened random effects
+```
+
+```
+## Error in ncol(Z): object 'Z' not found
+```
+
+```r
 p <- plogis(as.numeric(X %*% fixefSim + Z %*% u)) # probability of observation
+```
+
+```
+## Error in plogis(as.numeric(X %*% fixefSim + Z %*% u)): object 'Z' not found
+```
+
+```r
 dl$y <- rbinom(nrow(df), 1, p) # presence-absence data
+```
+
+```
+## Error in rbinom(nrow(df), 1, p): object 'p' not found
+```
+
+```r
 df <- as.data.frame(dl) # reconstruct the data frame with new
                         # structured response
 ```
@@ -125,13 +161,18 @@ Now we look at the new structure.  Here's the Cholesky factor of the species cov
 image(parsedForm$Lambdat)
 ```
 
-![plot of chunk unnamed-chunk-11](inst/README/figure/unnamed-chunk-11-1.png) 
+```
+## Error in image(parsedForm$Lambdat): error in evaluating the argument 'x' in selecting a method for function 'image': Error: object 'parsedForm' not found
+```
 
 ```r
 image(crossprod(parsedForm$Lambdat))
 ```
 
-![plot of chunk unnamed-chunk-11](inst/README/figure/unnamed-chunk-11-2.png) 
+```
+## Error in image(crossprod(parsedForm$Lambdat)): error in evaluating the argument 'x' in selecting a method for function 'image': Error in crossprod(parsedForm$Lambdat) : 
+##   error in evaluating the argument 'x' in selecting a method for function 'crossprod': Error: object 'parsedForm' not found
+```
 The big four blocks represent the 2-by-2 covariance between intercept
 and slope.  The covariances within these blocks represent phylogenetic
 covariance.  the pattern here is more closely related species have
@@ -147,7 +188,9 @@ the second 30.
 image(parsedForm$Zt)
 ```
 
-![plot of chunk unnamed-chunk-12](inst/README/figure/unnamed-chunk-12-1.png) 
+```
+## Error in image(parsedForm$Zt): error in evaluating the argument 'x' in selecting a method for function 'image': Error: object 'parsedForm' not found
+```
 
 Here's the full covariance matrix (the large scale blocks reflect
 phylogenetic correlations and the patterns within each block are due
@@ -157,14 +200,19 @@ to the environmental variable).
 image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% parsedForm$Zt)
 ```
 
-![plot of chunk unnamed-chunk-13](inst/README/figure/unnamed-chunk-13-1.png) 
+```
+## Error in image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% : error in evaluating the argument 'x' in selecting a method for function 'image': Error in t(parsedForm$Zt) : 
+##   error in evaluating the argument 'x' in selecting a method for function 't': Error: object 'parsedForm' not found
+```
 Here's a closeup of one of the blocks
 
 ```r
 image(fullCov[1:10, 1:10])
 ```
 
-![plot of chunk unnamed-chunk-14](inst/README/figure/unnamed-chunk-14-1.png) 
+```
+## Error in image(fullCov[1:10, 1:10]): error in evaluating the argument 'x' in selecting a method for function 'image': Error: object 'fullCov' not found
+```
 A potential problem is that this block is singular.
 
 ```r
@@ -172,8 +220,7 @@ eigen(fullCov[1:10, 1:10])$values
 ```
 
 ```
-##  [1]  6.748128e+00  3.398358e+00  1.561011e-16  1.101625e-16  6.591610e-18
-##  [6] -3.885041e-17 -8.128315e-17 -3.923051e-16 -4.882623e-16 -6.122015e-16
+## Error in as.matrix(x): object 'fullCov' not found
 ```
 In fact the rank of the full 300 by 300 matrix is only 60 = 30 species
 times 2 model matrix columns.
@@ -183,7 +230,7 @@ rankMatrix(fullCov)[1]
 ```
 
 ```
-## [1] 60
+## Error in stopifnot(length(d <- dim(x)) == 2): object 'fullCov' not found
 ```
 But then again so is the standard non-phylogenetic `glmer` model.
 
@@ -197,7 +244,7 @@ with(getME(gm, c("Zt", "Lambdat")), {
 ```
 
 ```
-## [1] 60
+## [1] 30
 ```
 
 ```
@@ -209,7 +256,9 @@ The distribution of underlying probabilities of occurrence looks OK.
 hist(p)
 ```
 
-![plot of chunk unnamed-chunk-18](inst/README/figure/unnamed-chunk-18-1.png) 
+```
+## Error in hist(p): object 'p' not found
+```
 Here is the observed occurrence pattern.
 
 ```r
@@ -226,14 +275,14 @@ mod <- glmerc(form, df, covMat = covMat)
 ```
 ## npt = 9 , n =  7 
 ## rhobeg =  0.2 , rhoend =  2e-07 
-##    0.020:  15:      343.673; 1.20159 -0.139508 0.483041 -0.933195 0.582633 0.0508191 0.549206 
-##   0.0020:  42:      333.153; 1.15618 -0.102176 0.262600 -1.03684 0.0105459 0.439994 0.863897 
-##  0.00020:  76:      333.083; 1.14676 -0.116070 0.164472 -1.00478 0.0258033 0.445324 0.839599 
-##  2.0e-05: 111:      333.083; 1.14677 -0.119141 0.156695 -1.00379 0.0278167 0.444258 0.838293 
-##  2.0e-06: 143:      333.083; 1.14698 -0.119098 0.156374 -1.00405 0.0278116 0.444394 0.838391 
-##  2.0e-07: 174:      333.083; 1.14704 -0.119139 0.156302 -1.00409 0.0278226 0.444432 0.838413 
+##    0.020:  13:      416.215;0.458710 -0.200171 0.621835 -0.104852 -0.0693831 -0.106557 0.181020 
+##   0.0020:  47:      410.103;0.511513 -0.278630 0.0763083 -0.0252949 -0.0396708 0.00903895 0.169824 
+##  0.00020:  77:      410.025;0.514705 -0.302518  0.00000 -0.000759701 -0.0461109 -0.00429556 0.179337 
+##  2.0e-05:  98:      410.024;0.512559 -0.303636  0.00000 -0.00238239 -0.0465206 -0.00378935 0.180255 
+##  2.0e-06: 111:      410.024;0.512597 -0.303755  0.00000 -0.00236715 -0.0464696 -0.00378699 0.180302 
+##  2.0e-07: 127:      410.024;0.512597 -0.303744  0.00000 -0.00236739 -0.0464717 -0.00377934 0.180295 
 ## At return
-## 194:     333.08262:  1.14705 -0.119142 0.156301 -1.00409 0.0278254 0.444433 0.838415
+## 148:     410.02430: 0.512598 -0.303743 3.56407e-07 -0.00236752 -0.0464721 -0.00377842 0.180294
 ```
 
 ```
