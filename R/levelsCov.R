@@ -25,14 +25,10 @@ levelsCovFormula <- function(formula, data = NULL, family = binomial, covList, .
     re <- mkTemplateReTrms(modMats,
                            grpFacs, grpFacConst,
                            covMats, covMatConst)
-    return(c(list(X = model.matrix(nobars(formula), data),
-                  y = model.response(model.frame(nobars(formula), data))), re))
-    ## initPars <- list(covar = re$theta, fixef = rep(0, ncol(X)), loads = NULL)
-    ## parInds <- lapply(initPars, seq_along)
-    ## mkGeneralGlmerDevfun(y, X, re$Zt, re$Lambdat,
-    ##                      rep(1, length(y)), rep(0, length(y)),
-    ##                      initPars, parInds,
-    ##                      re$mapToCovFact, function(loads) NULL)
+    return(c(rem,
+             list(X = model.matrix(nobars(formula), data),
+                  y = model.response(model.frame(nobars(formula), data))),
+             list(flist = fixFacList(grpFacs))))
 }
 
 ##' Get model matrix and grouping factor
@@ -61,4 +57,16 @@ getModMatAndGrpFac <- function(bar, fr) {
              nm, call. = FALSE)
     mm <- model.matrix(eval(substitute( ~ foo, list(foo = linFormLang))), fr)
     return(list(modMat = mm, grpFac = ff, grpName = nm))
+}
+
+fixFacList <- function(facList) {
+    fnms <- names(facList)
+    if (length(fnms) > length(ufn <- unique(fnms))) {
+        facList <- facList[match(ufn, fnms)]
+        asgn <- match(fnms, ufn)
+    } else asgn <- seq_along(facList)
+    names(facList) <- ufn
+    facList <- do.call(data.frame, c(facList, check.names = FALSE))
+    attr(facList, "assign") <- asgn
+    return(facList)
 }
