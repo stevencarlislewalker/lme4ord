@@ -1,15 +1,56 @@
-##' Construct deviance function for logistic principal components analysis
-##'
-##' @param Y response matrix
-##' @param d number of axes
-##' @param Xrow row model matrix
-##' @param Xcol col model matrix
-##' @param Upenalty penalty for axis scores
-##' @param thetaPenalty penalty for theta for the axes
-##' @param Ustart optional initial matrix of column scores
-##' @param thetaStart optional initial value for theta vector
-##' @importFrom Matrix t Diagonal rBind sparseMatrix .bdiag bdiag
-##' @export
+# ----------------------------------------------------------------------
+# factorCov
+# ----------------------------------------------------------------------
+
+## Factors with covariance matrices over the levels
+##
+## @param fac a factor
+## @param covMat a covariance matrix over the levels (if missing use
+## identity matrix)
+## @param stan standardize covariance matrix to determinant one?
+## @return a \code{factorCov} object
+## @rdname factorCov
+## @export
+factorCov <- function(fac, covMat, stan = TRUE) {
+    fac <- as.factor(fac)
+    if(missing(covMat)) {
+        covMat <- diag(1, nlevels(fac), nlevels(fac))
+    } else if(stan) {
+        covMat <- stanCov(covMat)
+    }
+    if(!(nlevels(fac) == nrow(covMat))) stop("covMat must be over levels(fac)")
+    attr(fac, "covMat") <- covMat
+    class(fac) <- c("factorCov", "factor")
+    return(fac)
+}
+
+## @rdname factorCov
+## @export
+print.factorCov <- function(x, ...) {
+    ret <- x
+    attr(x, "covMat") <- NULL
+    class(x) <- "factor"
+    print(as.factor(x), ...)
+    cat("Note: this factor includes a covariance matrix over its levels, attr(., \"covMat\")\n")
+}
+
+
+# ----------------------------------------------------------------------
+# logisticPCA
+# ----------------------------------------------------------------------
+
+## Construct deviance function for logistic principal components analysis
+##
+## @param Y response matrix
+## @param d number of axes
+## @param Xrow row model matrix
+## @param Xcol col model matrix
+## @param Upenalty penalty for axis scores
+## @param thetaPenalty penalty for theta for the axes
+## @param Ustart optional initial matrix of column scores
+## @param thetaStart optional initial value for theta vector
+## @importFrom Matrix t Diagonal rBind sparseMatrix .bdiag bdiag
+## @export
 logisticPcaDevfun <-
 function(Y, d, Xrow, Xcol, Ustart, thetaStart, Upenalty = 0, thetaPenalty = 0) {
 
@@ -149,24 +190,24 @@ function(Y, d, Xrow, Xcol, Ustart, thetaStart, Upenalty = 0, thetaPenalty = 0) {
     }
 }
 
-##' Get parameters from deviance function
-##'
-##' @param dfun deviance function created from \code{\link{logisticPcaDevfun}}
-##' @param parms character vectors of parameter names
-##' @param .unlist should the results be \code{\link{unlist}}ed?
-##' @return model parameters at their current value
-##' @export
+## Get parameters from deviance function
+##
+## @param dfun deviance function created from \code{\link{logisticPcaDevfun}}
+## @param parms character vectors of parameter names
+## @param .unlist should the results be \code{\link{unlist}}ed?
+## @return model parameters at their current value
+## @export
 getParms <- function(dfun, parms = c("theta", "phi"),
                      .unlist = TRUE) {
     ans <- as.list(environment(dfun))[parms]
     if(.unlist) return(unlist(ans)) else return(ans)
 }
 
-##' Initialize matrix of column scores
-##'
-##' @param Y response matrix
-##' @param d number of dimensions
-##' @export
+## Initialize matrix of column scores
+##
+## @param Y response matrix
+## @param d number of dimensions
+## @export
 initU <- function(Y, d) {
     svd2Ym1 <- svd(scale(2*Y - 1))
     V <- svd2Ym1$v[,1:d, drop = FALSE]
@@ -182,12 +223,12 @@ updateInitU <- function(Y1, Y2, U1) {
     ## not done obviously
 }
 
-##' Make logistic PCA model
-##'
-##' @param rho environment of the deviance function
-##' @param opt output of the optimizer
-##' @importFrom Matrix tcrossprod
-##' @export
+## Make logistic PCA model
+##
+## @param rho environment of the deviance function
+## @param opt output of the optimizer
+## @importFrom Matrix tcrossprod
+## @export
 mkMod <- function(rho, opt) {
     s <- rho$s
     t <- rho$t
@@ -234,5 +275,3 @@ mkMod <- function(rho, opt) {
                 REindRow = REindRow,
                 REindCol = REindCol))
 }
-
-

@@ -21,4 +21,3 @@ mkGblmerDevfun <- function(fr, X, linReTrms, bilinReTrms,
     
     return(dfun)
 }
-

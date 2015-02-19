@@ -19,7 +19,7 @@ glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
 
                                         # parse formula
     data <- as.data.frame(data)
-    parsedForm <- levelsCovFormula(formula, data, covList = covList)
+    parsedForm <- glmercFormula(formula, data, covList = covList)
 
                                         # organize initial values
     covar <- parsedForm$covar

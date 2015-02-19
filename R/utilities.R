@@ -1,3 +1,60 @@
+##' Standardize covariance matrix to determinant one
+##'
+##' @param covMat
+##' @export
+stanCov <- function(covMat) {
+    covMat / (det(covMat)^(1/nrow(covMat)))
+}
+
+##' Get model matrix and grouping factor
+##'
+##' This is kind of like \code{\link{model.matrix}} but for random
+##' effects terms.
+##' 
+##' @param bar random effect language object (e.g. \code{x | g})
+##' @param fr model frame
+##' @return list with model matrix and grouping factor
+##' @export
+getModMatAndGrpFac <- function(bar, fr) {
+    ## based on mkBlist
+    
+    fr <- factorize(bar, fr)
+    grpLang <- bar[[3]]
+    linFormLang <- bar[[2]]
+    nm <- deparse(grpLang)
+    ## try to evaluate grouping factor within model frame ...
+    if (is.null(ff <- tryCatch(eval(substitute(lme4:::makeFac(fac),
+                                               list(fac = grpLang)), fr),
+                error=function(e) NULL)))
+        stop("couldn't evaluate grouping factor ",
+             nm," within model frame:",
+             " try adding grouping factor to data ",
+             "frame explicitly if possible",call.=FALSE)
+    if (all(is.na(ff)))
+        stop("Invalid grouping factor specification, ",
+             nm, call. = FALSE)
+    mm <- model.matrix(eval(substitute( ~ foo, list(foo = linFormLang))), fr)
+    return(list(modMat = mm, grpFac = ff, grpName = nm))
+}
+
+##' Simplify factor list over random effects terms
+##'
+##' @param facList list of grouping factors over random effects terms
+##' @return collapse repeated factors and add an \code{assign}
+##' attribute for indicating which factors relate to which terms
+##' @export
+simplifyFacList <- function(facList) {
+    fnms <- names(facList)
+    if (length(fnms) > length(ufn <- unique(fnms))) {
+        facList <- facList[match(ufn, fnms)]
+        asgn <- match(fnms, ufn)
+    } else asgn <- seq_along(facList)
+    names(facList) <- ufn
+    facList <- do.call(data.frame, c(facList, check.names = FALSE))
+    attr(facList, "assign") <- asgn
+    return(facList)
+}
+
 ##' Make covariance template random effects term
 ##'
 ##' @param modMat a model matrix
@@ -59,7 +116,8 @@ mkTemplateReTrm <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
                 Lambdat = Lambdat, 
                 LambdatLind = LambdatLind,
                 LambdatCovar = LambdatCovar,
-                LambdatBaseline = LambdatBaseline))
+                LambdatBaseline = LambdatBaseline,
+                nCovar = length(TmodMat@x)))
 }
 
 
@@ -137,4 +195,3 @@ mkTemplateTermZt <- function(explVar, grpFac) {
     J <- as(as.factor(grp), "sparseMatrix")
     explVar 
 }
-
