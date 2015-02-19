@@ -52,13 +52,13 @@ mkTemplateReTrm <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
 
     LambdatBaseline <- T2 %x% TmodMatOnes %x% T1
     LambdatLind <- T2ones %x% TmodMatLind %x% T1ones
-    LambdatTheta <- T2ones %x% TmodMat %x% T1ones
+    LambdatCovar <- T2ones %x% TmodMat %x% T1ones
     Lambdat <- T2 %x% TmodMat %x% T1
-    
+
     return(list(Zt = Zt,
                 Lambdat = Lambdat, 
                 LambdatLind = LambdatLind,
-                LambdatTheta = LambdatTheta,
+                LambdatCovar = LambdatCovar,
                 LambdatBaseline = LambdatBaseline))
 }
 
@@ -99,11 +99,11 @@ mkTemplateReTrms <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
         
         Lambdat <- .bdiag(Lambdat)
         LambdatLind <- .bdiag(LambdatLind)
-        LambdatTheta <- .bdiag(LambdatTheta)
+        LambdatCovar <- .bdiag(LambdatCovar)
         LambdatBaseline <- .bdiag(LambdatBaseline)
         
         Lind <- LambdatLind@x
-        theta <- LambdatTheta@x[match(sort(unique(Lind)), Lind)]
+        covar <- LambdatCovar@x[match(sort(unique(Lind)), Lind)]
         baseline <- LambdatBaseline@x
         mapToCovFact <- function(covar) baseline * covar[Lind]
     })
