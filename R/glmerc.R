@@ -20,14 +20,14 @@ glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
     data <- as.data.frame(data)
     parsedForm <- levelsCovFormula(formula, data, covList = covList)
     X <- model.matrix(nobars(formula), df)
-    fr <- model.frame(formula, df)
+    fr <- model.frame(nobars(formula), df)
     y <- model.response(fr)
     covar <- parsedForm$covar
     fixef <- rep(0, ncol(X))
     initPars <- c(covar = covar,
                   fixef = fixef)
     parInds <- list(covar = seq_along(covar),
-                    fixef = length(covar),
+                    fixef = seq_along(fixef) + length(covar),
                     loads = NULL)
     dfun <- mkGeneralGlmerDevfun(y, X,
                                  parsedForm$Zt, parsedForm$Lambdat,
@@ -35,7 +35,7 @@ glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
                                  initPars, parInds,
                                  parsedForm$mapToCovFact, function(loads) NULL)
     dfun(initPars)
-    lower <- ifelse(covar, 0, -Inf)
+    lower <- ifelse(initPars, 0, -Inf)
     opt <- bobyqa(initPars, dfun, lower = lower,
                   control = list(iprint = 4L))
     names(opt$par) <- names(initPars)

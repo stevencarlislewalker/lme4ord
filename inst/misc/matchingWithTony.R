@@ -122,31 +122,17 @@ form <- Y ~ X +
     (0 + X | species)
 covList <- list(species = Vphy,
                 speciesInd = diag(nspp))
-parsedForm <- levelsCovFormula(form, df, covList = covList)
 
-initPars <- c(covar = rep(1, 4), fixef = rep(0, 2))
-parInds <- list(covar = 1:4, fixef = 5:6, loads = NULL)
-dfun <- mkGeneralGlmerDevfun(df$Y, parsedForm$X,
-                             parsedForm$Zt, parsedForm$Lambdat,
-                             rep(1, nrow(df)), rep(0, nrow(df)),
-                             initPars, parInds,
-                             parsedForm$mapToCovFact, function(loads) NULL)
+modSteve <- glmerc(form, df, binomial, covList)
 
-dfun(initPars)
+modTony <- communityPGLMM(Y ~ X, data = dat, family = "binomial",
+                          sp = dat$sp, site = dat$site,
+                          random.effects = list(re.1, re.2, re.3, re.4),
+                          REML = FALSE, verbose = TRUE)
 
-opt <- bobyqa(initPars, dfun, lower = c(rep(0, 4), rep(-Inf, 2)),
-              control = list(iprint = 4L))
-names(opt$par) <- names(initPars)
-dfun(opt$par)
-
-z.binary <- communityPGLMM(Y ~ X, data = dat, family = "binomial",
-                           sp = dat$sp, site = dat$site,
-                           random.effects = list(re.1, re.2, re.3, re.4),
-                           REML = FALSE, verbose = TRUE)
-
-(covarComp <- cbind(tony = round(z.binary$s2r, 3),
-                    steve = round(opt$par[parInds$covar]^2, 3),
+(covarComp <- cbind(tony = round(modTony$s2r, 3),
+                    steve = round(modSteve$opt$par[modSteve$parInds$covar]^2, 3),
                     true = c(sd.B0, sd.B0, sd.B1, sd.B1)))
-(fixefComp <- cbind(tony = as.vector(z.binary$B),
-                    steve = opt$par[parInds$fixef],
+(fixefComp <- cbind(tony = as.vector(modTony$B),
+                    steve = modSteve$opt$par[modSteve$parInds$fixef],
                     true = c(beta0, beta1)))
