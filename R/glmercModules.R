@@ -54,5 +54,30 @@ glmercFormula <- function(formula, data = NULL, family = binomial, covList, ...)
     return(c(re,
              list(X = model.matrix(nobars(formula), data),
                   y = model.response(model.frame(nobars(formula), data)),
-                  flist = simplifyFacList(grpFacs))))
+                  flist = simplifyFacList(grpFacs),
+                  modMats = modMats)))
+}
+
+##' @export
+getMEc <- function(object, name = c("X", "Z", "Zt", "y", "TmodMat", "cnms")) {
+    if (missing(name)) 
+        stop("'name' must not be missing")
+    if (length(name <- as.character(name)) > 1) {
+        names(name) <- name
+        return(lapply(name, getMEc, object = object))
+    }
+    cnms <- lapply(object$parsedForm$modMats, colnames)
+    TmodMat <- object$parsedForm$TmodMat
+    
+    for(i in 1:length(TmodMat)) {
+        TmodMat[[i]]@x <- covarByTerms(object)[[i]]
+        dimnames(TmodMat[[i]]) <- rep(cnms[i], 2)
+    }
+    switch(name,
+           X = object$X,
+           Z = t(object$parsedForm$Zt),
+           Z = object$parsedForm$Zt,
+           y = object$y,
+           TmodMat = TmodMat,
+           cnms = cnms)
 }

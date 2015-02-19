@@ -46,10 +46,50 @@ glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
 
                                         # organize return value
     ans <- list(opt = opt, parsedForm = parsedForm, dfun = dfun,
-                parInds = parInds, X = X, y = y)
+                parInds = parInds, X = parsedForm$X, y = parsedForm$y)
     class(ans) <- "glmerc"
     return(ans)
 }
 
 ##' @export
-fixef.glmerc <- function(object, ...) ans$opt$par[ans$parInds$fixef]
+fixef.glmerc <- function(object, ...) .fixef(object$opt$par, object$parInds)
+
+##' @export
+covar.glmerc <- function(object, ...) .covar(object$opt$par, object$parInds)
+
+##' @export
+loads.glmerc <- function(object, ...) stop("covariance over levels models do not have loadings")
+
+##' @export
+covarByTerms <- function(object, ...) {
+    inds <- covarInds(object$parsedForm$nCovar)
+    lapply(inds, function(i) covar(object)[i])
+}
+
+##' @export
+covarInds <- function(nCovar) {
+    ans <- lapply(nCovar, seq, from = 1, by = 1)
+    for(i in 2:length(nCovar)) ans[[i]] <- ans[[i]] + max(ans[[i-1]])
+    return(setNames(ans, names(nCovar)))
+}
+
+##' @export
+VarCorr.glmerc <- function(x, ...) {
+    tmm <- getMEc(x, "TmodMat")
+    cnms <- getMEc(modSteve, "cnms")
+    lapply(lapply(tmm, as.matrix), crossprod)
+}
+
+##' @export
+print.glmerc <- function(x, ...) {
+    cat("\nGeneralized linear mixed model\nwith covariance amongst grouping factor levels\n")
+    cat("----------------------------------------------\n\n")
+
+    cat("Fixed effects\n")
+    cat("-------------\n\n")
+    print(fixef(x))
+
+    cat("\n\nRandom effects (co)variance\n")
+    cat("---------------------------\n\n")
+    print(VarCorr(x))
+}

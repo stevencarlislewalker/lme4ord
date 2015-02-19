@@ -67,3 +67,12 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     return(devfun)
 }
 
+##' @export
+covar <- function(object, ...) UseMethod("covar")
+
+##' @export
+loads <- function(object, ...) loadings(object)
+
+.covar <- function(pars, ind) pars[ind$covar]
+.fixef <- function(pars, ind) pars[ind$fixef]
+.loads <- function(pars, ind) pars[ind$loads]

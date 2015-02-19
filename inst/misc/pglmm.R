@@ -62,7 +62,7 @@ covList <- list(species = Vphy)
                                         # intercept with
                                         # (phylogenetic) correlations
                                         # across species.
-form <- y ~ x*z + (x | species)
+form <- y ~ x * z + (x | species)
 
                                         # combine this formula with
                                         # the data and covariance

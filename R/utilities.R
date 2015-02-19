@@ -117,6 +117,7 @@ mkTemplateReTrm <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
                 LambdatLind = LambdatLind,
                 LambdatCovar = LambdatCovar,
                 LambdatBaseline = LambdatBaseline,
+                TmodMat = TmodMat,
                 nCovar = length(TmodMat@x)))
 }
 

@@ -69,11 +69,11 @@ interaction between the environment and the trait (with intercept and
 main effects too), a random environmental slope and intercept with
 phylogenetic correlations across species.  However, the phylogenetic
 nature of the covariances is not set in the formula, but rather as an
-argument to the `levelsCovFormula` function below, which will form the
+argument to the `glmercFormula` function below, which will form the
 formula parsing module of a pglmer function.
 ```{r}
 form <- y ~ x*z + (x | species)
-parsedForm <- levelsCovFormula(form, df, covList = covList)
+parsedForm <- glmercFormula(form, df, covList = covList)
 ```
 
 Set the covariance parameters to something more interesting (i.e. with
