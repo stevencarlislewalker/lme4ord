@@ -9,3 +9,6 @@ README.md: README.Rmd
 copy: README.md
 	cp README.md ../../README.md
 	rm README.md
+
+README.html: README.md
+	pandoc README.md -o README.html
