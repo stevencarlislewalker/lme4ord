@@ -7,11 +7,8 @@ glmerf(formula, data, family, latentName = "latent", latentDims = 0L,
   loadingsDim = 1L, loadingPen = 0L, verbose = 0L, ...)
 }
 \arguments{
-\item{linFormula}{a mixed model formula for the linear part of the
+\item{formula}{a mixed model formula for the linear part of the
 model}
-
-\item{bilinFormula}{a mixed model formula for the bilinear part of
-the model}
 
 \item{data}{a \code{\link{data.list}} object}
 
@@ -19,6 +16,8 @@ the model}
 
 \item{latentDims}{number of latent dimensions in the bilinear
 component of the model}
+
+\item{loadingsDim}{huh?}
 
 \item{loadingPen}{penalty for the size of the loadings}
 

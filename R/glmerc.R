@@ -62,6 +62,8 @@ loads.glmerc <- function(object, ...) stop("covariance over levels models do not
 
 ##' @export
 covarByTerms <- function(object, ...) {
+    nCovar <- object$parsedForm$nCovar
+    if(length(nCovar) == 1L) return(list(covar(object)))
     inds <- covarInds(object$parsedForm$nCovar)
     lapply(inds, function(i) covar(object)[i])
 }
@@ -76,7 +78,7 @@ covarInds <- function(nCovar) {
 ##' @export
 VarCorr.glmerc <- function(x, ...) {
     tmm <- getMEc(x, "TmodMat")
-    cnms <- getMEc(modSteve, "cnms")
+    cnms <- getMEc(x, "cnms")
     lapply(lapply(tmm, as.matrix), crossprod)
 }
 
