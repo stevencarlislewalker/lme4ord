@@ -71,11 +71,6 @@ df <- as.data.frame(dl) # reconstruct the data frame with new
                         # structured response
 
 
-## ----, fig.width=3, fig.height=3-----------------------------------------
-image(parsedForm$Lambdat)
-image(crossprod(parsedForm$Lambdat))
-
-
 ## ----, fig.width=7, fig.height=2-----------------------------------------
 image(parsedForm$Zt)
 
@@ -114,7 +109,7 @@ color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 
 
 ## ------------------------------------------------------------------------
-mod <- glmerc(form, df, covMat = covMat)
+(mod <- glmerc(form, df, covMat = covMat))
 
 
 ## ------------------------------------------------------------------------

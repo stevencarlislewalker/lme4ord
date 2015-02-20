@@ -258,10 +258,11 @@ color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 ## 
 ## Random effects (co)variance
 ## ---------------------------
-```
-
-```
-## Error in ans[[i]]: subscript out of bounds
+## 
+## $species
+##             (Intercept)           x
+## (Intercept)   1.3157135 -0.13666152
+## x            -0.1366615  0.03862486
 ```
 
 and compare with the true parameter values.
