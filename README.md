@@ -119,53 +119,52 @@ dl$y <- rbinom(nrow(df), 1, p) # presence-absence data
 df <- as.data.frame(dl) # reconstruct the data frame with new
                         # structured response
 ```
-Now we look at the new structure.  Here's the Cholesky factor of the species covariance, and the covariance itself.
 
-```r
-image(parsedForm$Lambdat)
-```
+Now we look at the new structure.  Here's the Cholesky factor of the
+species covariance, and the covariance itself.
 
-![plot of chunk unnamed-chunk-11](inst/README/figure/unnamed-chunk-11-1.png) 
-
-```r
-image(crossprod(parsedForm$Lambdat))
-```
-
-![plot of chunk unnamed-chunk-11](inst/README/figure/unnamed-chunk-11-2.png) 
-The big four blocks represent the 2-by-2 covariance between intercept
-and slope.  The covariances within these blocks represent phylogenetic
-covariance.  the pattern here is more closely related species have
-more similar intercepts and slopes (red blocks on the diagonal) but
-more closely related species also have stronger negative correlations
-between slope and intercept (blue blocks on off diagonal).
+```{r, fig.width=3, fig.height=3} image(parsedForm$Lambdat)
+image(crossprod(parsedForm$Lambdat)) ``` The big four blocks represent
+the 2-by-2 covariance between intercept and slope.  The covariances
+within these blocks represent phylogenetic covariance.  the pattern
+here is more closely related species have more similar intercepts and
+slopes (red blocks on the diagonal) but more closely related species
+also have stronger negative correlations between slope and intercept
+(blue blocks on off diagonal).
 
 Here's the transposed random effects model matrix.  Those are 1's for
 the intercepts in the first 30 rows and the environmental variable in
 the second 30.
 
+
 ```r
 image(parsedForm$Zt)
 ```
 
-![plot of chunk unnamed-chunk-12](inst/README/figure/unnamed-chunk-12-1.png) 
+![plot of chunk unnamed-chunk-11](inst/README/figure/unnamed-chunk-11-1.png) 
 
 Here's the full covariance matrix (the large scale blocks reflect
 phylogenetic correlations and the patterns within each block are due
 to the environmental variable).
 
+
 ```r
 image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% parsedForm$Zt)
 ```
 
-![plot of chunk unnamed-chunk-13](inst/README/figure/unnamed-chunk-13-1.png) 
-Here's a closeup of one of the blocks
+![plot of chunk unnamed-chunk-12](inst/README/figure/unnamed-chunk-12-1.png) 
+
+Here's a closeup of one of the blocks.
+
 
 ```r
 image(fullCov[1:10, 1:10])
 ```
 
-![plot of chunk unnamed-chunk-14](inst/README/figure/unnamed-chunk-14-1.png) 
+![plot of chunk unnamed-chunk-13](inst/README/figure/unnamed-chunk-13-1.png) 
+
 A potential problem is that this block is singular.
+
 
 ```r
 eigen(fullCov[1:10, 1:10])$values
@@ -175,8 +174,10 @@ eigen(fullCov[1:10, 1:10])$values
 ##  [1]  6.748128e+00  3.398358e+00  1.561011e-16  1.101625e-16  6.591610e-18
 ##  [6] -3.885041e-17 -8.128315e-17 -3.923051e-16 -4.882623e-16 -6.122015e-16
 ```
+
 In fact the rank of the full 300 by 300 matrix is only 60 = 30 species
 times 2 model matrix columns.
+
 
 ```r
 rankMatrix(fullCov)[1]
@@ -185,7 +186,9 @@ rankMatrix(fullCov)[1]
 ```
 ## [1] 60
 ```
+
 But then again so is the standard non-phylogenetic `glmer` model.
+
 
 ```r
 gm <- glmer(form, df, binomial)
@@ -203,24 +206,28 @@ with(getME(gm, c("Zt", "Lambdat")), {
 ```
 ## [1] 300 300
 ```
+
 The distribution of underlying probabilities of occurrence looks OK.
+
 
 ```r
 hist(p)
 ```
 
-![plot of chunk unnamed-chunk-18](inst/README/figure/unnamed-chunk-18-1.png) 
+![plot of chunk unnamed-chunk-17](inst/README/figure/unnamed-chunk-17-1.png) 
+
 Here is the observed occurrence pattern.
+
 
 ```r
 color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 ```
 
-![plot of chunk unnamed-chunk-19](inst/README/figure/unnamed-chunk-19-1.png) 
+![plot of chunk unnamed-chunk-18](inst/README/figure/unnamed-chunk-18-1.png) 
 
 
 ```r
-mod <- glmerc(form, df, covMat = covMat)
+(mod <- glmerc(form, df, covMat = covMat))
 ```
 
 ```
@@ -235,7 +242,30 @@ mod <- glmerc(form, df, covMat = covMat)
 ## At return
 ## 194:     333.08262:  1.14705 -0.119142 0.156301 -1.00409 0.0278254 0.444433 0.838415
 ```
+
+```
+## 
+## Generalized linear mixed model
+## with covariance amongst grouping factor levels
+## ----------------------------------------------
+## 
+## Fixed effects
+## -------------
+## 
+##      fixef1      fixef2      fixef3      fixef4 
+## -1.00408875  0.02782545  0.44443258  0.83841455 
+## 
+## 
+## Random effects (co)variance
+## ---------------------------
+```
+
+```
+## Error in ans[[i]]: subscript out of bounds
+```
+
 and compare with the true parameter values.
+
 
 ```r
 cbind(estimated = mod$opt$par, # estimated parameters

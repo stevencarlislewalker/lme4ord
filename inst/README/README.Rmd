@@ -96,21 +96,23 @@ dl$y <- rbinom(nrow(df), 1, p) # presence-absence data
 df <- as.data.frame(dl) # reconstruct the data frame with new
                         # structured response
 ```
-Now we look at the new structure.  Here's the Cholesky factor of the species covariance, and the covariance itself.
-```{r, fig.width=3, fig.height=3}
-image(parsedForm$Lambdat)
-image(crossprod(parsedForm$Lambdat))
-```
-The big four blocks represent the 2-by-2 covariance between intercept
-and slope.  The covariances within these blocks represent phylogenetic
-covariance.  the pattern here is more closely related species have
-more similar intercepts and slopes (red blocks on the diagonal) but
-more closely related species also have stronger negative correlations
-between slope and intercept (blue blocks on off diagonal).
+
+Now we look at the new structure.  Here's the Cholesky factor of the
+species covariance, and the covariance itself.
+
+```{r, fig.width=3, fig.height=3} image(parsedForm$Lambdat)
+image(crossprod(parsedForm$Lambdat)) ``` The big four blocks represent
+the 2-by-2 covariance between intercept and slope.  The covariances
+within these blocks represent phylogenetic covariance.  the pattern
+here is more closely related species have more similar intercepts and
+slopes (red blocks on the diagonal) but more closely related species
+also have stronger negative correlations between slope and intercept
+(blue blocks on off diagonal).
 
 Here's the transposed random effects model matrix.  Those are 1's for
 the intercepts in the first 30 rows and the environmental variable in
 the second 30.
+
 ```{r, fig.width=7, fig.height=2}
 image(parsedForm$Zt)
 ```
@@ -118,23 +120,32 @@ image(parsedForm$Zt)
 Here's the full covariance matrix (the large scale blocks reflect
 phylogenetic correlations and the patterns within each block are due
 to the environmental variable).
+
 ```{r, fig.width=5, fig.height=5}
 image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% parsedForm$Zt)
 ```
-Here's a closeup of one of the blocks
+
+Here's a closeup of one of the blocks.
+
 ```{r, fig.width=3, fig.height=3}
 image(fullCov[1:10, 1:10])
 ```
+
 A potential problem is that this block is singular.
+
 ```{r}
 eigen(fullCov[1:10, 1:10])$values
 ```
+
 In fact the rank of the full 300 by 300 matrix is only 60 = 30 species
 times 2 model matrix columns.
+
 ```{r}
 rankMatrix(fullCov)[1]
 ```
+
 But then again so is the standard non-phylogenetic `glmer` model.
+
 ```{r}
 gm <- glmer(form, df, binomial)
 with(getME(gm, c("Zt", "Lambdat")), {
@@ -143,19 +154,25 @@ with(getME(gm, c("Zt", "Lambdat")), {
     dim(covMatGm)
 })
 ```
+
 The distribution of underlying probabilities of occurrence looks OK.
+
 ```{r, fig.width=3, fig.height=3}
 hist(p)
 ```
+
 Here is the observed occurrence pattern.
+
 ```{r, fig.width=3, fig.height=3}
 color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 ```
 
 ```{r}
-mod <- glmerc(form, df, covMat = covMat)
+(mod <- glmerc(form, df, covMat = covMat))
 ```
+
 and compare with the true parameter values.
+
 ```{r}
 cbind(estimated = mod$opt$par, # estimated parameters
       true = c(covar = covarSim, fixef = fixefSim)) # true parameters
