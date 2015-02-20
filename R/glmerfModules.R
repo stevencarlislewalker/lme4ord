@@ -1,3 +1,6 @@
+glmerfFormula <- function(
+
+
 ##' Modular functions for generalized bilinear mixed models
 ##' @export
 mkGblmerDevfun <- function(fr, X, linReTrms, bilinReTrms,

@@ -36,19 +36,19 @@ dl <- data.list(Y = Y, x = x,
                 dimids = c("sites", "species"))
 summary(dl)
 
-mod00 <- gblmer(Y ~ 1 + (1 | species), dl, binomial,
+mod00 <- glmerf(Y ~ 1 + (1 | species), dl, binomial,
                 loadingsDim = 0)
 
-mod01 <- gblmer(Y ~ x + (x | species), dl, binomial,
+mod01 <- glmerf(Y ~ x + (x | species), dl, binomial,
                 loadingsDim = 0)
 
-mod0 <- gblmer(Y ~ 1 + (1 | species), dl, binomial,
+mod0 <- glmerf(Y ~ 1 + (1 | species), dl, binomial,
                loadingsDim = 2,
                latentDim = 2,
                loadingPen = 1L,
                verbose = 2L)
 
-mod1 <- gblmer(Y ~ x + (x | species), dl, binomial,
+mod1 <- glmerf(Y ~ x + (x | species), dl, binomial,
                loadingsDim = 2,
                latentDim = 2,
                loadingPen = 1L,

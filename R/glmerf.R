@@ -1,13 +1,12 @@
 ##' Generalized linear mixed model with factor loadings
 ##'
-##' @param linFormula a mixed model formula for the linear part of the
+##' @param formula a mixed model formula for the linear part of the
 ##' model
-##' @param bilinFormula a mixed model formula for the bilinear part of
-##' the model
 ##' @param data a \code{\link{data.list}} object
 ##' @param family a \code{\link{family}} object
 ##' @param latentDims number of latent dimensions in the bilinear
 ##' component of the model
+##' @param loadingsDim huh?
 ##' @param loadingPen penalty for the size of the loadings
 ##' @param verbose passed to optimizer
 ##' @param ... arguments to be passed to \code{\link{glFormula}}
