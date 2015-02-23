@@ -46,7 +46,8 @@ glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
 
                                         # organize return value
     ans <- list(opt = opt, parsedForm = parsedForm, dfun = dfun,
-                parInds = parInds, X = parsedForm$X, y = parsedForm$y)
+                parInds = parInds, X = parsedForm$X, y = parsedForm$y,
+                lower = lower)
     class(ans) <- "glmerc"
     return(ans)
 }
@@ -83,13 +84,27 @@ VarCorr.glmerc <- function(x, ...) {
 }
 
 ##' @export
+vcov.glmerc <- function(object, justFixef = TRUE, ...) {
+    optPar <- object$opt$par
+    ans <- solve(0.5 * lme4:::deriv12(object$dfun,
+                                      optPar)$Hessian)
+    dimnames(ans) <- rep(list(names(optPar)), 2)
+    if(justFixef) {
+        dims <- object$parInds$fixef
+        ans <- ans[dims, dims]
+    }
+    return(ans)
+}
+
+##' @export
 print.glmerc <- function(x, ...) {
     cat("\nGeneralized linear mixed model\nwith covariance amongst grouping factor levels\n")
     cat("----------------------------------------------\n\n")
 
     cat("Fixed effects\n")
     cat("-------------\n\n")
-    print(fixef(x))
+    print(cbind(Estimate = fixef(modNest),
+                `Std. Error` = sqrt(diag(vcov(modNest)))))
 
     cat("\n\nRandom effects (co)variance\n")
     cat("---------------------------\n\n")
