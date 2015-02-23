@@ -252,8 +252,11 @@ color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 ## Fixed effects
 ## -------------
 ## 
-##      fixef1      fixef2      fixef3      fixef4 
-## -1.00408875  0.02782545  0.44443258  0.83841455 
+##                Estimate Std. Error
+## (Intercept) -1.00408875  0.2808641
+## x            0.02782545  0.1957038
+## z            0.44443258  0.2719587
+## x:z          0.83841455  0.2093839
 ## 
 ## 
 ## Random effects (co)variance

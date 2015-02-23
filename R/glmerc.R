@@ -53,7 +53,10 @@ glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
 }
 
 ##' @export
-fixef.glmerc <- function(object, ...) .fixef(object$opt$par, object$parInds)
+fixef.glmerc <- function(object, ...) {
+    setNames(.fixef(object$opt$par, object$parInds),
+             colnames(object$X))
+}
 
 ##' @export
 covar.glmerc <- function(object, ...) .covar(object$opt$par, object$parInds)
@@ -103,8 +106,8 @@ print.glmerc <- function(x, ...) {
 
     cat("Fixed effects\n")
     cat("-------------\n\n")
-    print(cbind(Estimate = fixef(modNest),
-                `Std. Error` = sqrt(diag(vcov(modNest)))))
+    print(cbind(Estimate = fixef(x),
+                `Std. Error` = sqrt(diag(vcov(x)))))
 
     cat("\n\nRandom effects (co)variance\n")
     cat("---------------------------\n\n")
