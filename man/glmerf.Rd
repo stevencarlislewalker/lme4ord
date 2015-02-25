@@ -4,7 +4,8 @@
 \title{Generalized linear mixed model with factor loadings}
 \usage{
 glmerf(formula, data, family, latentName = "latent", latentDims = 0L,
-  loadingsDim = 1L, loadingPen = 0L, verbose = 0L, ...)
+  loadingsDim = 1L, loadingPen = 0L, verbose = 0L, control = list(),
+  ...)
 }
 \arguments{
 \item{formula}{a mixed model formula for the linear part of the
@@ -17,11 +18,14 @@ model}
 \item{latentDims}{number of latent dimensions in the bilinear
 component of the model}
 
-\item{loadingsDim}{huh?}
+\item{loadingsDim}{what dimension of \code{data} is associated
+with loadings?}
 
 \item{loadingPen}{penalty for the size of the loadings}
 
 \item{verbose}{passed to optimizer}
+
+\item{control}{arguments for the optimizer}
 
 \item{...}{arguments to be passed to \code{\link{glFormula}}}
 }

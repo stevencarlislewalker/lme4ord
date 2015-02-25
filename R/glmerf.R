@@ -6,9 +6,11 @@
 ##' @param family a \code{\link{family}} object
 ##' @param latentDims number of latent dimensions in the bilinear
 ##' component of the model
-##' @param loadingsDim huh?
+##' @param loadingsDim what dimension of \code{data} is associated
+##' with loadings?
 ##' @param loadingPen penalty for the size of the loadings
 ##' @param verbose passed to optimizer
+##' @param control arguments for the optimizer
 ##' @param ... arguments to be passed to \code{\link{glFormula}}
 ##' @importClassesFrom lme4 merMod glmerMod
 ##' @import multitable
@@ -16,7 +18,7 @@
 glmerf <- function(formula, data, family,
                    latentName = "latent", latentDims = 0L,
                    loadingsDim = 1L, loadingPen = 0L,
-                   verbose = 0L, ...) {
+                   verbose = 0L, control = list(), ...) {
     if(!any(inherits(data, "data.list"))) stop("data must be a data list")
     if(length(dim(data)) != 2L) stop("data list must be two dimensional")
     dIds <- names(dd <- dim(data))
@@ -26,7 +28,6 @@ glmerf <- function(formula, data, family,
         warning("no latent variables, returning glmer results")
         return(initGlmer)
     }
-    ## if(latentDims != 1L) stop("code for more than one latent variable not writen")
     if(loadingsDim == 2L) {
         datY <- data$Y
     } else if(loadingsDim == 1L) {
@@ -113,7 +114,8 @@ glmerf <- function(formula, data, family,
     optLower <- c(rep(-Inf, length(initLoadings)), rho$lower[-(1:latentDims)])
                                         # optimize
     opt <- lme4:::optwrap("bobyqa", dfun, initPars, 
-                          lower = optLower, verbose = verbose)
+                          lower = optLower, verbose = verbose,
+                          control = control)
 
     optPar <- opt$par
     optNoLoadings <- c(rep(1, latentDims), opt$par[-rho$loadInd])
