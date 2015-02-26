@@ -66,7 +66,7 @@ stronger correlations between `y` and `x` will be added below.
 set.seed(10)
 n <- 10
 m <- 30
-dl <- dims_to_vars(data.list(y = 1 * (rmat(n, m) > 0),
+dl <- dims_to_vars(data.list(y = 1 * (matrix(rnorm(n * m), n, m) > 0),
                              x = rnorm(n), z = rnorm(m),
                              dimids = c("sites", "species")))
 df <- as.data.frame(dl)

@@ -114,9 +114,7 @@ color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 
 
 ## ------------------------------------------------------------------------
-system.time({
-    (mod <- glmerc(form, df, covMat = covMat))
-})
+(mod <- glmerc(form, df, covMat = covMat, family = binomial))
 
 ## ------------------------------------------------------------------------
 cbind(estimated = mod$opt$par, # estimated parameters
