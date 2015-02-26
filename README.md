@@ -131,7 +131,8 @@ main effects too), a random environmental slope and intercept with
 phylogenetic correlations across species.  However, the phylogenetic
 nature of the covariances is not set in the formula, but rather as an
 argument to the `glmercFormula` function below, which will form the
-formula parsing module of a pglmer function.
+formula parsing module of a glmerc function.
+
 
 ```r
 form <- y ~ x*z + (x | species)
@@ -165,13 +166,15 @@ Now we look at the new structure.  Here's the Cholesky factor of the
 species covariance, and the covariance itself.
 
 ```{r, fig.width=3, fig.height=3} image(parsedForm$Lambdat)
-image(crossprod(parsedForm$Lambdat)) ``` The big four blocks represent
-the 2-by-2 covariance between intercept and slope.  The covariances
-within these blocks represent phylogenetic covariance.  the pattern
-here is more closely related species have more similar intercepts and
-slopes (red blocks on the diagonal) but more closely related species
-also have stronger negative correlations between slope and intercept
-(blue blocks on off diagonal).
+image(crossprod(parsedForm$Lambdat))
+``` 
+
+The big four blocks represent the 2-by-2 covariance between intercept
+and slope.  The covariances within these blocks represent phylogenetic
+covariance.  the pattern here is more closely related species have
+more similar intercepts and slopes (red blocks on the diagonal) but
+more closely related species also have stronger negative correlations
+between slope and intercept (blue blocks on off diagonal).
 
 Here's the transposed random effects model matrix.  Those are 1's for
 the intercepts in the first 30 rows and the environmental variable in
