@@ -24,6 +24,37 @@ library(reo)
 
 #### phylogenetic generalized linear mixed models!
 
+The idea is to be able to fit a `glmer` model where there is a known
+(e.g. phylogenetic) correlation structure over the levels of the
+random effects grouping factors.  In the example below, we simulate
+data and fit such a model.  The call will look like this.
+
+
+```r
+glmerc(y ~ x * z + (x | species), data,
+       covList = list(species = Vphy),
+       family = binomial)
+```
+
+Here `y` is a 0-1 vector indicating which species were present at
+which sites.  `x` and `z` are environmental variables (over the sites)
+and traits (over the species).  `Vphy` is a phylogenetic correlation
+matrix, which is tagged by `species` because this corresponds to a
+particular grouping factor in the model formula.  The size of `Vphy`
+therefore must equal the number of levels of `species`.
+
+In `glmer` this model formula would fit a two-by-two covariance matrix
+over the slope and intercept implied by the random effect term.  This
+same covariance matrix is repeated over each of the levels of the
+grouping factor, `species`.  Therefore, the full random effects
+covariance matrix can be viewed as a Kronecker product between this
+two-by-two matrix and an identity matrix of size given by the number
+of levels.  In `glmerc`, this identity matrix is simply replaced by
+what is given in `covList` for the relevant grouping factor, which in
+this case is the phylogenetic covariance matrix, `Vphy`.
+
+##### Simulations
+
 Begin with initial simulations of a sites-by-species binary response
 matrix, `y`, environmental variable, `x`, and trait `z`.
 stronger correlations between `y` and `x` will be added below.
@@ -51,34 +82,41 @@ head(df)
 
 Make up some silly phylogeny.
 
+
 ```r
 phy <- rtree(n = m)
 phy <- compute.brlen(phy, method = "Grafen", power = 0.5)
 ```
+
 and estimate a phylogenetic covariance matrix, standardized to unit determinant.
+
 
 ```r
 Vphy <- stanCov(vcv(phy))
 dimnames(Vphy) <- rep(list(1:m), 2)
 ```
+
 Here's the phylogeny (forget the species names) and the associated covariance matrix
+
 
 ```r
 plot(phy)
 ```
 
-![plot of chunk unnamed-chunk-6](inst/README/figure/unnamed-chunk-6-1.png) 
+![plot of chunk unnamed-chunk-7](inst/README/figure/unnamed-chunk-7-1.png) 
 
 ```r
 image(as(Vphy, "sparseMatrix"))
 ```
 
-![plot of chunk unnamed-chunk-6](inst/README/figure/unnamed-chunk-6-2.png) 
+![plot of chunk unnamed-chunk-7](inst/README/figure/unnamed-chunk-7-2.png) 
+
 Put the covariance matrix in a list, for model-input purposes -- the
 idea is that there might be other covariance matrix (e.g. a spatial
 one say).  It is important that the list element gets the name
 `species` because this is the name of the grouping factor used in the
 model formula below.
+
 
 ```r
 covList <- list(species = Vphy)
@@ -141,7 +179,7 @@ the second 30.
 image(parsedForm$Zt)
 ```
 
-![plot of chunk unnamed-chunk-11](inst/README/figure/unnamed-chunk-11-1.png) 
+![plot of chunk unnamed-chunk-12](inst/README/figure/unnamed-chunk-12-1.png) 
 
 Here's the full covariance matrix (the large scale blocks reflect
 phylogenetic correlations and the patterns within each block are due
@@ -152,78 +190,18 @@ to the environmental variable).
 image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% parsedForm$Zt)
 ```
 
-![plot of chunk unnamed-chunk-12](inst/README/figure/unnamed-chunk-12-1.png) 
-
-Here's a closeup of one of the blocks.
-
-
-```r
-image(fullCov[1:10, 1:10])
-```
-
 ![plot of chunk unnamed-chunk-13](inst/README/figure/unnamed-chunk-13-1.png) 
 
-A potential problem is that this block is singular.
-
-
-```r
-eigen(fullCov[1:10, 1:10])$values
-```
-
-```
-##  [1]  6.748128e+00  3.398358e+00  1.561011e-16  1.101625e-16  6.591610e-18
-##  [6] -3.885041e-17 -8.128315e-17 -3.923051e-16 -4.882623e-16 -6.122015e-16
-```
-
-In fact the rank of the full 300 by 300 matrix is only 60 = 30 species
-times 2 model matrix columns.
-
-
-```r
-rankMatrix(fullCov)[1]
-```
-
-```
-## [1] 60
-```
-
-But then again so is the standard non-phylogenetic `glmer` model.
-
-
-```r
-gm <- glmer(form, df, binomial)
-with(getME(gm, c("Zt", "Lambdat")), {
-    covMatGm <- t(Zt) %*% crossprod(Lambdat) %*% Zt
-    print(rankMatrix(covMatGm)[1])
-    dim(covMatGm)
-})
-```
-
-```
-## [1] 60
-```
-
-```
-## [1] 300 300
-```
-
-The distribution of underlying probabilities of occurrence looks OK.
-
-
-```r
-hist(p)
-```
-
-![plot of chunk unnamed-chunk-17](inst/README/figure/unnamed-chunk-17-1.png) 
-
-Here is the observed occurrence pattern.
+Here is the observed occurrence pattern of species among sites.
 
 
 ```r
 color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 ```
 
-![plot of chunk unnamed-chunk-18](inst/README/figure/unnamed-chunk-18-1.png) 
+![plot of chunk unnamed-chunk-14](inst/README/figure/unnamed-chunk-14-1.png) 
+
+##### Fit the model
 
 
 ```r
@@ -286,6 +264,7 @@ cbind(estimated = mod$opt$par, # estimated parameters
 ## fixef3  0.44443258  0.03799977
 ## fixef4  0.83841455  0.92106475
 ```
+
 Looks great!  At least in this case.
 
 #### mixed effects ordination!
@@ -295,7 +274,6 @@ Looks great!  At least in this case.
 data(fish)
 data(limn)
 Y <- as.matrix(fish)
-## Y <- Y[, colSums(Y) > 1]
 n <- nrow(Y)
 m <- ncol(Y)
 x <- as.vector(scale(limn$pH))

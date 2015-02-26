@@ -30,13 +30,18 @@ head(df)
 
 ## ------------------------------------------------------------------------
 phy <- rtree(n = m)
-phy <- compute.brlen(phy, method = "Grafen", power = 0.5)
+plot(phy)
+phy <- compute.brlen(phy, method = "Grafen", power = 0.8)
+plot(phy)
+
+
+vcv(corPagel(0.5, phy))
 
 
 ## ------------------------------------------------------------------------
 Vphy <- stanCov(vcv(phy))
 dimnames(Vphy) <- rep(list(1:m), 2)
-
+unique(phy$edge.length)
 
 ## ----, fig.width = 4, fig.height = 5-------------------------------------
 plot(phy)
@@ -109,8 +114,9 @@ color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 
 
 ## ------------------------------------------------------------------------
-(mod <- glmerc(form, df, covMat = covMat))
-
+system.time({
+    (mod <- glmerc(form, df, covMat = covMat))
+})
 
 ## ------------------------------------------------------------------------
 cbind(estimated = mod$opt$par, # estimated parameters
