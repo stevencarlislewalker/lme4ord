@@ -131,7 +131,7 @@ main effects too), a random environmental slope and intercept with
 phylogenetic correlations across species.  However, the phylogenetic
 nature of the covariances is not set in the formula, but rather as an
 argument to the `glmercFormula` function below, which will form the
-formula parsing module of a pglmer function.
+formula parsing module of a `glmerc` function.
 
 ```r
 form <- y ~ x*z + (x | species)
