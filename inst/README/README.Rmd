@@ -28,8 +28,11 @@ library(reo)
 
 The idea is to be able to fit a `glmer` model where there is a known
 (e.g. phylogenetic) correlation structure over the levels of the
-random effects grouping factors.  In the example below, we simulate
-data and fit such a model.  The call will look like this.
+random effects grouping factors.  The function `glmerc` (for `glmer`
+with known *C*ovariance over levels) can be used for this purpose.
+Although it is still very much in the development stage I would love
+to get feedback.  In the example below, we simulate data and fit such
+a model.  The call will look like this.
 
 ```{r, eval = FALSE}
 glmerc(y ~ x * z + (x | species), data,
@@ -39,7 +42,7 @@ glmerc(y ~ x * z + (x | species), data,
 
 Here `y` is a 0-1 vector indicating which species were present at
 which sites.  `x` and `z` are environmental variables (over the sites)
-and traits (over the species).  `Vphy` is a phylogenetic correlation
+and traits (over the species).  `Vphy` is a phylogenetic covariance
 matrix, which is tagged by `species` because this corresponds to a
 particular grouping factor in the model formula.  The size of `Vphy`
 therefore must equal the number of levels of `species`.
