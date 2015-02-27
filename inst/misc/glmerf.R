@@ -22,10 +22,19 @@ dl <- variable(Y, c("sites", "species"))
 
 mod <- glmerf(Y ~ 1 + (1 | sites) + (1 | species), dl, binomial,
               verbose = 3L,
-              latentDims = 2L, loadingsDim = 2L, loadingPen = 5L,
+              latentDims = 2L, loadingsDim = 2L,
+              loadingPen = rep(c(5, 10), times = c(30, 29)),
               control = list(maxfun = 1500))
+
+whichNonZero <- abs(mod@optPar[1:59]) > 0.01
+
+as(round(loadings(mod), 5), "sparseMatrix")
+
+eigen(mod@optinfo$derivs$Hessian[1:59, 1:59][whichNonZero, whichNonZero])$values
 eigen(mod@optinfo$derivs$Hessian)$values
 mod@optinfo$derivs$gradient
+
+print(varimax(loadings(mod))$loadings, cutoff = 0.01)
 
 cbind(loadings = loadings(mod)[1:59],
       se = sqrt(diag(solve(0.5 * mod@optinfo$derivs$Hessian)))[1:59])
