@@ -29,7 +29,9 @@ has also provided valuable money.
 The idea is to be able to fit a `glmer` model where there is a known
 (e.g. phylogenetic) correlation structure over the levels of the
 random effects grouping factors.  The function `glmerc` (for `glmer`
-with known *C*ovariance over levels) can be used for this purpose.  In terms of phylogenetic theory, the `glmerc` function essentially fits the [creationist](http://www.carlboettiger.info/2013/10/11/is-it-time-to-retire-pagels-lambda.html) Pagel's lambda model.  Although it is still very much in the development stage I would love to get feedback.  In the example below, we simulate data and fit such a model.  The call will look like this.
+with known *C*ovariance over levels) can be used for this purpose.  In terms of phylogenetic theory, the `glmerc` function essentially fits the [creationist](http://www.carlboettiger.info/2013/10/11/is-it-time-to-retire-pagels-lambda.html) Pagel's lambda model within a generalized linear mixed model framework.  Technically, Pagel's lambda is much easier to work with in `lme4` because it doesn't require an expensive Cholesky decomposition at each evaluation of the deviance function, whereas other models do require this.  Nevertheless, the ultimate plan is to extend the range of models, and the modular structure of `lme4` and `lme4ord` make this fairly easy to experiment with.  `lme4ord` is still very much in the development stage however and I would love to get feedback.
+
+In the example below, we simulate data and fit such a model.  The call will look like this.
 
 
 ```r
