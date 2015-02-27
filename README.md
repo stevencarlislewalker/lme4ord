@@ -29,11 +29,7 @@ has also provided valuable money.
 The idea is to be able to fit a `glmer` model where there is a known
 (e.g. phylogenetic) correlation structure over the levels of the
 random effects grouping factors.  The function `glmerc` (for `glmer`
-with known *C*ovariance over levels) can be used for this purpose.  
-In terms of phylogenetic theory, the `glmerc` function can essentially
-fit Pagel's lambda model.  Although it is still very much in the 
-development stage I would love to get feedback.  In the example below, 
-we simulate data and fit such a model.  The call will look like this.
+with known *C*ovariance over levels) can be used for this purpose.  In terms of phylogenetic theory, the `glmerc` function essentially fits the [creationist](http://www.carlboettiger.info/2013/10/11/is-it-time-to-retire-pagels-lambda.html) Pagel's lambda model.  Although it is still very much in the development stage I would love to get feedback.  In the example below, we simulate data and fit such a model.  The call will look like this.
 
 
 ```r
