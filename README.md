@@ -63,7 +63,7 @@ this case is the phylogenetic covariance matrix, `Vphy`.
 
 Begin with initial simulations of a sites-by-species binary response
 matrix, `y`, environmental variable, `x`, and trait `z`.
-stronger correlations between `y` and `x` will be added below.
+More interesting patterns between `y`, `x`, and `z` will be added below.
 
 ```r
 set.seed(10)
