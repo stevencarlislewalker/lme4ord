@@ -1,8 +1,6 @@
 lme4ord (l-m-e-ford)
 ====================
 
-
-
 Mixed-effects models for community ecologists.  See the currently
 evolving [mission statement](https://github.com/stevencarlislewalker/lme4ord/issues/1).
 
@@ -24,13 +22,18 @@ library(reo)
 
 #### phylogenetic generalized linear mixed models!
 
+Acknowledgements:  Ben Bolker, Tony Ives, and Guillaume Blanchet have 
+provided invaluable discussions, advice, and encouragement.  Ben Bolker
+has also provided valuable money.
+
 The idea is to be able to fit a `glmer` model where there is a known
 (e.g. phylogenetic) correlation structure over the levels of the
 random effects grouping factors.  The function `glmerc` (for `glmer`
-with known *C*ovariance over levels) can be used for this purpose.
-Although it is still very much in the development stage I would love
-to get feedback.  In the example below, we simulate data and fit such
-a model.  The call will look like this.
+with known *C*ovariance over levels) can be used for this purpose.  
+In terms of phylogenetic theory, the `glmerc` function can essentially
+fit Pagel's lambda model.  Although it is still very much in the 
+development stage I would love to get feedback.  In the example below, 
+we simulate data and fit such a model.  The call will look like this.
 
 
 ```r
@@ -130,8 +133,8 @@ interaction between the environment and the trait (with intercept and
 main effects too), a random environmental slope and intercept with
 phylogenetic correlations across species.  However, the phylogenetic
 nature of the covariances is not set in the formula, but rather as an
-argument to the `glmercFormula` function below, which will form the
-formula parsing module of a `glmerc` function.
+argument to the `glmercFormula` function below, which makes up the
+formula parsing module of the `glmerc` function.
 
 ```r
 form <- y ~ x*z + (x | species)
@@ -164,8 +167,12 @@ df <- as.data.frame(dl) # reconstruct the data frame with new
 Now we look at the new structure.  Here's the Cholesky factor of the
 species covariance, and the covariance itself.
 
-```{r, fig.width=3, fig.height=3} image(parsedForm$Lambdat)
-image(crossprod(parsedForm$Lambdat)) ``` The big four blocks represent
+```{r, fig.width=3, fig.height=3} 
+    image(parsedForm$Lambdat)
+    image(crossprod(parsedForm$Lambdat))
+```
+
+The big four blocks represent
 the 2-by-2 covariance between intercept and slope.  The covariances
 within these blocks represent phylogenetic covariance.  the pattern
 here is more closely related species have more similar intercepts and
