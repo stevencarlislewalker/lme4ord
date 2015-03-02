@@ -135,7 +135,7 @@ argument to the `glmercFormula` function below, which makes up the
 formula parsing module of the `glmerc` function.
 
 ```r
-form <- y ~ x*z + (x | species)
+form <- y ~ x * z + (x | species)
 parsedForm <- glmercFormula(form, df, covList = covList)
 ```
 
