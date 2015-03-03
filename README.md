@@ -24,13 +24,28 @@ library(reo)
 
 #### phylogenetic generalized linear mixed models!
 
+Acknowledgements:  Ben Bolker, Tony Ives, and Guillaume Blanchet have 
+provided invaluable discussions, advice, and encouragement.  Ben Bolker
+has also provided valuable money.
+
 The idea is to be able to fit a `glmer` model where there is a known
 (e.g. phylogenetic) correlation structure over the levels of the
 random effects grouping factors.  The function `glmerc` (for `glmer`
-with known *C*ovariance over levels) can be used for this purpose.
-Although it is still very much in the development stage I would love
-to get feedback.  In the example below, we simulate data and fit such
-a model.  The call will look like this.
+with known *C*ovariance over levels) can be used for this purpose.  In
+terms of phylogenetic theory, the `glmerc` function essentially fits
+the
+[almost creationist](http://www.carlboettiger.info/2013/10/11/is-it-time-to-retire-pagels-lambda.html)
+Pagel's lambda model within a generalized linear mixed model
+framework.  Technically, Pagel's lambda is much easier to work with in
+`lme4` because it doesn't require an expensive Cholesky decomposition
+at each evaluation of the deviance function, whereas other models do
+require this.  Nevertheless, the ultimate plan is to extend the range
+of models, and the modular structure of `lme4` and `lme4ord` make this
+[fairly easy to experiment with](http://stackoverflow.com/questions/19327088/reproducing-results-from-previous-answer-is-not-working-due-to-using-new-version/19382162#19382162).
+`lme4ord` is still very much in the development stage however and I
+would love to get feedback.
+
+In the example below, we simulate data and fit such a model.  The call will look like this.
 
 
 ```r
@@ -60,7 +75,7 @@ this case is the phylogenetic covariance matrix, `Vphy`.
 
 Begin with initial simulations of a sites-by-species binary response
 matrix, `y`, environmental variable, `x`, and trait `z`.
-stronger correlations between `y` and `x` will be added below.
+More interesting patterns between `y`, `x`, and `z` will be added below.
 
 ```r
 set.seed(10)
@@ -106,13 +121,13 @@ Here's the phylogeny (forget the species names) and the associated covariance ma
 plot(phy)
 ```
 
-![plot of chunk unnamed-chunk-7](inst/README/figure/unnamed-chunk-7-1.png) 
+![plot of chunk unnamed-chunk-6](inst/README/figure/unnamed-chunk-6-1.png) 
 
 ```r
 image(as(Vphy, "sparseMatrix"))
 ```
 
-![plot of chunk unnamed-chunk-7](inst/README/figure/unnamed-chunk-7-2.png) 
+![plot of chunk unnamed-chunk-6](inst/README/figure/unnamed-chunk-6-2.png) 
 
 Put the covariance matrix in a list, for model-input purposes -- the
 idea is that there might be other covariance matrix (e.g. a spatial
@@ -130,8 +145,8 @@ interaction between the environment and the trait (with intercept and
 main effects too), a random environmental slope and intercept with
 phylogenetic correlations across species.  However, the phylogenetic
 nature of the covariances is not set in the formula, but rather as an
-argument to the `glmercFormula` function below, which will form the
-formula parsing module of a glmerc function.
+argument to the `glmercFormula` function below, which makes up the
+formula parsing module of the `glmerc` function.
 
 
 ```r
@@ -185,7 +200,7 @@ the second 30.
 image(parsedForm$Zt)
 ```
 
-![plot of chunk unnamed-chunk-12](inst/README/figure/unnamed-chunk-12-1.png) 
+![plot of chunk unnamed-chunk-11](inst/README/figure/unnamed-chunk-11-1.png) 
 
 Here's the full covariance matrix (the large scale blocks reflect
 phylogenetic correlations and the patterns within each block are due
@@ -196,7 +211,7 @@ to the environmental variable).
 image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% parsedForm$Zt)
 ```
 
-![plot of chunk unnamed-chunk-13](inst/README/figure/unnamed-chunk-13-1.png) 
+![plot of chunk unnamed-chunk-12](inst/README/figure/unnamed-chunk-12-1.png) 
 
 Here is the observed occurrence pattern of species among sites.
 
@@ -205,7 +220,7 @@ Here is the observed occurrence pattern of species among sites.
 color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 ```
 
-![plot of chunk unnamed-chunk-14](inst/README/figure/unnamed-chunk-14-1.png) 
+![plot of chunk unnamed-chunk-13](inst/README/figure/unnamed-chunk-13-1.png) 
 
 ##### Fit the model
 
