@@ -17,11 +17,17 @@ library(pryr)
 library(reo)
 
 
+## ----, eval = FALSE------------------------------------------------------
+## glmerc(y ~ x * z + (x | species), data,
+##        covList = list(species = Vphy),
+##        family = binomial)
+
+
 ## ------------------------------------------------------------------------
 set.seed(10)
-n <- 10
-m <- 30
-dl <- dims_to_vars(data.list(y = 1 * (rmat(n, m) > 0),
+n <- 100
+m <- 10000
+dl <- dims_to_vars(data.list(y = 1 * (matrix(rnorm(n * m), n, m) > 0),
                              x = rnorm(n), z = rnorm(m),
                              dimids = c("sites", "species")))
 df <- as.data.frame(dl)
@@ -30,18 +36,13 @@ head(df)
 
 ## ------------------------------------------------------------------------
 phy <- rtree(n = m)
-plot(phy)
-phy <- compute.brlen(phy, method = "Grafen", power = 0.8)
-plot(phy)
-
-
-vcv(corPagel(0.5, phy))
+phy <- compute.brlen(phy, method = "Grafen", power = 0.1)
 
 
 ## ------------------------------------------------------------------------
 Vphy <- stanCov(vcv(phy))
 dimnames(Vphy) <- rep(list(1:m), 2)
-unique(phy$edge.length)
+
 
 ## ----, fig.width = 4, fig.height = 5-------------------------------------
 plot(phy)
@@ -85,36 +86,14 @@ image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% parsedFo
 
 
 ## ----, fig.width=3, fig.height=3-----------------------------------------
-image(fullCov[1:10, 1:10])
-
-
-## ------------------------------------------------------------------------
-eigen(fullCov[1:10, 1:10])$values
-
-
-## ------------------------------------------------------------------------
-rankMatrix(fullCov)[1]
-
-
-## ------------------------------------------------------------------------
-gm <- glmer(form, df, binomial)
-with(getME(gm, c("Zt", "Lambdat")), {
-    covMatGm <- t(Zt) %*% crossprod(Lambdat) %*% Zt
-    print(rankMatrix(covMatGm)[1])
-    dim(covMatGm)
-})
-
-
-## ----, fig.width=3, fig.height=3-----------------------------------------
-hist(p)
-
-
-## ----, fig.width=3, fig.height=3-----------------------------------------
 color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 
 
 ## ------------------------------------------------------------------------
-(mod <- glmerc(form, df, covMat = covMat, family = binomial))
+system.time({
+    (mod <- glmerc(form, df, covMat = covMat))
+})
+
 
 ## ------------------------------------------------------------------------
 cbind(estimated = mod$opt$par, # estimated parameters
@@ -125,7 +104,6 @@ cbind(estimated = mod$opt$par, # estimated parameters
 data(fish)
 data(limn)
 Y <- as.matrix(fish)
-## Y <- Y[, colSums(Y) > 1]
 n <- nrow(Y)
 m <- ncol(Y)
 x <- as.vector(scale(limn$pH))

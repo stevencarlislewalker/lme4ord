@@ -2,7 +2,7 @@ all: README.md copy
 
 README.md: README.Rmd
 	Rscript -e "library(knitr); knit(\"README.Rmd\")"
-	rm -r -f figure/
+	make clean
 	mv inst/README/figure/ figure/
 	rm -r inst
 
@@ -15,3 +15,6 @@ README.html: README.md
 
 README.R: README.Rmd
 	Rscript -e "library(knitr); purl(\"README.Rmd\")"
+
+clean:
+	rm -r -f figure/
