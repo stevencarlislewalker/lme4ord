@@ -88,7 +88,7 @@ glmerf <- function(formula, data, family,
     }
 
     dfunSuffix <- function(pars) {
-        p + sum(loadingPen * abs(loadings))
+        p + sum(loadingPen * abs(loadings^2))
     }
 
     body(dfun) <- cBody(body(dfunPrefix), body(dfun), body(dfunSuffix))
