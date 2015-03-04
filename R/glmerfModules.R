@@ -1,3 +1,10 @@
+glmerfFormula <- function(formula, data = NULL, family = binomial,
+                          latentName = "latent", latentDims = 0L,
+                          loadingsDim = 1L, loadingPen = 0L,
+                          loadingsPat = NULL, ...) {
+    
+}
+
 ##' Modular functions for generalized bilinear mixed models
 ##' @export
 mkGblmerDevfun <- function(fr, X, linReTrms, bilinReTrms,

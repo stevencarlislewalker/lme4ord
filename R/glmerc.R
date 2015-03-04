@@ -41,7 +41,11 @@ glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
     dfun(initPars)
     lower <- ifelse(initPars, 0, -Inf)
     opt <- bobyqa(initPars, dfun, lower = lower,
-                  control = list(iprint = 4L))
+                  control = optControl)
+    for(i in 1:5) {
+        opt <- bobyqa(opt$par, dfun, lower = lower,
+                      control = optControl)
+    }
     names(opt$par) <- names(initPars)
 
                                         # organize return value
