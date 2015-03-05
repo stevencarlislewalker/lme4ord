@@ -73,6 +73,9 @@ covar <- function(object, ...) UseMethod("covar")
 ##' @export
 loads <- function(object, ...) loadings(object)
 
+##' @export
+pars <- function(object, ...) UseMethod("pars")
+
 .covar <- function(pars, ind) pars[ind$covar]
 .fixef <- function(pars, ind) pars[ind$fixef]
 .loads <- function(pars, ind) pars[ind$loads]

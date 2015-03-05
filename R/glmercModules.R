@@ -81,3 +81,30 @@ getMEc <- function(object, name = c("X", "Z", "Zt", "y", "TmodMat", "cnms")) {
            TmodMat = TmodMat,
            cnms = cnms)
 }
+
+##' Make function for computing profiled deviance
+##' 
+##' @param mod \code{\link{glmerc}} object
+##' @param whichPar which parameter to profile
+##' @return function for computing the profiled deviance over a single
+##' parameter
+##' @export
+mkPfun <- function(mod, whichPar) {
+    local({
+        optPar <- mod$opt$par
+        whichPar <- whichPar
+        op <- optPar[-whichPar]
+        function(par) {
+            fn <- function(op) {
+                parNow <- numeric(length(op) + 1)
+                parNow[whichPar] <- par
+                parNow[-whichPar] <- op
+                centDfun(parNow)
+            }
+            opt <- bobyqa(op, fn, lower = mod$lower[-whichPar],
+                          control = list(iprint = 0L, maxfun = 500))
+            op <<- opt$par
+            return(opt$fval)
+        }
+    })
+}
