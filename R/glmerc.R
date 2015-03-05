@@ -41,7 +41,11 @@ glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
     dfun(initPars)
     lower <- ifelse(initPars, 0, -Inf)
     opt <- bobyqa(initPars, dfun, lower = lower,
-                  control = list(iprint = 4L))
+                  control = optControl)
+    if(FALSE) {for(i in 1:5) {
+        opt <- bobyqa(opt$par, dfun, lower = lower,
+                      control = optControl)
+    }}
     names(opt$par) <- names(initPars)
 
                                         # organize return value
@@ -63,6 +67,9 @@ covar.glmerc <- function(object, ...) .covar(object$opt$par, object$parInds)
 
 ##' @export
 loads.glmerc <- function(object, ...) stop("covariance over levels models do not have loadings")
+
+##' @export
+pars.glmerc <- function(object, ...) object$opt$par
 
 ##' @export
 covarByTerms <- function(object, ...) {
