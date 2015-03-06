@@ -82,7 +82,7 @@ getMEc <- function(object, name = c("X", "Z", "Zt", "y", "TmodMat", "cnms")) {
            cnms = cnms)
 }
 
-##' Make function for computing profiled deviance
+##' Make function for computing deviance profiles
 ##' 
 ##' @param mod \code{\link{glmerc}} object
 ##' @param whichPar which parameter to profile
@@ -91,6 +91,7 @@ getMEc <- function(object, name = c("X", "Z", "Zt", "y", "TmodMat", "cnms")) {
 ##' @export
 mkPfun <- function(mod, whichPar) {
     local({
+        dfun <- mkNfun(mod)
         optPar <- mod$opt$par
         whichPar <- whichPar
         op <- optPar[-whichPar]
@@ -99,12 +100,45 @@ mkPfun <- function(mod, whichPar) {
                 parNow <- numeric(length(op) + 1)
                 parNow[whichPar] <- par
                 parNow[-whichPar] <- op
-                centDfun(parNow)
+                dfun(parNow)
             }
             opt <- bobyqa(op, fn, lower = mod$lower[-whichPar],
                           control = list(iprint = 0L, maxfun = 500))
-            op <<- opt$par
+            op <<- opt$par # FIXME: assign to local env
             return(opt$fval)
         }
+    })
+}
+
+##' Make function for computing deviance slices
+##' 
+##' @param mod \code{\link{glmerc}} object
+##' @param whichPar which parameter to slice
+##' @return function for computing 1D slices through the deviance at
+##' the optimum
+##' @export
+mkSfun <- function(mod, whichPar) {
+    local({
+        dfun <- mkNfun(mod)
+        whichPar <- whichPar
+        par <- mod$opt$par
+        function(par1D) {
+            par[whichPar] <- par1D
+            return(dfun(par))
+        }
+    })
+}
+
+##' Make function for computing normalized deviance
+##'
+##' @param mod
+##' @return function for computing the normalized deviance, which
+##' equals zero at the optimum
+##' @export
+mkNfun <- function(mod) {
+    local({
+        dfun <- mod$dfun
+        optFunVal <- dfun(mod$opt$par)
+        function(par) dfun(par) - optFunVal
     })
 }

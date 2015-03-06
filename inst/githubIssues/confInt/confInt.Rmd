@@ -10,7 +10,7 @@ library(ggplot2)
 We simulate some data.
 ```{r}
 set.seed(6)
-n <- 10 # 100
+n <- 100 # 100
 m <- 500 # 500
 dl <- dims_to_vars(data.list(y = 1 * (matrix(rnorm(n * m), n, m) > 0),
                              x = rnorm(n), z = rnorm(m),
@@ -40,9 +40,39 @@ df <- as.data.frame(dl) # reconstruct the data frame with new
 
 Fit the generating model to the simulated data.
 ```{r}
-mod <- glmerc(form, df, covMat = covMat,
-              optControl = list(iprint = 0L, maxfun = 500))
+mod <- glmerc(form, df, covList = covList,
+              optControl = list(iprint = 4L, maxfun = 500))
 ```
+
+Look at a slice over the covariance parameter through the optimum.
+
+```{r, fig.width=3, fig.height=9}
+sfun <- mkSfun(mod, 1)
+pp <- seq(0.4, 0.62, length = 100)
+fn <- function(par) {
+    dv <- sfun(par)
+    c(dv, environment(mod$dfun)$pp$ldL2(),
+      environment(mod$dfun)$pp$sqrL(1),
+      environment(mod$dfun)$resp$aic(),
+      2 * log(det(environment(mod$dfun)$pp$L())))
+}
+ss <- sapply(pp, fn)
+par(mfrow = c(5, 1), mar = c(4, 4, 0, 0))
+plot(pp, ss[1,], type = "l", ylab = "deviance slice")
+plot(pp, apply(ss[-1, ], 2, sum), type = "l", ylab = "deviance slice")
+plot(pp, ss[2,], type = "l", ylab = "log determinant")
+plot(pp, ss[3,], type = "l", ylab = "squared length of u")
+plot(pp, ss[4,], type = "l", ylab = "conditional deviance")
+```
+
+```{r}
+2 * sum(log(environment(mod$dfun)$pp$L()@x))
+rho <- environment(mod$dfun)
+rho$resp$sqrtrwt * tcrossprod(rho$pp$Lambdat %*% rho$pp$Zt)@x
+sum(log( + 1))
+```
+
+That's a tough curve!
 
 Compute the Wald confidence intervals two ways.
 ```{r}
@@ -71,10 +101,10 @@ ggplot(params) +
 
 Compute the deviance profile for a particular parameter.
 ```{r}
-pfun <- mkPfun(mod, whichPar <- 3)
+pfun <- mkPfun(mod, whichPar <- 1)
 true <- c(covarSim, fixefSim)[whichPar]
 mle <- pars(mod)[whichPar]
-expFac <- 0.5 * apply(ci, 1, diff)
+expFac <- 100 * apply(ci, 1, diff)
 grdMin <- -expFac[whichPar] + ci[whichPar, 1]
 grdMax <-  expFac[whichPar] + ci[whichPar, 2]
 grd <- seq(min(max(mod$lower[whichPar], grdMin), true),

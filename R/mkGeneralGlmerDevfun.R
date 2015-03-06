@@ -29,7 +29,12 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                                  mapToCovFact, mapToModMat,
                                  family = binomial(),
                                  tolPwrss = 1e-3,
-                                 verbose = 0L) {
+                                 verbose = 0L, pureR = FALSE) {
+    if(pureR) {
+        return(pirls(X, y, Zt, Lambdat, mapToCovFact,
+                     initPars, weights, offset,
+                     family = family, tol = tolPwrss))
+    }
     devfun <- local({
         Lind <- seq_along(Lambdat@x)
         pp <- merPredD$new(X = X, Zt = Zt, Lambdat = Lambdat, Lind = Lind,
