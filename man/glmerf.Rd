@@ -15,6 +15,8 @@ model}
 
 \item{family}{a \code{\link{family}} object}
 
+\item{latentName}{name for latent factor}
+
 \item{latentDims}{number of latent dimensions in the bilinear
 component of the model}
 

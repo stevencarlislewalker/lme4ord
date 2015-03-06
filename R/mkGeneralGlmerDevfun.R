@@ -22,8 +22,10 @@
 ##' squares
 ##' @param verbose verbose
 ##' @param pureR should the PIRLS algorithm be run in
-##' \code{\link{lme4pureR}}?
+##' \code{lme4pureR}?
 ##' @return a deviance function with an environment
+##' @importFrom lme4pureR pirls
+##' @importFrom lme4 GHrule
 ##' @export
 mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                                  weights, offset,
@@ -39,9 +41,9 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     }
     devfun <- local({
         Lind <- seq_along(Lambdat@x)
-        pp <- merPredD$new(X = X, Zt = Zt, Lambdat = Lambdat, Lind = Lind,
+        pp <- lme4:::merPredD$new(X = X, Zt = Zt, Lambdat = Lambdat, Lind = Lind,
                            theta = as.double(Lambdat@x), n = nrow(X))
-        resp <- glmResp$new(y = y, family = family, weights = weights)
+        resp <- lme4:::glmResp$new(y = y, family = family, weights = weights)
         lp0 <- pp$linPred(1)
         baseOffset <- offset
         tolPwrss <- 1e-3
@@ -74,12 +76,18 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     return(devfun)
 }
 
+##' Get parameters
+##'
+##' @param object \code{lme4ord} fitted model object
+##' @rdname pars
 ##' @export
 covar <- function(object, ...) UseMethod("covar")
 
+##' @rdname pars
 ##' @export
 loads <- function(object, ...) loadings(object)
 
+##' @rdname pars
 ##' @export
 pars <- function(object, ...) UseMethod("pars")
 

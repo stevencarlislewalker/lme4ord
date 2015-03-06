@@ -16,11 +16,4 @@ densely tiled over the entire matrix (\code{FALSE})?}
 \description{
 Make covariance factor for a covariance template term
 }
-\examples{
-cm <- crossprod(matrix(rnorm(25), 5, 5))
-LamtDiag <- mkTemplateTermLambdat(cm, 4, TRUE)
-LamtDense <- mkTemplateTermLambdat(cm, 4, FALSE)
-image(LamtDiag)
-image(LamtDense)
-}
 

@@ -7,6 +7,8 @@ getReTrms(object, ...)
 }
 \arguments{
 \item{object}{\code{\link{merMod}} object}
+
+\item{...}{not used}
 }
 \value{
 see \code{\link{mkReTrms}}

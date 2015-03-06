@@ -6,7 +6,7 @@
 stanCov(covMat)
 }
 \arguments{
-\item{covMat}{}
+\item{covMat}{covariance matrix}
 }
 \description{
 Standardize covariance matrix to determinant one

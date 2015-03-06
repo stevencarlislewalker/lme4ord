@@ -41,10 +41,10 @@ glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
                                         # optimize deviance function
     dfun(initPars)
     lower <- ifelse(initPars, 0, -Inf)
-    opt <- bobyqa(initPars, dfun, lower = lower,
+    opt <- minqa:::bobyqa(initPars, dfun, lower = lower,
                   control = optControl)
     if(FALSE) {for(i in 1:5) {
-        opt <- bobyqa(opt$par, dfun, lower = lower,
+        opt <- minqa:::bobyqa(opt$par, dfun, lower = lower,
                       control = optControl)
     }}
     names(opt$par) <- names(initPars)
@@ -57,21 +57,30 @@ glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
     return(ans)
 }
 
+##' @param ... not used
+##' @importFrom lme4 fixef
+##' @rdname pars
 ##' @export
 fixef.glmerc <- function(object, ...) {
     setNames(.fixef(object$opt$par, object$parInds),
              colnames(object$X))
 }
 
+##' @rdname pars
 ##' @export
 covar.glmerc <- function(object, ...) .covar(object$opt$par, object$parInds)
 
+
+##' @rdname pars
 ##' @export
 loads.glmerc <- function(object, ...) stop("covariance over levels models do not have loadings")
 
+
+##' @rdname pars
 ##' @export
 pars.glmerc <- function(object, ...) c(covar(object), fixef(object))
 
+##' @rdname pars
 ##' @export
 covarByTerms <- function(object, ...) {
     nCovar <- object$parsedForm$nCovar
@@ -80,13 +89,13 @@ covarByTerms <- function(object, ...) {
     lapply(inds, function(i) covar(object)[i])
 }
 
-##' @export
 covarInds <- function(nCovar) {
     ans <- lapply(nCovar, seq, from = 1, by = 1)
     for(i in 2:length(nCovar)) ans[[i]] <- ans[[i]] + max(ans[[i-1]])
     return(setNames(ans, names(nCovar)))
 }
 
+##' @importFrom lme4 VarCorr
 ##' @export
 VarCorr.glmerc <- function(x, ...) {
     tmm <- getMEc(x, "TmodMat")
@@ -107,6 +116,7 @@ vcov.glmerc <- function(object, justFixef = TRUE, ...) {
     return(ans)
 }
 
+##' @rdname glmerc
 ##' @export
 print.glmerc <- function(x, ...) {
     cat("\nGeneralized linear mixed model\nwith covariance amongst grouping factor levels\n")
@@ -119,5 +129,5 @@ print.glmerc <- function(x, ...) {
 
     cat("\n\nRandom effects (co)variance\n")
     cat("---------------------------\n\n")
-    print(VarCorr(x))
+    print(VarCorr.glmerc(x))
 }

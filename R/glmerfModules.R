@@ -6,6 +6,15 @@ glmerfFormula <- function(formula, data = NULL, family = binomial,
 }
 
 ##' Modular functions for generalized bilinear mixed models
+##'
+##' @param fr model frame
+##' @param X fixed effects model matrix
+##' @param linReTrms linear random effects terms
+##' @param bilinReTrms bilinear random effects terms
+##' @param family family
+##' @param nAGQ nAGQ
+##' @param verbose verbose
+##' @param ... ...
 ##' @export
 mkGblmerDevfun <- function(fr, X, linReTrms, bilinReTrms,
                            family, nAGQ = 1, verbose = 0L, ...) {

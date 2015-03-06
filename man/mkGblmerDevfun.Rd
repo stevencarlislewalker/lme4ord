@@ -6,6 +6,23 @@
 mkGblmerDevfun(fr, X, linReTrms, bilinReTrms, family, nAGQ = 1,
   verbose = 0L, ...)
 }
+\arguments{
+\item{fr}{model frame}
+
+\item{X}{fixed effects model matrix}
+
+\item{linReTrms}{linear random effects terms}
+
+\item{bilinReTrms}{bilinear random effects terms}
+
+\item{family}{family}
+
+\item{nAGQ}{nAGQ}
+
+\item{verbose}{verbose}
+
+\item{...}{...}
+}
 \description{
 Modular functions for generalized bilinear mixed models
 }

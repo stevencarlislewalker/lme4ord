@@ -4,6 +4,7 @@
 ##' model
 ##' @param data a \code{\link{data.list}} object
 ##' @param family a \code{\link{family}} object
+##' @param latentName name for latent factor
 ##' @param latentDims number of latent dimensions in the bilinear
 ##' component of the model
 ##' @param loadingsDim what dimension of \code{data} is associated
@@ -14,6 +15,7 @@
 ##' @param ... arguments to be passed to \code{\link{glFormula}}
 ##' @importClassesFrom lme4 merMod glmerMod
 ##' @import multitable
+##' @importFrom lme4 glmer glFormula mkGlmerDevfun updateGlmerDevfun
 ##' @export
 glmerf <- function(formula, data, family,
                    latentName = "latent", latentDims = 0L,
@@ -293,7 +295,9 @@ joinFlist <- function(flist1, flist2) {
 ##' Get random effects terms from a fitted \code{merMod} object
 ##'
 ##' @param object \code{\link{merMod}} object
+##' @param ... not used
 ##' @return see \code{\link{mkReTrms}}
+##' @importFrom lme4 getME
 ##' @export
 getReTrms <- function(object, ...) {
     rts <- c("Zt", "Lambdat", "Lind", "theta", "lower", "flist", "cnms")

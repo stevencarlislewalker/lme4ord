@@ -1,6 +1,6 @@
 ##' Standardize covariance matrix to determinant one
 ##'
-##' @param covMat
+##' @param covMat covariance matrix
 ##' @export
 stanCov <- function(covMat) {
     covMat / (det(covMat)^(1/nrow(covMat)))
@@ -18,7 +18,7 @@ stanCov <- function(covMat) {
 getModMatAndGrpFac <- function(bar, fr) {
     ## based on mkBlist
     
-    fr <- factorize(bar, fr)
+    fr <- lme4:::factorize(bar, fr)
     grpLang <- bar[[3]]
     linFormLang <- bar[[2]]
     nm <- deparse(grpLang)
@@ -174,13 +174,12 @@ mkTemplateReTrms <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
 ##' @param nLevels number of levels over which the grouping factor varies
 ##' @param diagModel templates on the block diagonal (\code{TRUE}) or
 ##' densely tiled over the entire matrix (\code{FALSE})?
-##' @examples
-##' cm <- crossprod(matrix(rnorm(25), 5, 5))
-##' LamtDiag <- mkTemplateTermLambdat(cm, 4, TRUE)
-##' LamtDense <- mkTemplateTermLambdat(cm, 4, FALSE)
-##' image(LamtDiag)
-##' image(LamtDense)
 mkTemplateTermLambdat <- function(covMat, nLevels, diagModel = TRUE) {
+    ## cm <- crossprod(matrix(rnorm(25), 5, 5))
+    ## LamtDiag <- mkTemplateTermLambdat(cm, 4, TRUE)
+    ## LamtDense <- mkTemplateTermLambdat(cm, 4, FALSE)
+    ## image(LamtDiag)
+    ## image(LamtDense)
     Lt <- as(chol(covMat), "sparseMatrix")
     if(diagModel) {
         return(.bdiag(rep(list(Lt), nLevels)))
@@ -195,4 +194,43 @@ mkTemplateTermLambdat <- function(covMat, nLevels, diagModel = TRUE) {
 mkTemplateTermZt <- function(explVar, grpFac) {
     J <- as(as.factor(grp), "sparseMatrix")
     explVar 
+}
+
+##' Generate phylogenetic test data
+##'
+##' @param seed random seed
+##' @param n number of sites
+##' @param m number of species
+##' @param form formula with \code{y} (comm dat), \code{x} (env),
+##' \code{z} (trait), \code{species}, or \code{sites}
+##' @param power power for \code{Grafen} method
+##' @param covarSim covariance parameters
+##' @param fixefSim fixed effect parameters
+##' @importMethodsFrom Matrix t
+##' @export
+simTestPhyloDat <- function(seed = 1, n = 10, m = 30,
+                            form = y ~ 1 + (1 | species),
+                            power = 0.1,
+                            covarSim = 1, fixefSim = 1) {
+    set.seed(seed)
+    dl <- dims_to_vars(data.list(y = 1 * (matrix(rnorm(n * m), n, m) > 0),
+                                 x = rnorm(n), z = rnorm(m),
+                                 dimids = c("sites", "species")))
+    df <- as.data.frame(dl)
+    phy <- ape:::rtree(n = m)
+    phy <- ape:::compute.brlen(phy, method = "Grafen", power = power)
+    Vphy <- stanCov(ape:::vcv(phy))
+    dimnames(Vphy) <- rep(list(1:m), 2)
+    covList <- list(species = Vphy)
+    parsedForm <- glmercFormula(form, df, covList = covList)
+    parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim))
+    X <- model.matrix(nobars(form), df) # fixed effects design matrix
+    Z <- t(parsedForm$Lambdat %*% parsedForm$Zt) # random effects design
+                                        # matrix with
+                                        # phylogenetic
+                                        # covariances
+    u <- rnorm(ncol(Z)) # whitened random effects
+    p <- plogis(as.numeric(X %*% fixefSim + Z %*% u)) # probability of observation
+    dl$y <- rbinom(nrow(df), 1, p) # presence-absence data
+    return(as.data.frame(dl))
 }

@@ -6,7 +6,7 @@
 mkNfun(mod)
 }
 \arguments{
-\item{mod}{}
+\item{mod}{model object}
 }
 \value{
 function for computing the normalized deviance, which

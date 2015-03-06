@@ -4,8 +4,8 @@
 \title{Make a general (Laplace) glmer deviance function}
 \usage{
 mkGeneralGlmerDevfun(y, X, Zt, Lambdat, weights, offset, initPars, parInds,
-  mapToCovFact, mapToModMat, family = binomial(), tolPwrss = 0.001,
-  verbose = 0L)
+  mapToCovFact, mapToModMat, family = binomial(), tolPwrss = 1e-06,
+  verbose = 0L, pureR = FALSE)
 }
 \arguments{
 \item{y}{response vector}
@@ -41,6 +41,9 @@ returning the values of the non-zero elements of \code{Zt}
 squares}
 
 \item{verbose}{verbose}
+
+\item{pureR}{should the PIRLS algorithm be run in
+\code{lme4pureR}?}
 }
 \value{
 a deviance function with an environment

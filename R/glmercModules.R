@@ -6,6 +6,7 @@
 ##' @param covList list of covariance matrices for random effects
 ##' grouping factors in \code{formula}
 ##' @param ... not used yet
+##' @importFrom lme4 findbars nobars
 ##' @export
 glmercFormula <- function(formula, data = NULL, family = binomial, covList, ...) {
 
@@ -58,6 +59,10 @@ glmercFormula <- function(formula, data = NULL, family = binomial, covList, ...)
                   modMats = modMats)))
 }
 
+##' Get components of a \code{glmerc} object
+##'
+##' @param object \code{\link{glmerc}} object
+##' @param name object name
 ##' @export
 getMEc <- function(object, name = c("X", "Z", "Zt", "y", "TmodMat", "cnms")) {
     if (missing(name)) 
@@ -76,7 +81,7 @@ getMEc <- function(object, name = c("X", "Z", "Zt", "y", "TmodMat", "cnms")) {
     switch(name,
            X = object$X,
            Z = t(object$parsedForm$Zt),
-           Z = object$parsedForm$Zt,
+           Zt = object$parsedForm$Zt,
            y = object$y,
            TmodMat = TmodMat,
            cnms = cnms)
@@ -102,7 +107,7 @@ mkPfun <- function(mod, whichPar) {
                 parNow[-whichPar] <- op
                 dfun(parNow)
             }
-            opt <- bobyqa(op, fn, lower = mod$lower[-whichPar],
+            opt <- minqa:::bobyqa(op, fn, lower = mod$lower[-whichPar],
                           control = list(iprint = 0L, maxfun = 500))
             op <<- opt$par # FIXME: assign to local env
             return(opt$fval)
@@ -131,7 +136,7 @@ mkSfun <- function(mod, whichPar) {
 
 ##' Make function for computing normalized deviance
 ##'
-##' @param mod
+##' @param mod model object
 ##' @return function for computing the normalized deviance, which
 ##' equals zero at the optimum
 ##' @export
