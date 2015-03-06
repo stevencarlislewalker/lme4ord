@@ -193,7 +193,7 @@ color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 ##### Fit the model
 
 ```{r}
-(mod <- glmerc(form, df, covMat = covMat))
+(mod <- glmerc(form, df, covList = covList))
 ```
 
 and compare with the true parameter values.
