@@ -130,7 +130,7 @@ image(as(Vphy, "sparseMatrix"))
 ![plot of chunk plot phylogeny](inst/README/figure/plot phylogeny-2.png) 
 
 Put the covariance matrix in a list, for model-input purposes -- the
-idea is that there might be other covariance matrix (e.g. a spatial
+idea is that there might be other covariance matrices (e.g. a spatial
 one say).  It is important that the list element gets the name
 `species` because this is the name of the grouping factor used in the
 model formula below.
@@ -140,13 +140,13 @@ model formula below.
 covList <- list(species = Vphy)
 ```
 
-Here is the cool part ... a formula interface.  This model has a fixed
-interaction between the environment and the trait (with intercept and
-main effects too), a random environmental slope and intercept with
-phylogenetic correlations across species.  However, the phylogenetic
-nature of the covariances is not set in the formula, but rather as an
-argument to the `glmercFormula` function below, which makes up the
-formula parsing module of the `glmerc` function.
+There is a formula interface.  This model has a fixed interaction
+between the environment and the trait (with intercept and main effects
+too), a random environmental slope and intercept with phylogenetic
+correlations across species.  However, the phylogenetic nature of the
+covariances is not set in the formula, but rather as an argument to
+the `glmercFormula` function below, which makes up the formula parsing
+module of the `glmerc` function.
 
 
 ```r
