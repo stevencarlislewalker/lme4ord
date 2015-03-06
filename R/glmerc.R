@@ -35,7 +35,8 @@ glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
                                  parsedForm$Zt, parsedForm$Lambdat,
                                  rep(1, nrow(data)), rep(0, nrow(data)),
                                  initPars, parInds,
-                                 parsedForm$mapToCovFact, function(loads) NULL)
+                                 parsedForm$mapToCovFact, function(loads) NULL,
+                                 ...)
 
                                         # optimize deviance function
     dfun(initPars)
@@ -69,7 +70,7 @@ covar.glmerc <- function(object, ...) .covar(object$opt$par, object$parInds)
 loads.glmerc <- function(object, ...) stop("covariance over levels models do not have loadings")
 
 ##' @export
-pars.glmerc <- function(object, ...) object$opt$par
+pars.glmerc <- function(object, ...) c(covar(object), fixef(object))
 
 ##' @export
 covarByTerms <- function(object, ...) {
