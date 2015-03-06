@@ -1,7 +1,7 @@
 lme4ord (l-m-e-ford)
 ====================
 
-```{r, echo = FALSE}
+```{r, setup, echo = FALSE}
 library(knitr)
 opts_chunk$set(fig.path = "inst/README/figure/")
 ```
@@ -11,7 +11,7 @@ evolving [mission statement](https://github.com/stevencarlislewalker/lme4ord/iss
 
 This package is not at all stable.
 
-```{r, message = FALSE}
+```{r, packages, message = FALSE}
 library(Matrix)
 library(lme4ord)
 library(plotrix)
@@ -78,7 +78,7 @@ this case is the phylogenetic covariance matrix, `Vphy`.
 Begin with initial simulations of a sites-by-species binary response
 matrix, `y`, environmental variable, `x`, and trait `z`.
 More interesting patterns between `y`, `x`, and `z` will be added below.
-```{r}
+```{r, initial sims}
 set.seed(10)
 n <- 10
 m <- 30
@@ -91,21 +91,21 @@ head(df)
 
 Make up some silly phylogeny.
 
-```{r}
+```{r, phylogeny sims}
 phy <- rtree(n = m)
 phy <- compute.brlen(phy, method = "Grafen", power = 0.5)
 ```
 
 and estimate a phylogenetic covariance matrix, standardized to unit determinant.
 
-```{r}
+```{r, covariance sims}
 Vphy <- stanCov(vcv(phy))
 dimnames(Vphy) <- rep(list(1:m), 2)
 ```
 
 Here's the phylogeny (forget the species names) and the associated covariance matrix
 
-```{r, fig.width = 4, fig.height = 5}
+```{r, plot phylogeny, fig.width = 4, fig.height = 5}
 plot(phy)
 image(as(Vphy, "sparseMatrix"))
 ```
@@ -116,7 +116,7 @@ one say).  It is important that the list element gets the name
 `species` because this is the name of the grouping factor used in the
 model formula below.
 
-```{r}
+```{r, make the covList}
 covList <- list(species = Vphy)
 ```
 
@@ -128,19 +128,19 @@ nature of the covariances is not set in the formula, but rather as an
 argument to the `glmercFormula` function below, which makes up the
 formula parsing module of the `glmerc` function.
 
-```{r}
-form <- y ~ x*z + (x | species)
+```{r, formula parsing}
+form <- y ~ x * z + (x | species)
 parsedForm <- glmercFormula(form, df, covList = covList)
 ```
 
 Set the covariance parameters to something more interesting (i.e. with
 a covariance between the slope and intercept).
-```{r}
+```{r, update parsed formula}
 covarSim <- c(0.5, -0.2, 0.5)
 parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim))
 ```
 Update the simulations to reflect the new structure.
-```{r}
+```{r, update simulations}
 X <- model.matrix(nobars(form), df) # fixed effects design matrix
 Z <- t(parsedForm$Lambdat %*% parsedForm$Zt) # random effects design
                                              # matrix with
@@ -157,7 +157,8 @@ df <- as.data.frame(dl) # reconstruct the data frame with new
 Now we look at the new structure.  Here's the Cholesky factor of the
 species covariance, and the covariance itself.
 
-```{r, fig.width=3, fig.height=3} image(parsedForm$Lambdat)
+```{r, plot lambda, fig.width=3, fig.height=3}
+image(parsedForm$Lambdat)
 image(crossprod(parsedForm$Lambdat))
 ``` 
 
@@ -172,7 +173,7 @@ Here's the transposed random effects model matrix.  Those are 1's for
 the intercepts in the first 30 rows and the environmental variable in
 the second 30.
 
-```{r, fig.width=7, fig.height=2}
+```{r, plot Zt, fig.width=7, fig.height=2}
 image(parsedForm$Zt)
 ```
 
@@ -180,25 +181,25 @@ Here's the full covariance matrix (the large scale blocks reflect
 phylogenetic correlations and the patterns within each block are due
 to the environmental variable).
 
-```{r, fig.width=5, fig.height=5}
+```{r, plot full cov, fig.width=5, fig.height=5}
 image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% parsedForm$Zt)
 ```
 
 Here is the observed occurrence pattern of species among sites.
 
-```{r, fig.width=3, fig.height=3}
+```{r, plot sim data, fig.width=3, fig.height=3}
 color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 ```
 
 ##### Fit the model
 
-```{r}
+```{r, fit phylo model}
 (mod <- glmerc(form, df, covList = covList))
 ```
 
 and compare with the true parameter values.
 
-```{r}
+```{r, compare fit and sim}
 cbind(estimated = mod$opt$par, # estimated parameters
       true = c(covar = covarSim, fixef = fixefSim)) # true parameters
 ```
@@ -220,3 +221,13 @@ summary(dl)
 ```
 
 Not done!
+
+#### spatial models
+
+No example yet, but the idea is to put a spatial covariance matrix
+over the levels of a spatial grouping factor.  For example, you might
+do something like this,
+
+```r
+glmerc(y ~ x + (x | sites), covList = list(sites = spatialCovMat))
+```

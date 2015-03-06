@@ -121,13 +121,13 @@ Here's the phylogeny (forget the species names) and the associated covariance ma
 plot(phy)
 ```
 
-![plot of chunk unnamed-chunk-6](inst/README/figure/unnamed-chunk-6-1.png) 
+![plot of chunk plot phylogeny](inst/README/figure/plot phylogeny-1.png) 
 
 ```r
 image(as(Vphy, "sparseMatrix"))
 ```
 
-![plot of chunk unnamed-chunk-6](inst/README/figure/unnamed-chunk-6-2.png) 
+![plot of chunk plot phylogeny](inst/README/figure/plot phylogeny-2.png) 
 
 Put the covariance matrix in a list, for model-input purposes -- the
 idea is that there might be other covariance matrix (e.g. a spatial
@@ -150,7 +150,7 @@ formula parsing module of the `glmerc` function.
 
 
 ```r
-form <- y ~ x*z + (x | species)
+form <- y ~ x * z + (x | species)
 parsedForm <- glmercFormula(form, df, covList = covList)
 ```
 
@@ -180,9 +180,18 @@ df <- as.data.frame(dl) # reconstruct the data frame with new
 Now we look at the new structure.  Here's the Cholesky factor of the
 species covariance, and the covariance itself.
 
-```{r, fig.width=3, fig.height=3} image(parsedForm$Lambdat)
+
+```r
+image(parsedForm$Lambdat)
+```
+
+![plot of chunk plot lambda](inst/README/figure/plot lambda-1.png) 
+
+```r
 image(crossprod(parsedForm$Lambdat))
-``` 
+```
+
+![plot of chunk plot lambda](inst/README/figure/plot lambda-2.png) 
 
 The big four blocks represent the 2-by-2 covariance between intercept
 and slope.  The covariances within these blocks represent phylogenetic
@@ -200,7 +209,7 @@ the second 30.
 image(parsedForm$Zt)
 ```
 
-![plot of chunk unnamed-chunk-11](inst/README/figure/unnamed-chunk-11-1.png) 
+![plot of chunk plot Zt](inst/README/figure/plot Zt-1.png) 
 
 Here's the full covariance matrix (the large scale blocks reflect
 phylogenetic correlations and the patterns within each block are due
@@ -211,7 +220,7 @@ to the environmental variable).
 image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% parsedForm$Zt)
 ```
 
-![plot of chunk unnamed-chunk-12](inst/README/figure/unnamed-chunk-12-1.png) 
+![plot of chunk plot full cov](inst/README/figure/plot full cov-1.png) 
 
 Here is the observed occurrence pattern of species among sites.
 
@@ -220,7 +229,7 @@ Here is the observed occurrence pattern of species among sites.
 color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 ```
 
-![plot of chunk unnamed-chunk-13](inst/README/figure/unnamed-chunk-13-1.png) 
+![plot of chunk plot sim data](inst/README/figure/plot sim data-1.png) 
 
 ##### Fit the model
 
@@ -297,3 +306,13 @@ summary(dl)
 ```
 
 Not done!
+
+#### spatial models
+
+No example yet, but the idea is to put a spatial covariance matrix
+over the levels of a spatial grouping factor.  For example, you might
+do something like this,
+
+```r
+glmerc(y ~ x + (x | sites), covList = list(sites = spatialCovMat))
+```
