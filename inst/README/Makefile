@@ -1,11 +1,10 @@
-all: README.md copy
+all: README.md copy git
 
 README.md: README.Rmd
 	Rscript -e "library(knitr); knit(\"README.Rmd\")"
 	make clean
 	mv inst/README/figure/ figure/
 	rm -r inst
-	git add figure ../../README.md README.Rmd
 
 copy: README.md
 	cp README.md ../../README.md
@@ -16,6 +15,9 @@ README.html: README.md
 
 README.R: README.Rmd
 	Rscript -e "library(knitr); purl(\"README.Rmd\")"
+
+git: 
+	git add figure ../../README.md README.Rmd
 
 clean:
 	git rm -r -f figure/

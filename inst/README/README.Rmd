@@ -105,7 +105,7 @@ dimnames(Vphy) <- rep(list(1:m), 2)
 
 Here's the phylogeny (forget the species names) and the associated covariance matrix
 
-```{r, plot phylogeny, fig.width = 4, fig.height = 5}
+```{r, plot phylogeny, fig.width = 4, fig.height = 6}
 plot(phy)
 image(as(Vphy, "sparseMatrix"))
 ```
