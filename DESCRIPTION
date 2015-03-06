@@ -10,6 +10,7 @@ License: GPL-2
 Roxygen: list(wrap = FALSE)
 Depends:
     lme4,
+    lme4pureR,
     multitable
 Imports:
     Matrix

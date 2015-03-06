@@ -21,6 +21,8 @@
 ##' @param tolPwrss tolerance for penalized weighted residual sum of
 ##' squares
 ##' @param verbose verbose
+##' @param pureR should the PIRLS algorithm be run in
+##' \code{\link{lme4pureR}}?
 ##' @return a deviance function with an environment
 ##' @export
 mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
@@ -28,7 +30,7 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                                  initPars, parInds,
                                  mapToCovFact, mapToModMat,
                                  family = binomial(),
-                                 tolPwrss = 1e-3,
+                                 tolPwrss = 1e-6,
                                  verbose = 0L, pureR = FALSE) {
     if(pureR) {
         return(pirls(X, y, Zt, Lambdat, mapToCovFact,
