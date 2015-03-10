@@ -38,10 +38,12 @@ Ben and I had after a discussion with Jerrod Hadfield, we have a
 random effect for each edge.  These effects act on all species that
 descend from the particular edge in question.
 
-Here's a simulated example.
+Here's a simple simulated example with twenty sites and ten species,
+but there is absolutely no problem with scaling this up (that's one of
+the main points).
 
-```{r, fig.width = 4, fig.height = 4}
-td <- simTestPhyloDat(10, n = 10, m = 30, power = 0.4)
+```{r, fig.width = 4, fig.height = 6}
+td <- simTestPhyloDat(10, n = 20, m = 10, power = 0.4)
 color2D.matplot(td$dl$y, xlab = "species", ylab = "sites", main = "Occurrence")
 plot(td$ph)
 edgelabels()
