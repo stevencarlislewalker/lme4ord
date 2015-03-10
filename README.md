@@ -53,7 +53,8 @@ td <- simTestPhyloDat(10, n = 20, m = 10, power = 0.4)
 ```
 
 ```r
-color2D.matplot(td$dl$y, xlab = "species", ylab = "sites", main = "Occurrence")
+color2D.matplot(td$dl$y, xlab = "species", ylab = "sites",
+                main = "Occurrence")
 ```
 
 ![plot of chunk unnamed-chunk-1](inst/README/figure/unnamed-chunk-1-1.png) 
@@ -189,8 +190,10 @@ system.time(opt <- optim(c(1, 0), dfun, lower = c(0, -Inf), method = "L-BFGS-B")
 
 ```
 ##    user  system elapsed 
-##  15.413   1.179  16.592
+##  15.250   1.152  16.402
 ```
+
+`glmerc` (below) can't do that!
 
 #### phylogenetic generalized linear mixed models!
 

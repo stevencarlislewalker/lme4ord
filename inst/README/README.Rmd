@@ -45,7 +45,8 @@ fitting in `lme4ord`.
 
 ```{r, fig.width = 4, fig.height = 6}
 td <- simTestPhyloDat(10, n = 20, m = 10, power = 0.4)
-color2D.matplot(td$dl$y, xlab = "species", ylab = "sites", main = "Occurrence")
+color2D.matplot(td$dl$y, xlab = "species", ylab = "sites",
+                main = "Occurrence")
 plot(td$ph)
 edgelabels()
 ```
@@ -150,6 +151,8 @@ dfun <- mkGeneralGlmerDevfun(y = y, X = X,
                              mapToModMat = NULL)
 system.time(opt <- optim(c(1, 0), dfun, lower = c(0, -Inf), method = "L-BFGS-B"))
 ```
+
+`glmerc` (below) can't do that!
 
 #### phylogenetic generalized linear mixed models!
 
