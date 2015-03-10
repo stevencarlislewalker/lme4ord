@@ -124,7 +124,7 @@ simply the sums of the values on the branches leading to them.
 And it scales well!  Here's an example with 100 sites and 500 species.
 
 ```{r, echo = 15}
-td <- simTestPhyloDat(10, n = 100, m = 500, power = 0.4)
+td <- simTestPhyloDat(10, n = 100, m = 500, power = 0.1)
 indMat <- edgeTipIndicator(td$ph)
 dummy <- as.data.frame(t(indMat))
 td$dl <- td$dl + variableGroup(dummy, "species")

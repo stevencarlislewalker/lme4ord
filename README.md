@@ -183,17 +183,13 @@ simply the sums of the values on the branches leading to them.
 And it scales well!  Here's an example with 100 sites and 500 species.
 
 
-```
-## Error in chol.default(covMat1): the leading minor of order 2 is not positive definite
-```
-
 ```r
 system.time(opt <- optim(c(1, 0), dfun, lower = c(0, -Inf), method = "L-BFGS-B"))
 ```
 
 ```
 ##    user  system elapsed 
-##   0.035   0.000   0.035
+##  15.413   1.179  16.592
 ```
 
 #### phylogenetic generalized linear mixed models!
