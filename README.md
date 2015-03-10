@@ -38,7 +38,8 @@ descend from the particular edge in question.
 
 Here's a simple simulated example with twenty sites and ten species,
 but there is absolutely no problem with scaling this up (that's one of
-the main points).
+the main points).  This example also shows off the nice modularized
+fitting in `lme4ord`.
 
 
 ```r
@@ -167,12 +168,33 @@ with(rho$pp, image(crossprod(Lambdat %*% Zt)))
 
 ![plot of chunk unnamed-chunk-7](inst/README/figure/unnamed-chunk-7-1.png) 
 
+
 ```r
 plot(td$ph)
-edgelabels(round(rho$pp$b(1), 2))
+edgelabels(round(rho$pp$b(1), 2), cex = 1)
 ```
 
-![plot of chunk unnamed-chunk-7](inst/README/figure/unnamed-chunk-7-2.png) 
+![plot of chunk unnamed-chunk-8](inst/README/figure/unnamed-chunk-8-1.png) 
+
+This plot gives the estimated phylogenetic effects on community
+structure on each branch.  The link-scale effects for each species are
+simply the sums of the values on the branches leading to them.
+
+And it scales well!  Here's an example with 100 sites and 500 species.
+
+
+```
+## Error in chol.default(covMat1): the leading minor of order 2 is not positive definite
+```
+
+```r
+system.time(opt <- optim(c(1, 0), dfun, lower = c(0, -Inf), method = "L-BFGS-B"))
+```
+
+```
+##    user  system elapsed 
+##   0.035   0.000   0.035
+```
 
 #### phylogenetic generalized linear mixed models!
 
