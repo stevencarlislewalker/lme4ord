@@ -5,10 +5,14 @@
 ##' @param family family
 ##' @param covList list of covariance matrices for random effects
 ##' grouping factors in \code{formula}
+##' @param tileCov in kronecker products, should the covariance
+##' matrices in \code{covList} be tiled (\code{tileCov = TRUE}) or
+##' distributed (\code{tileCov = FALSE})?
 ##' @param ... not used yet
 ##' @importFrom lme4 findbars nobars
 ##' @export
-glmercFormula <- function(formula, data = NULL, family = binomial, covList, ...) {
+glmercFormula <- function(formula, data = NULL, family = binomial,
+                          covList, tileCov = TRUE, ...) {
 
                                         # get model matrix, grouping
                                         # factor, and term name
@@ -47,10 +51,17 @@ glmercFormula <- function(formula, data = NULL, family = binomial, covList, ...)
                                         # effects model matrix,
                                         # relative covariance factor,
                                         # etc.
-    re <- mkTemplateReTrms(modMats,
-                           grpFacs, grpFacConst,
-                           covMats, covMatConst)
+    if(tileCov) {
+        re <- mkTemplateReTrms(modMats,
+                               grpFacs, grpFacConst,
+                               covMats, covMatConst)
+    } else {
+        re <- mkTemplateReTrms(modMats,
+                               grpFacConst, grpFacs,
+                               covMatConst, covMats)
+    }
 
+    
                                         # organize output value
     return(c(re,
              list(X = model.matrix(nobars(formula), data),

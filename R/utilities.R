@@ -71,12 +71,12 @@ mkTemplateReTrm <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
     if(badDims) stop("covariance matrix incompatible with its grouping factor")
 
                                         # use consistent Matrix
-                                        # classes (Triplet-form Sparse
-                                        # Matrix -- i, j, x -- not
-                                        # Compressed-form Sparse
-                                        # Matrix)
-    matClass <- "TsparseMatrix"
-    giveCsparse <- FALSE
+                                        # classes (Triplet-form
+                                        # TSparseMatrix -- i, j, x --
+                                        # not Compressed-form
+                                        # CSparseMatrix)
+    matClass <- "CsparseMatrix"
+    giveCsparse <- TRUE
 
                                         # expand model matrix from
                                         # indicator matrices (double
@@ -206,16 +206,19 @@ mkTemplateTermZt <- function(explVar, grpFac) {
 ##' @param power power for \code{Grafen} method
 ##' @param covarSim covariance parameters
 ##' @param fixefSim fixed effect parameters
+##' @param perm permute data list?
 ##' @importMethodsFrom Matrix t
 ##' @export
 simTestPhyloDat <- function(seed = 1, n = 10, m = 30,
                             form = y ~ 1 + (1 | species),
                             power = 0.1,
-                            covarSim = 1, fixefSim = 1) {
+                            covarSim = 1, fixefSim,
+                            perm = FALSE) {
     set.seed(seed)
     dl <- dims_to_vars(data.list(y = 1 * (matrix(rnorm(n * m), n, m) > 0),
                                  x = rnorm(n), z = rnorm(m),
                                  dimids = c("sites", "species")))
+    if(perm) dl <- aperm(dl, c(2, 1))
     df <- as.data.frame(dl)
     phy <- ape:::rtree(n = m)
     phy <- ape:::compute.brlen(phy, method = "Grafen", power = power)
@@ -230,7 +233,9 @@ simTestPhyloDat <- function(seed = 1, n = 10, m = 30,
                                         # phylogenetic
                                         # covariances
     u <- rnorm(ncol(Z)) # whitened random effects
+    if(missing(fixefSim)) fixefSim <- rnorm(ncol(X))
     p <- plogis(as.numeric(X %*% fixefSim + Z %*% u)) # probability of observation
     dl$y <- rbinom(nrow(df), 1, p) # presence-absence data
-    return(as.data.frame(dl))
+    return(list(df = as.data.frame(dl),
+                cv = Vphy))
 }

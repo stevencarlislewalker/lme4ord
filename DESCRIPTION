@@ -11,6 +11,8 @@ Roxygen: list(wrap = FALSE)
 Depends:
     lme4,
     lme4pureR,
-    multitable
+    multitable,
+    ape,
+    reshape2
 Imports:
     Matrix

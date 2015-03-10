@@ -4,7 +4,7 @@
 \title{Generate phylogenetic test data}
 \usage{
 simTestPhyloDat(seed = 1, n = 10, m = 30, form = y ~ 1 + (1 | species),
-  power = 0.1, covarSim = 1, fixefSim = 1)
+  power = 0.1, covarSim = 1, fixefSim, perm = FALSE)
 }
 \arguments{
 \item{seed}{random seed}
@@ -21,6 +21,8 @@ simTestPhyloDat(seed = 1, n = 10, m = 30, form = y ~ 1 + (1 | species),
 \item{covarSim}{covariance parameters}
 
 \item{fixefSim}{fixed effect parameters}
+
+\item{perm}{permute data list?}
 }
 \description{
 Generate phylogenetic test data

@@ -11,15 +11,21 @@
 ##' @param data data
 ##' @param family family
 ##' @param covList covList
+##' @param tileCov in kronecker products, should the covariance
+##' matrices in \code{covList} be tiled (\code{tileCov = TRUE}) or
+##' distributed (\code{tileCov = FALSE})?
 ##' @param optControl optControl
 ##' @param ... ...
 ##' @export
-glmerc <- function(formula, data = NULL, family = binomial, covList = list(),
+glmerc <- function(formula, data = NULL, family = binomial,
+                   covList = list(), tileCov = TRUE,
                    optControl = list(iprint = 0L), ...) {
 
                                         # parse formula
     data <- as.data.frame(data)
-    parsedForm <- glmercFormula(formula, data, covList = covList)
+    parsedForm <- glmercFormula(formula, data,
+                                covList = covList,
+                                tileCov = tileCov)
 
                                         # organize initial values
     covar <- parsedForm$covar
