@@ -10,13 +10,13 @@
 \usage{
 findPathFromNode(node, edge)
 
-findEdgesFromPath(path, edge)
+findEdgesFromPath(path, edge, scale = 1)
 
 edgeTipIndicator(object, ...)
 
 \method{edgeTipIndicator}{default}(object, ...)
 
-\method{edgeTipIndicator}{matrix}(object, ntip, ...)
+\method{edgeTipIndicator}{matrix}(object, ntip, scale = 1, ...)
 
 \method{edgeTipIndicator}{phylo}(object, ...)
 }
@@ -29,6 +29,8 @@ edgeTipIndicator(object, ...)
 through its ancestor nodes (output of \code{findFromNode})}
 
 \item{object}{either a \code{phylo} or \code{matrix} object}
+
+\item{scale}{scaling factor for edges (i.e., vector of branch lengths)}
 
 \item{ntip}{number of tips}
 }
@@ -47,5 +49,9 @@ phy <- rtree(5)
 plot(phy)
 edgelabels()
 edgeTipIndicator(phy)
+(ee <- edgeTipIndicator(phy))
+if (require(Matrix)) {
+   image(Matrix(ee),sub="",xlab="tips",ylab="branches")
+}
 }
 

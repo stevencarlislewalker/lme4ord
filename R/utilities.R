@@ -62,8 +62,14 @@ simplifyFacList <- function(facList) {
 ##' of a melted response matrix)
 ##' @param covMat1,covMat2 covariance matrices among the levels of
 ##' \code{grpFac1} and \code{grpFac2}
+##' @param giveCsparse use compressed-form \code{CsparseMatrix}
+##' representations (\code{TRUE}), or triplet-form
+##' \code{TsparseMatrix} representations (\code{FALSE})?
 ##' @export
-mkTemplateReTrm <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
+mkTemplateReTrm <- function(modMat,
+                            grpFac1, grpFac2,
+                            covMat1, covMat2,
+                            giveCsparse = TRUE) {
 
     badDims <-
         (length(levels(grpFac1)) != nrow(covMat1)) ||
@@ -75,8 +81,7 @@ mkTemplateReTrm <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
                                         # TSparseMatrix -- i, j, x --
                                         # not Compressed-form
                                         # CSparseMatrix)
-    matClass <- "CsparseMatrix"
-    giveCsparse <- TRUE
+    matClass <- if(giveCsparse) "CsparseMatrix" else "TsparseMatrix"
 
                                         # expand model matrix from
                                         # indicator matrices (double
@@ -137,14 +142,18 @@ reTrmsBdiag <- function(lst) {
 
 ##' Make several covariance template random effects terms
 ##'
-##' @param modMat,grpFac1,grpFac2,covMat1,covMat2 lists of inputs to
+##' @param modMat,grpFac1,grpFac2,covMat1,covMat2,giveCsparse lists of inputs to
 ##' \code{\link{mkTemplateReTrm}}
 ##' @export
-mkTemplateReTrms <- function(modMat, grpFac1, grpFac2, covMat1, covMat2) {
+mkTemplateReTrms <- function(modMat,
+                             grpFac1, grpFac2,
+                             covMat1, covMat2,
+                             giveCsparse) {
 
     reTrmsList <- listTranspose(mapply(mkTemplateReTrm,
                                        modMat, grpFac1, grpFac2, covMat1, covMat2,
-                                       SIMPLIFY = FALSE))
+                                       SIMPLIFY = FALSE,
+                                       MoreArgs = list(giveCsparse = giveCsparse)))
 
     if(!(length(reTrmsList$Zt) == 1L)) {
         for(i in 2:length(reTrmsList$LambdatLind)) {
@@ -236,6 +245,8 @@ simTestPhyloDat <- function(seed = 1, n = 10, m = 30,
     if(missing(fixefSim)) fixefSim <- rnorm(ncol(X))
     p <- plogis(as.numeric(X %*% fixefSim + Z %*% u)) # probability of observation
     dl$y <- rbinom(nrow(df), 1, p) # presence-absence data
-    return(list(df = as.data.frame(dl),
-                cv = Vphy))
+    dimnames(dl)[[2]] <- phy$tip.label
+    return(list(dl = dims_to_vars(dl),
+                cv = Vphy,
+                ph = phy))
 }

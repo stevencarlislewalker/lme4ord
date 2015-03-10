@@ -22,6 +22,255 @@ library(pryr)
 library(reo)
 ```
 
+#### Edge-based phylogenetic GLMMs
+
+Acknowledgements:  Ben Bolker, Jarrod Hadfield, and Guillaume Blanchet
+have provided extremely useful discussions.
+
+Here's some new stuff that I'm excited about, mostly because it seems
+to solve a huge computational cost problem with Ives and Helmus style
+PGLMMs, and just because it is interesting.  The idea is to avoid all
+of the computationally expensive linear algebra involved when dealing
+with dense phylogenetic covariance matrices.  Instead, from an idea
+Ben and I had after a discussion with Jerrod Hadfield, we have a
+random effect for each edge.  These effects act on all species that
+descend from the particular edge in question.
+
+Here's a simulated example.
+
+
+```r
+td <- simTestPhyloDat(10, n = 10, m = 30, power = 0.4)
+```
+
+```
+## Note: method with signature 'dsparseMatrix#dsparseMatrix' chosen for function 'kronecker',
+##  target signature 'dgTMatrix#dgCMatrix'.
+##  "TsparseMatrix#sparseMatrix" would also be valid
+```
+
+```r
+color2D.matplot(td$dl$y, xlab = "species", ylab = "sites", main = "Occurrence")
+```
+
+![plot of chunk unnamed-chunk-1](inst/README/figure/unnamed-chunk-1-1.png) 
+
+```r
+plot(td$ph)
+edgelabels()
+```
+
+![plot of chunk unnamed-chunk-1](inst/README/figure/unnamed-chunk-1-2.png) 
+
+We find an indicator matrix giving the relationships between the edges
+(plotted above on the phylogeny) and the tips (also plotted)
+
+
+```r
+(indMat <- edgeTipIndicator(td$ph))
+```
+
+```
+##       t5 t14 t6 t16 t24 t30 t2 t25 t20 t12 t22 t18 t21 t8 t15 t1 t19 t10
+##  [1,]  1   1  1   1   1   1  1   1   1   1   1   1   1  1   1  1   1   1
+##  [2,]  1   1  1   1   1   1  1   1   1   0   0   0   0  0   0  0   0   0
+##  [3,]  1   1  1   1   1   0  0   0   0   0   0   0   0  0   0  0   0   0
+##  [4,]  1   1  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+##  [5,]  1   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+##  [6,]  0   1  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+##  [7,]  0   0  1   1   1   0  0   0   0   0   0   0   0  0   0  0   0   0
+##  [8,]  0   0  1   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+##  [9,]  0   0  0   1   1   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [10,]  0   0  0   1   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [11,]  0   0  0   0   1   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [12,]  0   0  0   0   0   1  1   1   1   0   0   0   0  0   0  0   0   0
+## [13,]  0   0  0   0   0   1  1   0   0   0   0   0   0  0   0  0   0   0
+## [14,]  0   0  0   0   0   1  0   0   0   0   0   0   0  0   0  0   0   0
+## [15,]  0   0  0   0   0   0  1   0   0   0   0   0   0  0   0  0   0   0
+## [16,]  0   0  0   0   0   0  0   1   1   0   0   0   0  0   0  0   0   0
+## [17,]  0   0  0   0   0   0  0   1   0   0   0   0   0  0   0  0   0   0
+## [18,]  0   0  0   0   0   0  0   0   1   0   0   0   0  0   0  0   0   0
+## [19,]  0   0  0   0   0   0  0   0   0   1   1   1   1  1   1  1   1   1
+## [20,]  0   0  0   0   0   0  0   0   0   1   1   1   1  1   1  1   1   1
+## [21,]  0   0  0   0   0   0  0   0   0   1   1   1   0  0   0  0   0   0
+## [22,]  0   0  0   0   0   0  0   0   0   1   0   0   0  0   0  0   0   0
+## [23,]  0   0  0   0   0   0  0   0   0   0   1   1   0  0   0  0   0   0
+## [24,]  0   0  0   0   0   0  0   0   0   0   1   0   0  0   0  0   0   0
+## [25,]  0   0  0   0   0   0  0   0   0   0   0   1   0  0   0  0   0   0
+## [26,]  0   0  0   0   0   0  0   0   0   0   0   0   1  1   1  1   1   1
+## [27,]  0   0  0   0   0   0  0   0   0   0   0   0   1  1   1  1   1   1
+## [28,]  0   0  0   0   0   0  0   0   0   0   0   0   1  1   1  1   1   1
+## [29,]  0   0  0   0   0   0  0   0   0   0   0   0   1  1   1  1   0   0
+## [30,]  0   0  0   0   0   0  0   0   0   0   0   0   1  0   0  0   0   0
+## [31,]  0   0  0   0   0   0  0   0   0   0   0   0   0  1   1  1   0   0
+## [32,]  0   0  0   0   0   0  0   0   0   0   0   0   0  1   1  0   0   0
+## [33,]  0   0  0   0   0   0  0   0   0   0   0   0   0  1   0  0   0   0
+## [34,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   1  0   0   0
+## [35,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  1   0   0
+## [36,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   1   1
+## [37,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   1   0
+## [38,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   1
+## [39,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [40,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [41,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [42,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [43,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [44,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [45,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [46,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [47,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [48,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [49,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [50,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [51,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [52,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [53,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [54,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [55,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [56,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [57,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+## [58,]  0   0  0   0   0   0  0   0   0   0   0   0   0  0   0  0   0   0
+##       t9 t7 t13 t11 t29 t26 t23 t28 t27 t4 t3 t17
+##  [1,]  1  1   1   1   1   1   1   1   0  0  0   0
+##  [2,]  0  0   0   0   0   0   0   0   0  0  0   0
+##  [3,]  0  0   0   0   0   0   0   0   0  0  0   0
+##  [4,]  0  0   0   0   0   0   0   0   0  0  0   0
+##  [5,]  0  0   0   0   0   0   0   0   0  0  0   0
+##  [6,]  0  0   0   0   0   0   0   0   0  0  0   0
+##  [7,]  0  0   0   0   0   0   0   0   0  0  0   0
+##  [8,]  0  0   0   0   0   0   0   0   0  0  0   0
+##  [9,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [10,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [11,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [12,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [13,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [14,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [15,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [16,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [17,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [18,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [19,]  1  1   1   1   1   1   1   1   0  0  0   0
+## [20,]  1  1   1   0   0   0   0   0   0  0  0   0
+## [21,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [22,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [23,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [24,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [25,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [26,]  1  1   1   0   0   0   0   0   0  0  0   0
+## [27,]  1  0   0   0   0   0   0   0   0  0  0   0
+## [28,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [29,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [30,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [31,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [32,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [33,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [34,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [35,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [36,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [37,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [38,]  0  0   0   0   0   0   0   0   0  0  0   0
+## [39,]  1  0   0   0   0   0   0   0   0  0  0   0
+## [40,]  0  1   1   0   0   0   0   0   0  0  0   0
+## [41,]  0  1   0   0   0   0   0   0   0  0  0   0
+## [42,]  0  0   1   0   0   0   0   0   0  0  0   0
+## [43,]  0  0   0   1   1   1   1   1   0  0  0   0
+## [44,]  0  0   0   1   1   1   0   0   0  0  0   0
+## [45,]  0  0   0   1   1   0   0   0   0  0  0   0
+## [46,]  0  0   0   1   0   0   0   0   0  0  0   0
+## [47,]  0  0   0   0   1   0   0   0   0  0  0   0
+## [48,]  0  0   0   0   0   1   0   0   0  0  0   0
+## [49,]  0  0   0   0   0   0   1   1   0  0  0   0
+## [50,]  0  0   0   0   0   0   1   0   0  0  0   0
+## [51,]  0  0   0   0   0   0   0   1   0  0  0   0
+## [52,]  0  0   0   0   0   0   0   0   1  1  1   1
+## [53,]  0  0   0   0   0   0   0   0   1  1  1   0
+## [54,]  0  0   0   0   0   0   0   0   1  0  0   0
+## [55,]  0  0   0   0   0   0   0   0   0  1  1   0
+## [56,]  0  0   0   0   0   0   0   0   0  1  0   0
+## [57,]  0  0   0   0   0   0   0   0   0  0  1   0
+## [58,]  0  0   0   0   0   0   0   0   0  0  0   1
+```
+
+Now we add this matrix to the data.
+
+
+```r
+dummy <- as.data.frame(t(indMat))
+td$dl <- td$dl + variableGroup(dummy, "species")
+edgeNms <- names(dummy)
+df <- as.data.frame(td$dl)
+```
+
+Now construct objects for fitting the mixed model.
+
+
+```r
+Z <- model.matrix(as.formula(paste("~ 0 + ", paste(edgeNms, collapse = " + "))), df)
+X <- model.matrix(~ 1, df)
+y <- model.response(model.frame(y ~ 1, df))
+n <- nrow(df)
+p <- ncol(X)
+q <- ncol(Z)
+mapToCovFact <- local({
+    q <- q
+    function(covar) rep(covar, q)
+})
+```
+
+With these objects we may use the `mkGeneralGlmerDevfun` function in
+`lme4ord`.
+
+
+```r
+dfun <- mkGeneralGlmerDevfun(y = y, X = X,
+                             Zt = as(t(Z), "sparseMatrix"),
+                             Lambdat = sparseMatrix(i = 1:q, j = 1:q, x = 1),
+                             weights = rep(1, n), offset = rep(0, n),
+                             initPars = c(1, 0),
+                             parInds = list(covar = 1, fixef = 2),
+                             mapToCovFact = mapToCovFact,
+                             mapToModMat = NULL)
+```
+
+Optimizing the resulting deviance function gives,
+
+
+```r
+opt <- optim(c(1, 0), dfun, lower = c(0, -Inf), method = "L-BFGS-B")
+dfun(opt$par)
+```
+
+```
+## [1] 390.2847
+```
+
+```r
+opt$par
+```
+
+```
+## [1] 0.3925823 0.6686694
+```
+
+And here are some plots of the output, including the full covariance
+matrix for the entire system and the phylogeny with the estimated edge
+effects.
+
+
+```r
+rho <- environment(dfun)
+with(rho$pp, image(crossprod(Lambdat %*% Zt)))
+```
+
+![plot of chunk unnamed-chunk-7](inst/README/figure/unnamed-chunk-7-1.png) 
+
+```r
+plot(td$ph)
+edgelabels(round(rho$pp$b(1), 2), cex = 0.6)
+```
+
+![plot of chunk unnamed-chunk-7](inst/README/figure/unnamed-chunk-7-2.png) 
+
 #### phylogenetic generalized linear mixed models!
 
 Acknowledgements:  Ben Bolker, Tony Ives, and Guillaume Blanchet have 
