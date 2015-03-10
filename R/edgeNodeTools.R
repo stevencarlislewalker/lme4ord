@@ -8,7 +8,7 @@
 ##' relationship between tips and the edges associated with their
 ##' history.
 ##' 
-##' @param to vector of tip indices
+##' @param to vector of node indices
 ##' @param edge phylogenetic edge matrix
 ##' @param path vector giving the path from a node back in time
 ##' through its ancestor nodes (output of \code{findFromNode})
