@@ -8,11 +8,12 @@
 ##' relationship between tips and the edges associated with their
 ##' history.
 ##' 
-##' @param to vector of node indices
+##' @param node vector of node indices
 ##' @param edge phylogenetic edge matrix
 ##' @param path vector giving the path from a node back in time
 ##' through its ancestor nodes (output of \code{findFromNode})
 ##' @param object either a \code{phylo} or \code{matrix} object
+##' @param ntip number of tips
 ##' @rdname edgeTipIndicator
 ##' @export
 ##' @examples
@@ -21,11 +22,11 @@
 ##' plot(phy)
 ##' edgelabels()
 ##' edgeTipIndicator(phy)
-findFromNode <- function(to, edge) {
-    lastTo <- to[length(to)]
-    newTo <- edge[edge[, 2] == lastTo, ][1]
-    if(is.na(newTo)) return(to)
-    findFromNode(c(to, newTo), edge)
+findPathFromNode <- function(node, edge) {
+    lastNode <- node[length(node)]
+    newNode <- edge[edge[, 2] == lastNode, ][1]
+    if(is.na(newNode)) return(node)
+    findPathFromNode(c(node, newNode), edge)
 }
 ##' @rdname edgeTipIndicator
 ##' @export
@@ -48,7 +49,7 @@ edgeTipIndicator.default <- function(object, ...) {
 ##' @export
 edgeTipIndicator.matrix <- function(object, ntip, ...) {
     if(ncol(object) != 2L) stop("not an edge matrix")
-    sapply(lapply(1:ntip, findFromNode, object),
+    sapply(lapply(1:ntip, findPathFromNode, object),
            findEdgesFromPath, object)
 }
 ##' @rdname edgeTipIndicator
