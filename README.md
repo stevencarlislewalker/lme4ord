@@ -65,7 +65,7 @@ edgelabels()
 ![plot of chunk unnamed-chunk-1](inst/README/figure/unnamed-chunk-1-2.png) 
 
 We find an indicator matrix giving the relationships between the edges
-(plotted above on the phylogeny) and the tips (also plotted)
+(plotted above on the phylogeny) and the tips (also plotted).
 
 
 ```r
@@ -169,7 +169,7 @@ with(rho$pp, image(crossprod(Lambdat %*% Zt)))
 
 ```r
 plot(td$ph)
-edgelabels(round(rho$pp$b(1), 2), cex = 0.6)
+edgelabels(round(rho$pp$b(1), 2))
 ```
 
 ![plot of chunk unnamed-chunk-7](inst/README/figure/unnamed-chunk-7-2.png) 

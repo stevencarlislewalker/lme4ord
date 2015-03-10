@@ -50,7 +50,7 @@ edgelabels()
 ```
 
 We find an indicator matrix giving the relationships between the edges
-(plotted above on the phylogeny) and the tips (also plotted)
+(plotted above on the phylogeny) and the tips (also plotted).
 
 ```{r}
 (indMat <- edgeTipIndicator(td$ph))
@@ -110,7 +110,7 @@ effects.
 rho <- environment(dfun)
 with(rho$pp, image(crossprod(Lambdat %*% Zt)))
 plot(td$ph)
-edgelabels(round(rho$pp$b(1), 2), cex = 0.6)
+edgelabels(round(rho$pp$b(1), 2))
 ```
 
 #### phylogenetic generalized linear mixed models!
