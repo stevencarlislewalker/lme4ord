@@ -13,7 +13,6 @@
 ##' @param path vector giving the path from a node back in time
 ##' through its ancestor nodes (output of \code{findFromNode})
 ##' @param object either a \code{phylo} or \code{matrix} object
-##' @param ntip number of tips
 ##' @rdname edgeTipIndicator
 ##' @export
 ##' @examples
@@ -22,6 +21,10 @@
 ##' plot(phy)
 ##' edgelabels()
 ##' edgeTipIndicator(phy)
+##' (ee <- edgeTipIndicator(phy))
+##' if (require(Matrix)) {
+##'    image(Matrix(ee),sub="",xlab="tips",ylab="branches")
+##' }
 findPathFromNode <- function(node, edge) {
     lastNode <- node[length(node)]
     newNode <- edge[edge[, 2] == lastNode, ][1]
@@ -29,11 +32,12 @@ findPathFromNode <- function(node, edge) {
     findPathFromNode(c(node, newNode), edge)
 }
 ##' @rdname edgeTipIndicator
+##' @param scale scaling factor for edges (i.e., vector of branch lengths)
 ##' @export
-findEdgesFromPath <- function(path, edge) {
+findEdgesFromPath <- function(path, edge, scale=1) {
     col1 <- edge[, 1] %in% path[-1           ]
     col2 <- edge[, 2] %in% path[-length(path)]
-    col1 & col2
+    (col1 & col2)*scale
 }
 ##' @rdname edgeTipIndicator
 ##' @export
@@ -45,9 +49,10 @@ edgeTipIndicator <- function(object, ...) {
 edgeTipIndicator.default <- function(object, ...) {
     edgeTipIndicator(as.matrix(object))
 }
+##' @param ntip number of tips
 ##' @rdname edgeTipIndicator
 ##' @export
-edgeTipIndicator.matrix <- function(object, ntip, ...) {
+edgeTipIndicator.matrix <- function(object, ntip, scale=1, ...) {
     if(ncol(object) != 2L) stop("not an edge matrix")
     sapply(lapply(1:ntip, findPathFromNode, object),
            findEdgesFromPath, object)
@@ -55,7 +60,9 @@ edgeTipIndicator.matrix <- function(object, ntip, ...) {
 ##' @rdname edgeTipIndicator
 ##' @export
 edgeTipIndicator.phylo <- function(object, ...) {
-    ans <- edgeTipIndicator(object$edge, Ntip(object))
+    ## FIXME: do all phylo objects have edge lengths or can they
+    ##  be implicit?
+    ans <- edgeTipIndicator(object$edge, Ntip(object), object$edge.length)
     colnames(ans) <- object$tip.label
     return(ans)
 }
