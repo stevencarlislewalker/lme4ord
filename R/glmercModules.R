@@ -26,10 +26,10 @@ glmercFormula <- function(formula, data = NULL, family = binomial,
     reTrmsList <- lapply(findbars(formula), getModMatAndGrpFac, fr = data)
     names(reTrmsList) <- sapply(reTrmsList, "[[", "grpName")
 
-                                        # append the covariance
-                                        # matrices over the levels
-                                        # associated with each random
-                                        # effects term
+                                        # append the covariance and
+                                        # structure matrices over the
+                                        # levels associated with each
+                                        # random effects term
     for(i in seq_along(reTrmsList)) {
         reTrmsList[[i]]$strMat <- strList[[reTrmsList[[i]]$grpName]]
         if(is.null(reTrmsList[[i]]$strMat)) { # if no str mat, use
