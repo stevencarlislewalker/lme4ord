@@ -20,4 +20,4 @@ git:
 	git add figure ../../README.md README.Rmd
 
 rmfig:
-	git rm -r -f figure/
+	git rm -r -f figure

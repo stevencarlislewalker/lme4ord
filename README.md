@@ -43,7 +43,10 @@ fitting in `lme4ord`.
 
 
 ```r
-td <- simTestPhyloDat(10, n = 20, m = 10, power = 0.4)
+td <- simTestPhyloDat(1, n = 100, m = 5, power = 0.5,
+                      y ~ 1 + (1 | species),
+                      covarSim = 1,
+                      fixefSim = 1)
 ```
 
 ```
@@ -71,90 +74,48 @@ We find an indicator matrix giving the relationships between the edges
 
 
 ```r
-(indMat <- edgeTipIndicator(td$ph))
+(edgeMat <- edgeTipIndicator(td$ph))
 ```
 
 ```
-##       t4 t5 t8 t9 t10 t6 t7 t1 t3 t2
-##  [1,]  1  1  1  1   0  0  0  0  0  0
-##  [2,]  1  0  0  0   0  0  0  0  0  0
-##  [3,]  0  1  1  1   0  0  0  0  0  0
-##  [4,]  0  1  0  0   0  0  0  0  0  0
-##  [5,]  0  0  1  1   0  0  0  0  0  0
-##  [6,]  0  0  1  0   0  0  0  0  0  0
-##  [7,]  0  0  0  1   0  0  0  0  0  0
-##  [8,]  0  0  0  0   1  1  1  1  1  1
-##  [9,]  0  0  0  0   1  1  0  0  0  0
-## [10,]  0  0  0  0   1  0  0  0  0  0
-## [11,]  0  0  0  0   0  1  0  0  0  0
-## [12,]  0  0  0  0   0  0  1  1  1  1
-## [13,]  0  0  0  0   0  0  1  1  0  0
-## [14,]  0  0  0  0   0  0  1  0  0  0
-## [15,]  0  0  0  0   0  0  0  1  0  0
-## [16,]  0  0  0  0   0  0  0  0  1  1
-## [17,]  0  0  0  0   0  0  0  0  1  0
-## [18,]  0  0  0  0   0  0  0  0  0  1
+##      t2 t5 t3 t4 t1
+## [1,]  1  0  0  0  0
+## [2,]  0  1  1  1  1
+## [3,]  0  1  1  1  0
+## [4,]  0  1  0  0  0
+## [5,]  0  0  1  1  0
+## [6,]  0  0  1  0  0
+## [7,]  0  0  0  1  0
+## [8,]  0  0  0  0  1
 ```
 
 Now we add this matrix to the data.
 
 
 ```r
-dummy <- as.data.frame(t(indMat))
-td$dl <- td$dl + variableGroup(dummy, "species")
-edgeNms <- names(dummy)
-df <- as.data.frame(td$dl)
-```
-
-Now construct objects for fitting the mixed model.
-
-
-```r
-Z <- model.matrix(as.formula(paste("~ 0 + ", paste(edgeNms, collapse = " + "))), df)
-X <- model.matrix(~ 1, df)
-y <- model.response(model.frame(y ~ 1, df))
-n <- nrow(df)
-p <- ncol(X)
-q <- ncol(Z)
-mapToCovFact <- local({
-    q <- q
-    function(covar) rep(covar, q)
-})
-```
-
-With these objects we may use the `mkGeneralGlmerDevfun` function in
-`lme4ord`.
-
-
-```r
-dfun <- mkGeneralGlmerDevfun(y = y, X = X,
-                             Zt = as(t(Z), "sparseMatrix"),
-                             Lambdat = sparseMatrix(i = 1:q, j = 1:q, x = 1),
-                             weights = rep(1, n), offset = rep(0, n),
-                             initPars = c(1, 0),
-                             parInds = list(covar = 1, fixef = 2),
-                             mapToCovFact = mapToCovFact,
-                             mapToModMat = NULL)
-```
-
-Optimizing the resulting deviance function gives,
-
-
-```r
-opt <- optim(c(1, 0), dfun, lower = c(0, -Inf), method = "L-BFGS-B")
-dfun(opt$par)
+(mod <- glmerc(y ~ 1 + (1 | species), as.data.frame(td$dl), binomial,
+               strList = list(species = edgeMat)))
 ```
 
 ```
-## [1] 245.0065
-```
-
-```r
-opt$par
-```
-
-```
-## [1]  0.7308034 -0.1352882
+## 
+## Generalized linear mixed model
+## with covariance amongst grouping factor levels
+## ----------------------------------------------
+## 
+## Fixed effects
+## -------------
+## 
+##              Estimate Std. Error
+## (Intercept) 0.6367757   1.158189
+## 
+## 
+## Random effects (co)variance
+## ---------------------------
+## 
+## $species
+##             (Intercept)
+## (Intercept)     2.09553
 ```
 
 And here are some plots of the output, including the full covariance
@@ -163,11 +124,11 @@ effects.
 
 
 ```r
-rho <- environment(dfun)
+rho <- environment(mod$dfun)
 with(rho$pp, image(crossprod(Lambdat %*% Zt)))
 ```
 
-![plot of chunk unnamed-chunk-7](inst/README/figure/unnamed-chunk-7-1.png) 
+![plot of chunk unnamed-chunk-4](inst/README/figure/unnamed-chunk-4-1.png) 
 
 
 ```r
@@ -175,7 +136,7 @@ plot(td$ph)
 edgelabels(round(rho$pp$b(1), 2), cex = 1)
 ```
 
-![plot of chunk unnamed-chunk-8](inst/README/figure/unnamed-chunk-8-1.png) 
+![plot of chunk unnamed-chunk-5](inst/README/figure/unnamed-chunk-5-1.png) 
 
 This plot gives the estimated phylogenetic effects on community
 structure on each branch.  The link-scale effects for each species are
@@ -185,12 +146,14 @@ And it scales well!  Here's an example with 100 sites and 500 species.
 
 
 ```r
-system.time(opt <- optim(c(1, 0), dfun, lower = c(0, -Inf), method = "L-BFGS-B"))
+system.time(mod <- glmerc(y ~ 1 + (1 | species),
+                          as.data.frame(td$dl), binomial,
+                          strList = list(species = edgeMat)))
 ```
 
 ```
 ##    user  system elapsed 
-##  16.182   1.276  17.461
+##  32.577   3.308  35.894
 ```
 
 `glmerc` (below) can't do that!  I think the reason for the speed is
@@ -199,10 +162,10 @@ the following sparsity pattern, which gives the numbers of species
 
 
 ```r
-image(as(tcrossprod(indMat), "sparseMatrix"))
+image(as(tcrossprod(edgeMat), "sparseMatrix"))
 ```
 
-![plot of chunk unnamed-chunk-10](inst/README/figure/unnamed-chunk-10-1.png) 
+![plot of chunk unnamed-chunk-6](inst/README/figure/unnamed-chunk-6-1.png) 
 
 #### phylogenetic generalized linear mixed models!
 
@@ -333,7 +296,7 @@ module of the `glmerc` function.
 
 ```r
 form <- y ~ x * z + (x | species)
-parsedForm <- glmercFormula(form, df, covList = covList)
+parsedForm <- glmercFormula(form, df, covList = covList, strList = list())
 ```
 
 Set the covariance parameters to something more interesting (i.e. with

@@ -14,18 +14,25 @@
 ##' @param tileCov in kronecker products, should the covariance
 ##' matrices in \code{covList} be tiled (\code{tileCov = TRUE}) or
 ##' distributed (\code{tileCov = FALSE})?
+##' @param giveCsparse use compressed-form \code{CsparseMatrix}
+##' representations (\code{TRUE}), or triplet-form
+##' \code{TsparseMatrix} representations (\code{FALSE})?
 ##' @param optControl optControl
 ##' @param ... ...
 ##' @export
 glmerc <- function(formula, data = NULL, family = binomial,
-                   covList = list(), tileCov = TRUE,
+                   covList = list(), strList = list(),
+                   tileCov = TRUE,
+                   giveCsparse = TRUE,
                    optControl = list(iprint = 0L), ...) {
 
                                         # parse formula
     data <- as.data.frame(data)
     parsedForm <- glmercFormula(formula, data,
                                 covList = covList,
-                                tileCov = tileCov)
+                                strList = strList,
+                                tileCov = tileCov,
+                                giveCsparse = giveCsparse)
 
                                         # organize initial values
     covar <- parsedForm$covar
@@ -122,6 +129,11 @@ vcov.glmerc <- function(object, justFixef = TRUE, ...) {
     return(ans)
 }
 
+.safeExtractDiag <- function(x) {
+    if(length(x) == 1) return(x)
+    diag(x)
+}
+
 ##' @rdname glmerc
 ##' @export
 print.glmerc <- function(x, ...) {
@@ -131,7 +143,7 @@ print.glmerc <- function(x, ...) {
     cat("Fixed effects\n")
     cat("-------------\n\n")
     print(cbind(Estimate = fixef(x),
-                `Std. Error` = sqrt(diag(vcov(x)))))
+                `Std. Error` = sqrt(.safeExtractDiag(vcov(x)))))
 
     cat("\n\nRandom effects (co)variance\n")
     cat("---------------------------\n\n")
