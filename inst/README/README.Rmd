@@ -152,7 +152,13 @@ dfun <- mkGeneralGlmerDevfun(y = y, X = X,
 system.time(opt <- optim(c(1, 0), dfun, lower = c(0, -Inf), method = "L-BFGS-B"))
 ```
 
-`glmerc` (below) can't do that!
+`glmerc` (below) can't do that!  I think the reason for the speed is
+the following sparsity pattern, which gives the numbers of species
+'shared' by pairs of edges.
+
+```{r, fig.width = 4, fig.height = 4}
+image(as(tcrossprod(indMat), "sparseMatrix"))
+```
 
 #### phylogenetic generalized linear mixed models!
 

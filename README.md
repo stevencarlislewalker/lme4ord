@@ -190,10 +190,19 @@ system.time(opt <- optim(c(1, 0), dfun, lower = c(0, -Inf), method = "L-BFGS-B")
 
 ```
 ##    user  system elapsed 
-##  15.250   1.152  16.402
+##  16.182   1.276  17.461
 ```
 
-`glmerc` (below) can't do that!
+`glmerc` (below) can't do that!  I think the reason for the speed is
+the following sparsity pattern, which gives the numbers of species
+'shared' by pairs of edges.
+
+
+```r
+image(as(tcrossprod(indMat), "sparseMatrix"))
+```
+
+![plot of chunk unnamed-chunk-10](inst/README/figure/unnamed-chunk-10-1.png) 
 
 #### phylogenetic generalized linear mixed models!
 
