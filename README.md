@@ -47,9 +47,7 @@ td <- simTestPhyloDat(10, n = 20, m = 10, power = 0.4)
 ```
 
 ```
-## Note: method with signature 'dsparseMatrix#dsparseMatrix' chosen for function 'kronecker',
-##  target signature 'dgTMatrix#dgCMatrix'.
-##  "TsparseMatrix#sparseMatrix" would also be valid
+## Error: argument "strList" is missing, with no default
 ```
 
 ```r
@@ -57,14 +55,25 @@ color2D.matplot(td$dl$y, xlab = "species", ylab = "sites",
                 main = "Occurrence")
 ```
 
-![plot of chunk unnamed-chunk-1](inst/README/figure/unnamed-chunk-1-1.png) 
+```
+## Error in color2D.matplot(td$dl$y, xlab = "species", ylab = "sites", main = "Occurrence"): object 'td' not found
+```
 
 ```r
 plot(td$ph)
+```
+
+```
+## Error in plot(td$ph): object 'td' not found
+```
+
+```r
 edgelabels()
 ```
 
-![plot of chunk unnamed-chunk-1](inst/README/figure/unnamed-chunk-1-2.png) 
+```
+## Error in get("last_plot.phylo", envir = .PlotPhyloEnv): object 'last_plot.phylo' not found
+```
 
 We find an indicator matrix giving the relationships between the edges
 (plotted above on the phylogeny) and the tips (also plotted).
@@ -75,25 +84,7 @@ We find an indicator matrix giving the relationships between the edges
 ```
 
 ```
-##       t4 t5 t8 t9 t10 t6 t7 t1 t3 t2
-##  [1,]  1  1  1  1   0  0  0  0  0  0
-##  [2,]  1  0  0  0   0  0  0  0  0  0
-##  [3,]  0  1  1  1   0  0  0  0  0  0
-##  [4,]  0  1  0  0   0  0  0  0  0  0
-##  [5,]  0  0  1  1   0  0  0  0  0  0
-##  [6,]  0  0  1  0   0  0  0  0  0  0
-##  [7,]  0  0  0  1   0  0  0  0  0  0
-##  [8,]  0  0  0  0   1  1  1  1  1  1
-##  [9,]  0  0  0  0   1  1  0  0  0  0
-## [10,]  0  0  0  0   1  0  0  0  0  0
-## [11,]  0  0  0  0   0  1  0  0  0  0
-## [12,]  0  0  0  0   0  0  1  1  1  1
-## [13,]  0  0  0  0   0  0  1  1  0  0
-## [14,]  0  0  0  0   0  0  1  0  0  0
-## [15,]  0  0  0  0   0  0  0  1  0  0
-## [16,]  0  0  0  0   0  0  0  0  1  1
-## [17,]  0  0  0  0   0  0  0  0  1  0
-## [18,]  0  0  0  0   0  0  0  0  0  1
+## Error in edgeTipIndicator(td$ph): object 'td' not found
 ```
 
 Now we add this matrix to the data.
@@ -101,9 +92,27 @@ Now we add this matrix to the data.
 
 ```r
 dummy <- as.data.frame(t(indMat))
+```
+
+```
+## Error in t(indMat): error in evaluating the argument 'x' in selecting a method for function 't': Error: object 'indMat' not found
+```
+
+```r
 td$dl <- td$dl + variableGroup(dummy, "species")
+```
+
+```
+## Error in eval(expr, envir, enclos): object 'td' not found
+```
+
+```r
 edgeNms <- names(dummy)
 df <- as.data.frame(td$dl)
+```
+
+```
+## Error in as.data.frame(td$dl): object 'td' not found
 ```
 
 Now construct objects for fitting the mixed model.
@@ -111,11 +120,48 @@ Now construct objects for fitting the mixed model.
 
 ```r
 Z <- model.matrix(as.formula(paste("~ 0 + ", paste(edgeNms, collapse = " + "))), df)
+```
+
+```
+## Error in parse(text = x): <text>:2:0: unexpected end of input
+## 1: ~ 0 +  
+##    ^
+```
+
+```r
 X <- model.matrix(~ 1, df)
+```
+
+```
+## Error in terms.formula(object, data = data): 'data' argument is of the wrong type
+```
+
+```r
 y <- model.response(model.frame(y ~ 1, df))
+```
+
+```
+## Error in terms.formula(formula, data = data): 'data' argument is of the wrong type
+```
+
+```r
 n <- nrow(df)
 p <- ncol(X)
+```
+
+```
+## Error in ncol(X): object 'X' not found
+```
+
+```r
 q <- ncol(Z)
+```
+
+```
+## Error in ncol(Z): object 'Z' not found
+```
+
+```r
 mapToCovFact <- local({
     q <- q
     function(covar) rep(covar, q)
@@ -137,16 +183,27 @@ dfun <- mkGeneralGlmerDevfun(y = y, X = X,
                              mapToModMat = NULL)
 ```
 
+```
+## Error in 1:q: NA/NaN argument
+```
+
 Optimizing the resulting deviance function gives,
 
 
 ```r
 opt <- optim(c(1, 0), dfun, lower = c(0, -Inf), method = "L-BFGS-B")
+```
+
+```
+## Error in (function (par) : object 'dfun' not found
+```
+
+```r
 dfun(opt$par)
 ```
 
 ```
-## [1] 245.0065
+## Error in eval(expr, envir, enclos): could not find function "dfun"
 ```
 
 ```r
@@ -154,7 +211,7 @@ opt$par
 ```
 
 ```
-## [1]  0.7308034 -0.1352882
+## Error in eval(expr, envir, enclos): object 'opt' not found
 ```
 
 And here are some plots of the output, including the full covariance
@@ -164,18 +221,36 @@ effects.
 
 ```r
 rho <- environment(dfun)
+```
+
+```
+## Error in environment(dfun): object 'dfun' not found
+```
+
+```r
 with(rho$pp, image(crossprod(Lambdat %*% Zt)))
 ```
 
-![plot of chunk unnamed-chunk-7](inst/README/figure/unnamed-chunk-7-1.png) 
+```
+## Error in with(rho$pp, image(crossprod(Lambdat %*% Zt))): object 'rho' not found
+```
 
 
 ```r
 plot(td$ph)
+```
+
+```
+## Error in plot(td$ph): object 'td' not found
+```
+
+```r
 edgelabels(round(rho$pp$b(1), 2), cex = 1)
 ```
 
-![plot of chunk unnamed-chunk-8](inst/README/figure/unnamed-chunk-8-1.png) 
+```
+## Error in get("last_plot.phylo", envir = .PlotPhyloEnv): object 'last_plot.phylo' not found
+```
 
 This plot gives the estimated phylogenetic effects on community
 structure on each branch.  The link-scale effects for each species are
@@ -184,13 +259,62 @@ simply the sums of the values on the branches leading to them.
 And it scales well!  Here's an example with 100 sites and 500 species.
 
 
+```
+## Error: argument "strList" is missing, with no default
+```
+
+```
+## Error in edgeTipIndicator(td$ph): object 'td' not found
+```
+
+```
+## Error in t(indMat): error in evaluating the argument 'x' in selecting a method for function 't': Error: object 'indMat' not found
+```
+
+```
+## Error in eval(expr, envir, enclos): object 'td' not found
+```
+
+```
+## Error in as.data.frame(td$dl): object 'td' not found
+```
+
+```
+## Error in parse(text = x): <text>:2:0: unexpected end of input
+## 1: ~ 0 +  
+##    ^
+```
+
+```
+## Error in terms.formula(object, data = data): 'data' argument is of the wrong type
+```
+
+```
+## Error in terms.formula(formula, data = data): 'data' argument is of the wrong type
+```
+
+```
+## Error in ncol(X): object 'X' not found
+```
+
+```
+## Error in ncol(Z): object 'Z' not found
+```
+
+```
+## Error in 1:q: NA/NaN argument
+```
+
 ```r
 system.time(opt <- optim(c(1, 0), dfun, lower = c(0, -Inf), method = "L-BFGS-B"))
 ```
 
 ```
-##    user  system elapsed 
-##  16.182   1.276  17.461
+## Error in (function (par) : object 'dfun' not found
+```
+
+```
+## Timing stopped at: 0.001 0 0
 ```
 
 `glmerc` (below) can't do that!  I think the reason for the speed is
@@ -202,7 +326,11 @@ the following sparsity pattern, which gives the numbers of species
 image(as(tcrossprod(indMat), "sparseMatrix"))
 ```
 
-![plot of chunk unnamed-chunk-10](inst/README/figure/unnamed-chunk-10-1.png) 
+```
+## Error in image(as(tcrossprod(indMat), "sparseMatrix")): error in evaluating the argument 'x' in selecting a method for function 'image': Error in tcrossprod(indMat) : 
+##   error in evaluating the argument 'x' in selecting a method for function 'tcrossprod': Error: object 'indMat' not found
+## Calls: as -> .class1 -> tcrossprod
+```
 
 #### phylogenetic generalized linear mixed models!
 
@@ -336,6 +464,10 @@ form <- y ~ x * z + (x | species)
 parsedForm <- glmercFormula(form, df, covList = covList)
 ```
 
+```
+## Error: argument "strList" is missing, with no default
+```
+
 Set the covariance parameters to something more interesting (i.e. with
 a covariance between the slope and intercept).
 
@@ -343,18 +475,50 @@ a covariance between the slope and intercept).
 covarSim <- c(0.5, -0.2, 0.5)
 parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim))
 ```
+
+```
+## Error in within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim)): object 'parsedForm' not found
+```
 Update the simulations to reflect the new structure.
 
 ```r
 X <- model.matrix(nobars(form), df) # fixed effects design matrix
 Z <- t(parsedForm$Lambdat %*% parsedForm$Zt) # random effects design
+```
+
+```
+## Error in t(parsedForm$Lambdat %*% parsedForm$Zt): error in evaluating the argument 'x' in selecting a method for function 't': Error: object 'parsedForm' not found
+```
+
+```r
                                              # matrix with
                                              # phylogenetic
                                              # covariances
 fixefSim <- rnorm(ncol(X)) # fixed effects
 u <- rnorm(ncol(Z)) # whitened random effects
+```
+
+```
+## Error in ncol(Z): object 'Z' not found
+```
+
+```r
 p <- plogis(as.numeric(X %*% fixefSim + Z %*% u)) # probability of observation
+```
+
+```
+## Error in plogis(as.numeric(X %*% fixefSim + Z %*% u)): object 'Z' not found
+```
+
+```r
 dl$y <- rbinom(nrow(df), 1, p) # presence-absence data
+```
+
+```
+## Error in rbinom(nrow(df), 1, p): object 'p' not found
+```
+
+```r
 df <- as.data.frame(dl) # reconstruct the data frame with new
                         # structured response
 ```
@@ -367,13 +531,18 @@ species covariance, and the covariance itself.
 image(parsedForm$Lambdat)
 ```
 
-![plot of chunk plot lambda](inst/README/figure/plot lambda-1.png) 
+```
+## Error in image(parsedForm$Lambdat): error in evaluating the argument 'x' in selecting a method for function 'image': Error: object 'parsedForm' not found
+```
 
 ```r
 image(crossprod(parsedForm$Lambdat))
 ```
 
-![plot of chunk plot lambda](inst/README/figure/plot lambda-2.png) 
+```
+## Error in image(crossprod(parsedForm$Lambdat)): error in evaluating the argument 'x' in selecting a method for function 'image': Error in crossprod(parsedForm$Lambdat) : 
+##   error in evaluating the argument 'x' in selecting a method for function 'crossprod': Error: object 'parsedForm' not found
+```
 
 The big four blocks represent the 2-by-2 covariance between intercept
 and slope.  The covariances within these blocks represent phylogenetic
@@ -391,7 +560,9 @@ the second 30.
 image(parsedForm$Zt)
 ```
 
-![plot of chunk plot Zt](inst/README/figure/plot Zt-1.png) 
+```
+## Error in image(parsedForm$Zt): error in evaluating the argument 'x' in selecting a method for function 'image': Error: object 'parsedForm' not found
+```
 
 Here's the full covariance matrix (the large scale blocks reflect
 phylogenetic correlations and the patterns within each block are due
@@ -402,7 +573,10 @@ to the environmental variable).
 image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% parsedForm$Zt)
 ```
 
-![plot of chunk plot full cov](inst/README/figure/plot full cov-1.png) 
+```
+## Error in image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% : error in evaluating the argument 'x' in selecting a method for function 'image': Error in t(parsedForm$Zt) : 
+##   error in evaluating the argument 'x' in selecting a method for function 't': Error: object 'parsedForm' not found
+```
 
 Here is the observed occurrence pattern of species among sites.
 
@@ -421,28 +595,7 @@ color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
 ```
 
 ```
-## 
-## Generalized linear mixed model
-## with covariance amongst grouping factor levels
-## ----------------------------------------------
-## 
-## Fixed effects
-## -------------
-## 
-##                Estimate Std. Error
-## (Intercept) -0.77896847  0.5559502
-## x            0.02085585  0.2890297
-## z            0.06163753  0.2177365
-## x:z          0.82337750  0.2214758
-## 
-## 
-## Random effects (co)variance
-## ---------------------------
-## 
-## $species
-##             (Intercept)          x
-## (Intercept)   0.6055915 -0.1215599
-## x            -0.1215599  0.1076299
+## Error: argument "strList" is missing, with no default
 ```
 
 and compare with the true parameter values.
@@ -454,14 +607,7 @@ cbind(estimated = mod$opt$par, # estimated parameters
 ```
 
 ```
-##          estimated        true
-## covar1  0.77819762  0.50000000
-## covar2 -0.15620693 -0.20000000
-## covar3  0.28849496  0.50000000
-## fixef1 -0.77896847 -1.13324675
-## fixef2  0.02085585  0.06607030
-## fixef3  0.06163753  0.03799977
-## fixef4  0.82337750  0.92106475
+## Error in cbind(estimated = mod$opt$par, true = c(covar = covarSim, fixef = fixefSim)): object 'mod' not found
 ```
 
 Looks great!  At least in this case.
