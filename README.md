@@ -153,7 +153,7 @@ system.time(mod <- glmerc(y ~ 1 + (1 | species),
 
 ```
 ##    user  system elapsed 
-##  32.577   3.308  35.894
+##  31.997   3.206  35.205
 ```
 
 `glmerc` (below) can't do that!  I think the reason for the speed is
