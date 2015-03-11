@@ -3,7 +3,8 @@
 \alias{mkTemplateReTrm}
 \title{Make covariance template random effects term}
 \usage{
-mkTemplateReTrm(modMat, grpFac1, grpFac2, covMat1, covMat2)
+mkTemplateReTrm(modMat, grpFac1, grpFac2, covMat1, covMat2,
+  giveCsparse = TRUE)
 }
 \arguments{
 \item{modMat}{a model matrix}
@@ -13,6 +14,10 @@ of a melted response matrix)}
 
 \item{covMat1,covMat2}{covariance matrices among the levels of
 \code{grpFac1} and \code{grpFac2}}
+
+\item{giveCsparse}{use compressed-form \code{CsparseMatrix}
+representations (\code{TRUE}), or triplet-form
+\code{TsparseMatrix} representations (\code{FALSE})?}
 }
 \description{
 Make covariance template random effects term

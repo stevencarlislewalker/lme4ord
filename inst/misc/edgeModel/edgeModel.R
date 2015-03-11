@@ -2,12 +2,15 @@ library(lme4ord)
 library(lme4)
 library(ape)
 
-td <- simTestPhyloDat(10, n = 10, m = 30, power = 0.4)
+td <- simTestPhyloDat(9, n = 10, m = 100, power = 0.1)
 
-dummy <- as.data.frame(t(edgeTipIndicator(td$ph)))
+edgeInd <- edgeTipIndicator(td$ph)
+dummy <- as.data.frame(t(edgeInd))
 td$dl <- td$dl + variableGroup(dummy, "species")
 edgeNms <- names(dummy)
 df <- as.data.frame(td$dl)
+
+image(as(tcrossprod(edgeInd), "sparseMatrix"))
 
 Z <- model.matrix(as.formula(paste("~ 0 + ", paste(edgeNms, collapse = " + "))), df)
 X <- model.matrix(~ 1, df)

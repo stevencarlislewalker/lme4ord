@@ -14,18 +14,23 @@
 ##' @param tileCov in kronecker products, should the covariance
 ##' matrices in \code{covList} be tiled (\code{tileCov = TRUE}) or
 ##' distributed (\code{tileCov = FALSE})?
+##' @param giveCsparse use compressed-form \code{CsparseMatrix}
+##' representations (\code{TRUE}), or triplet-form
+##' \code{TsparseMatrix} representations (\code{FALSE})?
 ##' @param optControl optControl
 ##' @param ... ...
 ##' @export
 glmerc <- function(formula, data = NULL, family = binomial,
                    covList = list(), tileCov = TRUE,
+                   giveCsparse = TRUE,
                    optControl = list(iprint = 0L), ...) {
 
                                         # parse formula
     data <- as.data.frame(data)
     parsedForm <- glmercFormula(formula, data,
                                 covList = covList,
-                                tileCov = tileCov)
+                                tileCov = tileCov,
+                                giveCsparse = giveCsparse)
 
                                         # organize initial values
     covar <- parsedForm$covar
