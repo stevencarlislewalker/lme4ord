@@ -3,7 +3,7 @@
 \alias{glmercFormula}
 \title{Parse mixed model formula for levels-covariance model}
 \usage{
-glmercFormula(formula, data = NULL, family = binomial, covList,
+glmercFormula(formula, data = NULL, family = binomial, covList, strList,
   tileCov = TRUE, giveCsparse = TRUE, ...)
 }
 \arguments{
@@ -14,6 +14,9 @@ glmercFormula(formula, data = NULL, family = binomial, covList,
 \item{family}{family}
 
 \item{covList}{list of covariance matrices for random effects
+grouping factors in \code{formula}}
+
+\item{strList}{list of structure matrices for random effects
 grouping factors in \code{formula}}
 
 \item{tileCov}{in kronecker products, should the covariance

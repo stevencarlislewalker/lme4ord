@@ -84,7 +84,7 @@ simTestPhyloDat <- function(seed = 1, n = 10, m = 30,
     Vphy <- stanCov(ape:::vcv(phy))
     dimnames(Vphy) <- rep(list(1:m), 2)
     covList <- list(species = Vphy)
-    parsedForm <- glmercFormula(form, df, covList = covList)
+    parsedForm <- glmercFormula(form, df, covList = covList, strList = list())
     parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim))
     X <- model.matrix(nobars(form), df) # fixed effects design matrix
     Z <- t(parsedForm$Lambdat %*% parsedForm$Zt) # random effects design

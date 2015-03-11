@@ -10,13 +10,13 @@
 ##' representations (\code{TRUE}), or triplet-form
 ##' \code{TsparseMatrix} representations (\code{FALSE})?
 ##' @export
-mkTemplateReTrm <- function(modMat, grpFac, edgeMat,
-                            giveCsparse = TRUE) {
+## mkTemplateReTrm <- function(modMat, grpFac, edgeMat,
+##                             giveCsparse = TRUE) {
 
-    matClass <- if(giveCsparse) "CsparseMatrix" else "TsparseMatrix"
+##     matClass <- if(giveCsparse) "CsparseMatrix" else "TsparseMatrix"
 
-    J <- as(as(grpFac, "sparseMatrix"), matClass)
-    Zt <- KhatriRao(edgeMat %*% J, t(modMat))
+##     J <- as(as(grpFac, "sparseMatrix"), matClass)
+##     Zt <- KhatriRao(edgeMat %*% J, t(modMat))
     
 
-}
+## }

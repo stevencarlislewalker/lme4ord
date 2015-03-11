@@ -3,10 +3,11 @@
 \alias{mkTemplateReTrms}
 \title{Make several covariance template random effects terms}
 \usage{
-mkTemplateReTrms(modMat, grpFac1, grpFac2, covMat1, covMat2, giveCsparse)
+mkTemplateReTrms(modMat, grpFac1, grpFac2, covMat1, covMat2, strMat1, strMat2,
+  giveCsparse)
 }
 \arguments{
-\item{modMat,grpFac1,grpFac2,covMat1,covMat2,giveCsparse}{lists of inputs to
+\item{modMat,grpFac1,grpFac2,covMat1,covMat2,strMat1,strMat2,giveCsparse}{lists of inputs to
 \code{\link{mkTemplateReTrm}}}
 }
 \description{

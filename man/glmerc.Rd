@@ -5,7 +5,8 @@
 \title{Generalized linear mixed model with custom covariance over grouping factor levels}
 \usage{
 glmerc(formula, data = NULL, family = binomial, covList = list(),
-  tileCov = TRUE, giveCsparse = TRUE, optControl = list(iprint = 0L), ...)
+  strList = list(), tileCov = TRUE, giveCsparse = TRUE,
+  optControl = list(iprint = 0L), ...)
 
 print.glmerc(x, ...)
 }

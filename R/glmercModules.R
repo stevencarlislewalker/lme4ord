@@ -5,6 +5,8 @@
 ##' @param family family
 ##' @param covList list of covariance matrices for random effects
 ##' grouping factors in \code{formula}
+##' @param strList list of structure matrices for random effects
+##' grouping factors in \code{formula}
 ##' @param tileCov in kronecker products, should the covariance
 ##' matrices in \code{covList} be tiled (\code{tileCov = TRUE}) or
 ##' distributed (\code{tileCov = FALSE})?
@@ -15,7 +17,8 @@
 ##' @importFrom lme4 findbars nobars
 ##' @export
 glmercFormula <- function(formula, data = NULL, family = binomial,
-                          covList, tileCov = TRUE,
+                          covList, strList,
+                          tileCov = TRUE,
                           giveCsparse = TRUE, ...) {
 
                                         # get model matrix, grouping
@@ -28,11 +31,17 @@ glmercFormula <- function(formula, data = NULL, family = binomial,
                                         # associated with each random
                                         # effects term
     for(i in seq_along(reTrmsList)) {
+        reTrmsList[[i]]$strMat <- strList[[reTrmsList[[i]]$grpName]]
+        if(is.null(reTrmsList[[i]]$strMat)) { # if no str mat, use
+                                              # identify
+            nli <- nlevels(reTrmsList[[i]]$grpFac)
+            reTrmsList[[i]]$strMat <- diag(1, nli, nli)
+        }
         reTrmsList[[i]]$covMat <- covList[[reTrmsList[[i]]$grpName]]
         if(is.null(reTrmsList[[i]]$covMat)) { # if no cov mat, use
                                               # identity
-            nli <- nlevels(reTrmsList[[i]]$grpFac)
-            reTrmsList[[i]]$covMat <- diag(1, nli, nli)
+            nstr <- nrow(reTrmsList[[i]]$strMat)
+            reTrmsList[[i]]$covMat <- diag(1, nstr, nstr)
         }
     }
 
@@ -42,6 +51,7 @@ glmercFormula <- function(formula, data = NULL, family = binomial,
     modMats <- lapply(reTrmsList, "[[", "modMat")
     grpFacs <- lapply(reTrmsList, "[[", "grpFac")
     covMats <- lapply(reTrmsList, "[[", "covMat")
+    strMats <- lapply(reTrmsList, "[[", "strMat")
 
                                         # set up constant grouping
                                         # factors and 1 by 1 cov mats
@@ -50,6 +60,7 @@ glmercFormula <- function(formula, data = NULL, family = binomial,
                                         # nesting)
     grpFacConst <- rep(list(as.factor(rep("const", nrow(data)))), length(grpFacs))
     covMatConst <- rep(list(matrix(1, 1, 1)), length(grpFacs))
+    strMatConst <- rep(list(matrix(1, 1, 1)), length(grpFacs))
 
                                         # construct the full random
                                         # effects model matrix,
@@ -59,11 +70,13 @@ glmercFormula <- function(formula, data = NULL, family = binomial,
         re <- mkTemplateReTrms(modMats,
                                grpFacs, grpFacConst,
                                covMats, covMatConst,
+                               strMats, strMatConst,
                                giveCsparse)
     } else {
         re <- mkTemplateReTrms(modMats,
                                grpFacConst, grpFacs,
                                covMatConst, covMats,
+                               strMatConst, strMats,
                                giveCsparse)
     }
 
@@ -73,7 +86,8 @@ glmercFormula <- function(formula, data = NULL, family = binomial,
              list(X = model.matrix(nobars(formula), data),
                   y = model.response(model.frame(nobars(formula), data)),
                   flist = simplifyFacList(grpFacs),
-                  modMats = modMats)))
+                  modMats = modMats,
+                  strMats = strMats)))
 }
 
 ##' Get components of a \code{glmerc} object
@@ -111,6 +125,7 @@ getMEc <- function(object, name = c("X", "Z", "Zt", "y", "TmodMat", "cnms")) {
 ##' of a melted response matrix)
 ##' @param covMat1,covMat2 covariance matrices among the levels of
 ##' \code{grpFac1} and \code{grpFac2}
+##' @param strMat1,strMat2 structure matrices
 ##' @param giveCsparse use compressed-form \code{CsparseMatrix}
 ##' representations (\code{TRUE}), or triplet-form
 ##' \code{TsparseMatrix} representations (\code{FALSE})?
@@ -118,11 +133,12 @@ getMEc <- function(object, name = c("X", "Z", "Zt", "y", "TmodMat", "cnms")) {
 mkTemplateReTrm <- function(modMat,
                             grpFac1, grpFac2,
                             covMat1, covMat2,
+                            strMat1, strMat2,
                             giveCsparse = TRUE) {
 
-    badDims <-
-        (length(levels(grpFac1)) != nrow(covMat1)) ||
-        (length(levels(grpFac2)) != nrow(covMat2))
+    badDims <- FALSE # FIXME: improve condition
+        # (length(levels(grpFac1)) != nrow(covMat1)) ||
+        # (length(levels(grpFac2)) != nrow(covMat2))
     if(badDims) stop("covariance matrix incompatible with its grouping factor")
 
                                         # use consistent Matrix
@@ -141,8 +157,8 @@ mkTemplateReTrm <- function(modMat,
                                         # sure levels of grpFac's are
                                         # in the same order as the
                                         # dimnames of the covMat's)
-    J1 <- as(as(grpFac1, "sparseMatrix"), matClass)
-    J2 <- as(as(grpFac2, "sparseMatrix"), matClass)
+    J1 <- as(strMat1 %*% as(grpFac1, "sparseMatrix"), matClass)
+    J2 <- as(strMat2 %*% as(grpFac2, "sparseMatrix"), matClass)
     Zt <- KhatriRao(KhatriRao(J2, t(modMat)), J1)
 
     nc <- ncol(modMat)
@@ -191,16 +207,20 @@ reTrmsBdiag <- function(lst) {
 
 ##' Make several covariance template random effects terms
 ##'
-##' @param modMat,grpFac1,grpFac2,covMat1,covMat2,giveCsparse lists of inputs to
+##' @param modMat,grpFac1,grpFac2,covMat1,covMat2,strMat1,strMat2,giveCsparse lists of inputs to
 ##' \code{\link{mkTemplateReTrm}}
 ##' @export
 mkTemplateReTrms <- function(modMat,
                              grpFac1, grpFac2,
                              covMat1, covMat2,
+                             strMat1, strMat2,
                              giveCsparse) {
 
     reTrmsList <- listTranspose(mapply(mkTemplateReTrm,
-                                       modMat, grpFac1, grpFac2, covMat1, covMat2,
+                                       modMat,
+                                       grpFac1, grpFac2,
+                                       covMat1, covMat2,
+                                       strMat1, strMat2,
                                        SIMPLIFY = FALSE,
                                        MoreArgs = list(giveCsparse = giveCsparse)))
 

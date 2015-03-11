@@ -21,7 +21,8 @@
 ##' @param ... ...
 ##' @export
 glmerc <- function(formula, data = NULL, family = binomial,
-                   covList = list(), tileCov = TRUE,
+                   covList = list(), strList = list(),
+                   tileCov = TRUE,
                    giveCsparse = TRUE,
                    optControl = list(iprint = 0L), ...) {
 
@@ -29,6 +30,7 @@ glmerc <- function(formula, data = NULL, family = binomial,
     data <- as.data.frame(data)
     parsedForm <- glmercFormula(formula, data,
                                 covList = covList,
+                                strList = strList,
                                 tileCov = tileCov,
                                 giveCsparse = giveCsparse)
 
@@ -127,6 +129,11 @@ vcov.glmerc <- function(object, justFixef = TRUE, ...) {
     return(ans)
 }
 
+.safeExtractDiag <- function(x) {
+    if(length(x) == 1) return(x)
+    diag(x)
+}
+
 ##' @rdname glmerc
 ##' @export
 print.glmerc <- function(x, ...) {
@@ -136,7 +143,7 @@ print.glmerc <- function(x, ...) {
     cat("Fixed effects\n")
     cat("-------------\n\n")
     print(cbind(Estimate = fixef(x),
-                `Std. Error` = sqrt(diag(vcov(x)))))
+                `Std. Error` = sqrt(.safeExtractDiag(vcov(x)))))
 
     cat("\n\nRandom effects (co)variance\n")
     cat("---------------------------\n\n")
