@@ -10,6 +10,7 @@
 ##' @return object of class \code{repSparse} with list elements
 ##' \code{rowInds}, \code{colInds}, \code{valInds}, \code{vals}, and
 ##' \code{Dim} attibute
+##' @rdname repSparse
 ##' @export
 repSparse <- function(rowInds, colInds, valInds, vals, Dim) {
     if(missing(Dim)) Dim <- c(max(rowInds), max(colInds))
@@ -25,9 +26,11 @@ repSparse <- function(rowInds, colInds, valInds, vals, Dim) {
               Dim = Dim)
 }
 
+##' @rdname repSparse
 ##' @export
 print.repSparse <- function(x, ...) str(x, ...)
 
+##' @rdname repSparse
 ##' @export
 as.data.frame.repSparse <- function(x, ...) {
     with(x, {
@@ -38,6 +41,7 @@ as.data.frame.repSparse <- function(x, ...) {
     })
 }
 
+##' @rdname repSparse
 ##' @param sparse return \code{sparseMatrix}?
 ##' @export
 as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
@@ -51,6 +55,7 @@ as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
     return(as.matrix(ans))
 }
 
+##' @rdname repSparse
 ##' @export
 dim.repSparse <- function(x) attr(x, "Dim")
 
@@ -58,6 +63,7 @@ dim.repSparse <- function(x) attr(x, "Dim")
 ##'
 ##' @param object \code{repSparse} object
 ##' @return results of \code{sparseMatrix}
+##' @rdname repSparse
 ##' @export
 repSparse2Sparse <- function(object, ...) {
     with(object, {
@@ -69,6 +75,7 @@ repSparse2Sparse <- function(object, ...) {
     })
 }
 
+##' @rdname repSparse
 ##' @export
 image.repSparse <- function(x, ...) image(repSparse2Sparse(x))
 
