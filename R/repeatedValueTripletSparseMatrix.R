@@ -169,3 +169,26 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
               Dim = c(nrows, ncols))
 }
 
+##' Simplify a repeated sparse matrix
+##'
+##' Remove unused values and renumber value indices of a
+##' \code{repSparse} object that has values that are not used in any
+##' matrix element.
+##'
+##' @param object a \code{repSparse} object
+##' @export
+simplifyRepSparse <- function(object) {
+    keepers <- sort(unique(object$valInds))
+    valsOut <- object$vals[keepers]
+    valIndsOut <- match(object$valInds, keepers)
+    object$vals <- valsOut
+    object$valInds <- valIndsOut
+    return(object)
+}
+
+
+
+colBind <- function(...) {
+    mats <- list(...)
+    
+}
