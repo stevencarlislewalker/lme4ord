@@ -187,8 +187,48 @@ simplifyRepSparse <- function(object) {
 }
 
 
-
+##' Column and row binding fo repeated sparse matrices
+##'
+##' @param ... list of \code{repSparse} objects
+##' @rdname colBind
+##' @export
 colBind <- function(...) {
     mats <- list(...)
-    
+    ci <- lapply(mats, "[[", "colInds")
+    ri <- lapply(mats, "[[", "rowInds")
+    vi <- lapply(mats, "[[", "valInds")
+    va <- lapply(mats, "[[", "vals")
+    clen <- sapply(ci, length)
+    vilen <- sapply(vi, length)
+    valen <- sapply(va[-nmat], length) # don't need value lengths for last matrix
+    nmat <- length(mats)
+    ncols <- sapply(mats, ncol)
+    nrows <- nrow(mats[[1]])
+    repSparse(rowInds = unlist(ri) + 1,
+              colInds = unlist(ci) + rep.int(c(0, cumsum(ncols[-nmat])), clen) + 1,
+              valInds = unlist(vi) + rep.int(c(0, cumsum(valen)), vlen),
+              vals = unlist(va),
+              Dim = c(nrows, sum(ncols)))
+}
+
+##' @rdname colBind
+##' @export
+rowBind <- function(...) {
+    ## FIXME: a little DRY cf colBind
+    mats <- list(...)
+    ci <- lapply(mats, "[[", "colInds")
+    ri <- lapply(mats, "[[", "rowInds")
+    vi <- lapply(mats, "[[", "valInds")
+    va <- lapply(mats, "[[", "vals")
+    rlen <- sapply(ri, length)
+    vilen <- sapply(vi, length)
+    valen <- sapply(va[-nmat], length) # don't need value lengths for last matrix
+    nmat <- length(mats)
+    nrows <- sapply(mats, nrow)
+    ncols <- ncol(mats[[1]])
+    repSparse(rowInds = unlist(ri) + rep.int(c(0, cumsum(nrows[-nmat])), rlen) + 1,
+              colInds = unlist(ci) + 1,
+              valInds = unlist(vi) + rep.int(c(0, cumsum(valen)), vlen),
+              vals = unlist(va),
+              Dim = c(sum(nrows), ncols))
 }
