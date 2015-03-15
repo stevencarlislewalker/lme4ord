@@ -191,7 +191,10 @@ mkTemplateReTrm <- function(modMat,
                 nCovar = length(TmodMat@x)))
 }
 
-
+##' Transpose a list
+##'
+##' @param lst \code{\link{list}}
+##' @export
 listTranspose <- function(lst) {
     lstExtract <- function(i) lapply(lst, "[[", i)
     setNames(lapply(names(lst[[1]]), lstExtract), names(lst[[1]]))
