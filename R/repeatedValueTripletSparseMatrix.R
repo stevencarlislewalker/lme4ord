@@ -187,48 +187,45 @@ simplifyRepSparse <- function(object) {
 }
 
 
-##' Column and row binding fo repeated sparse matrices
+##' Row, column, and block-diagonal binding for repeated sparse
+##' matrices
 ##'
 ##' @param ... list of \code{repSparse} objects
-##' @rdname colBind
+##' @param type type of binding
+##' @param repVals repeat unique values from the first matrix over all
+##' matrices (FIXME: maybe implement a tolerance for `unique` or
+##' `duplicated` or something)
+##' @rdname bind
 ##' @export
-colBind <- function(...) {
+bind <- function(..., type = c("row", "col", "diag"), repVals = FALSE) {
+    ## FIXME add reprow, repcol, and repdiag types for 
     mats <- list(...)
-    ci <- lapply(mats, "[[", "colInds")
-    ri <- lapply(mats, "[[", "rowInds")
-    vi <- lapply(mats, "[[", "valInds")
-    va <- lapply(mats, "[[", "vals")
-    clen <- sapply(ci, length)
-    vilen <- sapply(vi, length)
-    valen <- sapply(va[-nmat], length) # don't need value lengths for last matrix
     nmat <- length(mats)
-    ncols <- sapply(mats, ncol)
-    nrows <- nrow(mats[[1]])
-    repSparse(rowInds = unlist(ri) + 1,
-              colInds = unlist(ci) + rep.int(c(0, cumsum(ncols[-nmat])), clen) + 1,
-              valInds = unlist(vi) + rep.int(c(0, cumsum(valen)), vlen),
-              vals = unlist(va),
-              Dim = c(nrows, sum(ncols)))
-}
-
-##' @rdname colBind
-##' @export
-rowBind <- function(...) {
-    ## FIXME: a little DRY cf colBind
-    mats <- list(...)
-    ci <- lapply(mats, "[[", "colInds")
-    ri <- lapply(mats, "[[", "rowInds")
-    vi <- lapply(mats, "[[", "valInds")
-    va <- lapply(mats, "[[", "vals")
-    rlen <- sapply(ri, length)
-    vilen <- sapply(vi, length)
-    valen <- sapply(va[-nmat], length) # don't need value lengths for last matrix
-    nmat <- length(mats)
-    nrows <- sapply(mats, nrow)
-    ncols <- ncol(mats[[1]])
-    repSparse(rowInds = unlist(ri) + rep.int(c(0, cumsum(nrows[-nmat])), rlen) + 1,
-              colInds = unlist(ci) + 1,
-              valInds = unlist(vi) + rep.int(c(0, cumsum(valen)), vlen),
-              vals = unlist(va),
-              Dim = c(sum(nrows), ncols))
+    with(listTranspose(mats), {
+        valOff <- rowOff <- colOff <- 0
+        if(repVals) {
+            stop("not done repVals")
+            vals <- vals[1]
+        }
+        vilen <- sapply(valInds, length)
+        valen <- sapply(vals[-nmat], length) # don't need value lengths for last matrix
+        valOff <- rep.int(c(0, cumsum(valen)), vilen)
+        if((type == "row") || (type == "diag")) {
+            rlen <- sapply(rowInds, length)
+            nrows <- sapply(mats, nrow)
+            rowOff <- rep.int(c(0, cumsum(nrows[-nmat])), rlen)
+        }
+        if((type == "col") || (type == "diag")) {
+            clen <- sapply(colInds, length)
+            ncols <- sapply(mats, ncol)
+            colOff <- rep.int(c(0, cumsum(ncols[-nmat])), clen)
+        }
+        if(type == "row") ncols <- ncol(mats[[1]])
+        if(type == "col") nrows <- nrow(mats[[1]])
+        return(repSparse(rowInds = unlist(rowInds) + rowOff + 1,
+                         colInds = unlist(colInds) + colOff + 1,
+                         valInds = unlist(valInds) + valOff,
+                         vals = unlist(vals),
+                         Dim = c(sum(nrows), sum(ncols))))
+    })
 }
