@@ -7,6 +7,7 @@
 \alias{print.repSparse}
 \alias{repSparse}
 \alias{repSparse2Sparse}
+\alias{sparse2RepSparse}
 \title{Sparse matrix with repeated values}
 \usage{
 repSparse(rowInds, colInds, valInds, vals, Dim)
@@ -20,6 +21,8 @@ as.matrix.repSparse(x, sparse = FALSE, ...)
 \method{dim}{repSparse}(x)
 
 repSparse2Sparse(object, ...)
+
+sparse2RepSparse(object, ...)
 
 image.repSparse(x, ...)
 }
@@ -49,7 +52,5 @@ results of \code{sparseMatrix}
 }
 \description{
 Sparse matrix with repeated values
-
-Convert to \code{sparseMatrix}
 }
 

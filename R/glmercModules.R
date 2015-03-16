@@ -33,7 +33,7 @@ glmercFormula <- function(formula, data = NULL, family = binomial,
     for(i in seq_along(reTrmsList)) {
         reTrmsList[[i]]$strMat <- strList[[reTrmsList[[i]]$grpName]]
         if(is.null(reTrmsList[[i]]$strMat)) { # if no str mat, use
-                                              # identify
+                                              # identity
             nli <- nlevels(reTrmsList[[i]]$grpFac)
             reTrmsList[[i]]$strMat <- diag(1, nli, nli)
         }

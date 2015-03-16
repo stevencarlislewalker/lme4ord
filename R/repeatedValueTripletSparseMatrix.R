@@ -59,8 +59,7 @@ as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
 ##' @export
 dim.repSparse <- function(x) attr(x, "Dim")
 
-##' Convert to \code{sparseMatrix}
-##'
+
 ##' @param object \code{repSparse} object
 ##' @return results of \code{sparseMatrix}
 ##' @rdname repSparse
@@ -74,6 +73,18 @@ repSparse2Sparse <- function(object, ...) {
                      giveCsparse = FALSE)
     })
 }
+
+##' @rdname repSparse
+##' @export
+sparse2RepSparse <- function(object, ...) {
+    object <- as(object, "TsparseMatrix")
+    repSparse(rowInds = object@i + 1L,
+              colInds = object@j + 1L,
+              valInds = 1:length(object@i),
+              vals = object@x,
+              Dim = dim(object))
+}
+
 
 ##' @rdname repSparse
 ##' @export
@@ -93,9 +104,15 @@ image.repSparse <- function(x, ...) image(repSparse2Sparse(x))
 ##     with(ans, repSparse(rowInds, colInds, valInds, vals, dim(x)))
 ## }
 
-## mmult <- function(X, Y) {
-    
-## }
+## ----------------------------------------------------------------------
+## Matrix multiplication -- mmult (standard matrix product),
+## kron (Kronecker product), kr (Khatri-Rao product)
+
+mmult <- function(X, Y) {
+    stop("not done")
+    matchBin <- outer(X$colInds, Y$rowInds, "==")
+    matchInd <- which(matchBin, arr.ind = TRUE)
+}
 
 ##' Kronecker and Khatri-Rao products for repeated sparse matrices
 ##'
@@ -261,4 +278,16 @@ rep.repSparse <- function(x, times,
                      vals = x$vals,
                      Dim = c(rowMult, colMult) * dim(x))
     return(ans)
+}
+
+##' Repeated sparse matrix transpose
+##'
+##' @param x \code{repSparse} object
+##' @export
+t.repSparse <- function(x) {
+    tx <- x
+    tx$rowInds <- x$colInds
+    tx$colInds <- x$rowInds
+    attr(tx, "Dim") <- rev(dim(x))
+    return(tx)
 }
