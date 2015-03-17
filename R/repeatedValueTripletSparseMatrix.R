@@ -107,6 +107,7 @@ image.repSparse <- function(x, ...) image(repSparse2Sparse(x))
 ## ----------------------------------------------------------------------
 ## Matrix multiplication -- mmult (standard matrix product),
 ## kron (Kronecker product), kr (Khatri-Rao product)
+## ----------------------------------------------------------------------
 
 mmult <- function(X, Y) {
     stop("not done")
@@ -203,6 +204,9 @@ simplifyRepSparse <- function(object) {
     return(object)
 }
 
+## ----------------------------------------------------------------------
+## Matrix binding and repeating
+## ----------------------------------------------------------------------
 
 ##' Row, column, and block-diagonal binding for repeated sparse
 ##' matrices
@@ -280,6 +284,10 @@ rep.repSparse <- function(x, times,
     return(ans)
 }
 
+## ----------------------------------------------------------------------
+## Matrix reshaping -- t
+## ----------------------------------------------------------------------
+
 ##' Repeated sparse matrix transpose
 ##'
 ##' @param x \code{repSparse} object
@@ -290,4 +298,51 @@ t.repSparse <- function(x) {
     tx$colInds <- x$rowInds
     attr(tx, "Dim") <- rev(dim(x))
     return(tx)
+}
+
+
+## ----------------------------------------------------------------------
+## Construct special matrices -- repSparseCompSymm
+## ----------------------------------------------------------------------
+
+##' Repeated sparse matrix with compound symmetry
+##'
+##' @param diagVal value for the diagonal
+##' @param offDiagVal value for the off-diagonal
+##' @param matSize size of the resulting matrix
+##' @export
+repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
+    iii <- rep.int(1:(matSize-1), 1:(matSize-1)) + 1
+    jjj <- sequence(1:(matSize-1))
+    ii <- c(1:m, iii, jjj)
+    jj <- c(1:m, jjj, iii)
+    vi <- rep.int(1:2, c(matSize, 2 * choose(matSize, 2)))
+    va <- setNames(c( diagVal ,  offDiagVal ),
+                   c("diagVal", "offDiagVal"))
+    ans <- repSparse(ii, jj, vi, va, Dim = c(matSize, matSize))
+    class(ans) <- c("repSparseCompSymm", class(ans))
+    return(ans)
+}
+
+##' Diagonal repeated sparse matrix
+##'
+##' @param vals vector of values
+##' @param valInds vector of value indices
+##' @export
+repSparseDiag <- function(vals, valInds) {
+    if(missing(valInds)) valInds <- seq_along(vals)
+    matSize <- length(valInds)
+    ans <- repSparse(1:matSize, 1:matSize, valInds, vals)
+    class(ans) <- c("repSparseDiag", class(ans))
+    return(ans)
+}
+
+##' Identity repeated sparse matrix
+##'
+##' @param matSize size of matrix
+##' @export
+repSparseIdent <- function(matSize) {
+    ans <- repSparseDiag(1, rep(1, matSize))
+    class(ans) <- c("repSparseIdent", class(ans))
+    return(ans)
 }
