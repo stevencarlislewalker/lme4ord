@@ -37,8 +37,15 @@ as.data.frame.repSparse <- function(x, ...) {
         data.frame(rowInds = rowInds,
                    colInds = colInds,
                    valInds = valInds,
-                   values = vals[valInds])
+                   vals = vals[valInds])
     })
+}
+
+##' @param keep.rownames passed to \code{as.data.table}
+##' @rdname repSparse
+##' @export
+as.data.table.repSparse <- function(x, keep.rownames = FALSE) {
+    as.data.table(as.data.frame(x), keep.rownames = keep.rownames)
 }
 
 ##' @rdname repSparse
@@ -109,11 +116,74 @@ image.repSparse <- function(x, ...) image(repSparse2Sparse(x))
 ## kron (Kronecker product), kr (Khatri-Rao product)
 ## ----------------------------------------------------------------------
 
-mmult <- function(X, Y) {
-    stop("not done")
-    matchBin <- outer(X$colInds, Y$rowInds, "==")
+
+##' Row-wise combination of two repeated sparse matrices
+##'
+##' @param X,Y \code{repSparse} objects
+##' @return a row-wise combination of repeated sparse matrices
+##' @export
+rowWiseCombination <- function(X, Y) {
+
+    matchBin <- outer(X$colInds, Y$colInds, "==")
     matchInd <- which(matchBin, arr.ind = TRUE)
+    
+    structure(list(XrowInds  = X$rowInds[matchInd[, 1]],
+                   YrowInds  = Y$rowInds[matchInd[, 2]],
+                   XYcolInds = X$colInds[matchInd[, 1]],
+                   XvalInds  = X$valInds[matchInd[, 1]],
+                   YvalInds  = Y$valInds[matchInd[, 2]],
+                   Xvals = X$vals,
+                   Yvals = Y$vals),
+              class = "repSparseRowWiseCombination",
+              Dim = c(nrow(X), nrow(Y), ncol(X)))
 }
+
+    
+
+
+##' Standard matrix multiplication for repeated sparse matrices
+##'
+##' @param X,Y \code{repSparse} objects
+##' @export
+mmult <- function(X, Y) {
+
+    Y <- t(Y)
+    
+    ## matchBin <- outer(X$colInds, Y$colInds, "==")
+    ## matchInd <- which(matchBin, arr.ind = TRUE)
+
+    ## XrowInds <- X$rowInds[matchInd[, 1]]
+    ## YrowInds <- Y$rowInds[matchInd[, 2]]
+    ## XvalInds <- X$valInds[matchInd[, 1]]
+    ## YvalInds <- Y$valInds[matchInd[, 2]]
+
+    with(rowWiseCombination(X, Y), {
+
+        outerColInds <- XYcolInds
+        outerValInds <- YvalInds + (length(Yvals) * (XvalInds - 1))
+        outerVals <- as.vector(Yvals %*% t(Xvals))
+        outerRowInds <- YrowInds + (dim(Y)[1] * XrowInds)
+        
+        sumInds <- lapply(tapply(outerValInds, outerRowInds, I), sort)
+        uniqueSumInds <- unique(sumInds)
+        
+        groupNames <- as.numeric(names(sumInds))
+        matchNames <- match(groupNames, outerRowInds)
+        
+        XYrowInds <- XrowInds[matchNames]
+        XYcolInds <- YrowInds[matchNames]
+        XYvals <- sapply(uniqueSumInds, function(ii) sum(outerVals[ii]))
+        XYvalInds <- match(sumInds, uniqueSumInds)
+        
+        structure(list(rowInds = XYrowInds,
+                       colInds = XYcolInds,
+                       valInds = XYvalInds,
+                       vals = XYvals),
+                  class = "repSparse",
+                  Dim = c(dim(X)[1], dim(Y)[1]))
+    })
+}
+
 
 ##' Kronecker and Khatri-Rao products for repeated sparse matrices
 ##'
@@ -143,48 +213,20 @@ kron <- function(X, Y, FUN = "*",
 ##' @rdname kron
 ##' @export
 kr <- function(X, Y) {
-    matchBin <- outer(X$colInds, Y$colInds, "==")
-    matchInd <- which(matchBin, arr.ind = TRUE)
 
-    XrowInds <- X$rowInds[matchInd[, 1]]
-    YrowInds <- Y$rowInds[matchInd[, 2]]
-    XvalInds <- X$valInds[matchInd[, 1]]
-    YvalInds <- Y$valInds[matchInd[, 2]]
-
-    XYcolInds <- X$colInds[matchInd[, 1]]
-    XYvalInds <- YvalInds + (length(Y$vals) * (XvalInds - 1))
-    XYvals <- as.vector(Y$vals %*% t(X$vals))
-    XYrowInds <- YrowInds + (dim(Y)[1] * XrowInds)
+    with(rowWiseCombination(X, Y), {
     
-    structure(list(rowInds = XYrowInds,
-                   colInds = XYcolInds,
-                   valInds = XYvalInds,
-                   vals = XYvals),
-              class = "repSparse",
-              Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
-}
-
-##' Random repeated sparse matrix
-##'
-##' @param nrows,ncols numbers of rows and columns
-##' @param nvals number of values
-##' @param nnonzeros number of nonzero elements
-##' @param rfunc random number function
-##' @param ... dots
-##' @export
-rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
-    if(nnonzeros < nvals)
-        stop("number of nonzeros must be at least the number of values")
-    if(nnonzeros > (nrows * ncols))
-        stop("too many nonzeros for matrix of this size")
-    valInds <- sample(c(1:nvals, sample(1:nvals, nnonzeros - nvals, TRUE)))
-    indChoose <- sample(nrows * ncols, length(valInds))
-    inds <- expand.grid(1:nrows, 1:ncols)[indChoose, ]
-    vals <- rfunc(max(valInds), ...)
-    repSparse(rowInds = inds$Var1,
-              colInds = inds$Var2,
-              valInds = valInds, vals = vals,
-              Dim = c(nrows, ncols))
+        XYvalInds <- YvalInds + (length(Yvals) * (XvalInds - 1))
+        XYvals <- as.vector(Yvals %*% t(Xvals))
+        XYrowInds <- YrowInds + (dim(Y)[1] * XrowInds)
+        
+        structure(list(rowInds = XYrowInds,
+                       colInds = XYcolInds,
+                       valInds = XYvalInds,
+                       vals = XYvals),
+                  class = "repSparse",
+                  Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
+    })
 }
 
 ##' Simplify a repeated sparse matrix
@@ -302,7 +344,8 @@ t.repSparse <- function(x) {
 
 
 ## ----------------------------------------------------------------------
-## Construct special matrices -- repSparseCompSymm
+## Construct special matrices -- repSparseCompSymm, repSparseDiag,
+## repSparseIdent, rRepSparse
 ## ----------------------------------------------------------------------
 
 ##' Repeated sparse matrix with compound symmetry
@@ -345,4 +388,28 @@ repSparseIdent <- function(matSize) {
     ans <- repSparseDiag(1, rep(1, matSize))
     class(ans) <- c("repSparseIdent", class(ans))
     return(ans)
+}
+
+
+##' Random repeated sparse matrix
+##'
+##' @param nrows,ncols numbers of rows and columns
+##' @param nvals number of values
+##' @param nnonzeros number of nonzero elements
+##' @param rfunc random number function
+##' @param ... dots
+##' @export
+rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
+    if(nnonzeros < nvals)
+        stop("number of nonzeros must be at least the number of values")
+    if(nnonzeros > (nrows * ncols))
+        stop("too many nonzeros for matrix of this size")
+    valInds <- sample(c(1:nvals, sample(1:nvals, nnonzeros - nvals, TRUE)))
+    indChoose <- sample(nrows * ncols, length(valInds))
+    inds <- expand.grid(1:nrows, 1:ncols)[indChoose, ]
+    vals <- rfunc(max(valInds), ...)
+    repSparse(rowInds = inds$Var1,
+              colInds = inds$Var2,
+              valInds = valInds, vals = vals,
+              Dim = c(nrows, ncols))
 }
