@@ -5,15 +5,22 @@
 \alias{as.matrix.repSparse}
 \alias{dim.repSparse}
 \alias{image.repSparse}
+\alias{mkIdentityTrans}
 \alias{print.repSparse}
 \alias{repSparse}
 \alias{repSparse2Sparse}
 \alias{sparse2RepSparse}
+\alias{subset.repSparse}
+\alias{update.repSparse}
 \title{Sparse matrix with repeated values}
 \usage{
-repSparse(rowInds, colInds, valInds, vals, Dim)
+repSparse(rowInds, colInds, valInds, vals, trans, Dim)
+
+mkIdentityTrans(lengthPars)
 
 print.repSparse(x, ...)
+
+update.repSparse(object, newPars, ...)
 
 \method{as.data.frame}{repSparse}(x, ...)
 
@@ -28,6 +35,8 @@ repSparse2Sparse(object, ...)
 sparse2RepSparse(object, ...)
 
 image.repSparse(x, ...)
+
+\method{subset}{repSparse}(x, rows, cols)
 }
 \arguments{
 \item{rowInds}{1-based row indices (converted to 0-based in
@@ -40,18 +49,30 @@ output)}
 
 \item{vals}{nonzero values}
 
+\item{trans}{function for transforming some parameters into
+\code{vals}.  the \code{\link{environment}} of this function must
+contain a named list of these parameters (called \code{matPars}),
+which are to be taken as the arguments to \code{trans}.
+\code{update} will update these parameters (in the future).}
+
 \item{Dim}{matrix dimensions}
+
+\item{lengthPars}{length of the parameter vector}
+
+\item{newPars}{new parameter values}
 
 \item{keep.rownames}{passed to \code{as.data.table}}
 
 \item{sparse}{return \code{sparseMatrix}?}
 
 \item{object}{\code{repSparse} object}
+
+\item{rows,cols}{not sure yet}
 }
 \value{
 object of class \code{repSparse} with list elements
 \code{rowInds}, \code{colInds}, \code{valInds}, \code{vals}, and
-\code{Dim} attibute
+\code{trans}, and a \code{Dim} attibute
 
 results of \code{sparseMatrix}
 }

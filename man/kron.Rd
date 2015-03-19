@@ -4,14 +4,14 @@
 \alias{kron}
 \title{Kronecker and Khatri-Rao products for repeated sparse matrices}
 \usage{
-kron(X, Y, FUN = "*", makedimnames = FALSE, ...)
+kron(X, Y, trans = "*", makedimnames = FALSE, ...)
 
-kr(X, Y)
+kr(X, Y, trans = "*")
 }
 \arguments{
 \item{X,Y}{\code{repSparse} objects}
 
-\item{FUN}{ignored}
+\item{trans}{see argument \code{FUN} in \code{\link{outer}}}
 
 \item{makedimnames}{ignored}
 

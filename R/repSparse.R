@@ -6,29 +6,59 @@
 ##' output)
 ##' @param valInds indices for the nonzero values
 ##' @param vals nonzero values
+##' @param trans function for transforming some parameters into
+##' \code{vals}.  the \code{\link{environment}} of this function must
+##' contain a named list of these parameters (called \code{matPars}),
+##' which are to be taken as the arguments to \code{trans}.
+##' \code{update} will update these parameters (in the future).
 ##' @param Dim matrix dimensions
 ##' @return object of class \code{repSparse} with list elements
 ##' \code{rowInds}, \code{colInds}, \code{valInds}, \code{vals}, and
-##' \code{Dim} attibute
+##' \code{trans}, and a \code{Dim} attibute
 ##' @rdname repSparse
 ##' @export
-repSparse <- function(rowInds, colInds, valInds, vals, Dim) {
+repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim) {
     if(missing(Dim)) Dim <- c(max(rowInds), max(colInds))
     if(!all(1:max(valInds) %in% valInds)) stop("max(valInds) unnecessarily large")
     if(length(vals) != max(valInds)) stop("mismatch between vals and valInds")
     if(length(rowInds) != length(colInds)) stop("row and column index mismatch")
     if(length(rowInds) != length(valInds)) stop("row and value index mismatch")
+    if(missing(trans)) trans <- mkIdentityTrans(length(vals))
     structure(list(rowInds = as.integer(rowInds - 1),
                    colInds = as.integer(colInds - 1),
                    valInds = valInds,
-                   vals = vals),
+                   vals = vals,
+                   trans = trans),
               class = "repSparse",
               Dim = Dim)
+}
+
+##' @param lengthPars length of the parameter vector
+##' @rdname repSparse
+##' @export
+mkIdentityTrans <- function(lengthPars) {
+    local({
+        lengthPars <- lengthPars
+        function(matPars) {
+            if((nPars <- length(matPars)) != lengthPars)
+                stop(paste("length(matPars) = ", nPars,
+                           " but must be ", lengthPars,
+                           collapse = ""))
+            matPars
+        }
+    })
 }
 
 ##' @rdname repSparse
 ##' @export
 print.repSparse <- function(x, ...) str(x, ...)
+
+##' @param newPars new parameter values
+##' @rdname repSparse
+##' @export
+update.repSparse <- function(object, newPars, ...) {
+    stop("not done, but really should be")
+}
 
 ##' @rdname repSparse
 ##' @export
@@ -89,6 +119,7 @@ sparse2RepSparse <- function(object, ...) {
               colInds = object@j + 1L,
               valInds = 1:length(object@i),
               vals = object@x,
+              trans = mkIdentityTrans(length(object@x)),
               Dim = dim(object))
 }
 
@@ -97,8 +128,11 @@ sparse2RepSparse <- function(object, ...) {
 ##' @export
 image.repSparse <- function(x, ...) image(repSparse2Sparse(x))
 
-
-## subset.repSparse <- function(x, rows, cols) {
+##' @param rows,cols not sure yet
+##' @rdname repSparse
+##' @export
+subset.repSparse <- function(x, rows, cols) {
+    stop("not done, but really should be")
 ##     ri <- x$rowInds %in% rows
 ##     ci <- x$colInds %in% cols
 ##     inds <- ri & ci
@@ -109,7 +143,7 @@ image.repSparse <- function(x, ...) image(repSparse2Sparse(x))
 ##         valInds <- valInds[inds]
 ##     })
 ##     with(ans, repSparse(rowInds, colInds, valInds, vals, dim(x)))
-## }
+}
 
 ## ----------------------------------------------------------------------
 ## Matrix multiplication -- mmult (standard matrix product),
@@ -133,36 +167,51 @@ rowWiseCombination <- function(X, Y) {
                    XvalInds  = X$valInds[matchInd[, 1]],
                    YvalInds  = Y$valInds[matchInd[, 2]],
                    Xvals = X$vals,
-                   Yvals = Y$vals),
+                   Yvals = Y$vals,
+                   Xtrans = X$trans,
+                   Ytrans = Y$trans),
               class = "repSparseRowWiseCombination",
               Dim = c(nrow(X), nrow(Y), ncol(X)))
 }
 
-    
-
+##' Construct function for a transformed outer product
+##'
+##' @param A,B \code{numeric} \code{vector}s
+##' @param Atrans,Btrans functions for transforming \code{A} and
+##' \code{B}
+##' @param ABtrans function to pass as \code{FUN} in
+##' \code{\link{outer}}
+##' @export
+mkOuterTrans <- function(A, B, Atrans, Btrans, ABtrans) {
+    local({
+        ## FIXME: include indices??  don't think so, but ... actually
+        ## now i think yes
+        Atrans <- Atrans
+        Btrans <- Btrans
+        ABtrans <- ABtrans
+        Aind <- seq_along(A)
+        Bind <- seq_along(B) + length(A) - 1
+        function(matPars) as.vector(outer(Atrans(matPars[Aind]),
+                                          Btrans(matPars[Bind]),
+                                          FUN = ABtrans))
+    })
+}
 
 ##' Standard matrix multiplication for repeated sparse matrices
 ##'
 ##' @param X,Y \code{repSparse} objects
+##' @param trans two argument transformation from \code{X$vals} and
+##' \code{Y$vals} to the repeated values of the resulting matrix
 ##' @export
-mmult <- function(X, Y) {
+mmult <- function(X, Y, trans = "*") {
 
-    Y <- t(Y)
-    
-    ## matchBin <- outer(X$colInds, Y$colInds, "==")
-    ## matchInd <- which(matchBin, arr.ind = TRUE)
-
-    ## XrowInds <- X$rowInds[matchInd[, 1]]
-    ## YrowInds <- Y$rowInds[matchInd[, 2]]
-    ## XvalInds <- X$valInds[matchInd[, 1]]
-    ## YvalInds <- Y$valInds[matchInd[, 2]]
-
-    with(rowWiseCombination(X, Y), {
+    with(rowWiseCombination(X, t(Y)), {
 
         outerColInds <- XYcolInds
         outerValInds <- YvalInds + (length(Yvals) * (XvalInds - 1))
-        outerVals <- as.vector(Yvals %*% t(Xvals))
-        outerRowInds <- YrowInds + (dim(Y)[1] * XrowInds)
+        outerTrans <- mkOuterTrans(Xvals, Yvals, Xtrans, Ytrans, trans)
+        outerVals <- as.vector(outer(Xvals, Yvals, trans))
+        outerRowInds <- YrowInds + (dim(Y)[2] * XrowInds)
         
         sumInds <- lapply(tapply(outerValInds, outerRowInds, I), sort)
         uniqueSumInds <- unique(sumInds)
@@ -178,9 +227,10 @@ mmult <- function(X, Y) {
         structure(list(rowInds = XYrowInds,
                        colInds = XYcolInds,
                        valInds = XYvalInds,
-                       vals = XYvals),
+                       vals = XYvals,
+                       trans = outerTrans),
                   class = "repSparse",
-                  Dim = c(dim(X)[1], dim(Y)[1]))
+                  Dim = c(dim(X)[1], dim(Y)[2]))
     })
 }
 
@@ -188,12 +238,12 @@ mmult <- function(X, Y) {
 ##' Kronecker and Khatri-Rao products for repeated sparse matrices
 ##'
 ##' @param X,Y \code{repSparse} objects
-##' @param FUN ignored
+##' @param trans see argument \code{FUN} in \code{\link{outer}}
 ##' @param makedimnames ignored
 ##' @param ... ignored
 ##' @rdname kron
 ##' @export
-kron <- function(X, Y, FUN = "*",
+kron <- function(X, Y, trans = "*",
                  makedimnames = FALSE, ...) {
     lenX <- length(X$rowInds)
     lenY <- length(Y$rowInds)
@@ -201,29 +251,33 @@ kron <- function(X, Y, FUN = "*",
     XYrowInds <- rep.int(Y$rowInds, lenX) + dim(Y)[1] * rep.int(X$rowInds, lenRep)
     XYcolInds <- rep.int(Y$colInds, lenX) + dim(Y)[2] * rep.int(X$colInds, lenRep)
     XYvalInds <- as.vector(outer(Y$valInds, max(Y$valInds) * (X$valInds - 1), "+"))
-    XYvals <- as.vector(Y$vals %*% t(X$vals))
+    XYtrans <- mkOuterTrans(Y$vals, X$vals, Y$trans, X$trans, trans)
+    XYvals <- as.vector(outer(Y$vals, X$vals, FUN = trans))
     structure(list(rowInds = XYrowInds,
                    colInds = XYcolInds,
                    valInds = XYvalInds,
-                   vals = XYvals),
+                   vals = XYvals,
+                   trans = XYtrans),
               class = "repSparse",
               Dim = dim(X) * dim(Y))
 }
 
 ##' @rdname kron
 ##' @export
-kr <- function(X, Y) {
+kr <- function(X, Y, trans = "*") {
 
     with(rowWiseCombination(X, Y), {
     
         XYvalInds <- YvalInds + (length(Yvals) * (XvalInds - 1))
-        XYvals <- as.vector(Yvals %*% t(Xvals))
+        XYtrans <- mkOuterTrans(Yvals, Xvals, Ytrans, Xtrans, trans)
+        XYvals <- as.vector(outer(Yvals, Xvals, FUN = trans))
         XYrowInds <- YrowInds + (dim(Y)[1] * XrowInds)
         
         structure(list(rowInds = XYrowInds,
                        colInds = XYcolInds,
                        valInds = XYvalInds,
-                       vals = XYvals),
+                       vals = XYvals,
+                       trans = XYtrans),
                   class = "repSparse",
                   Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
     })
@@ -233,11 +287,12 @@ kr <- function(X, Y) {
 ##'
 ##' Remove unused values and renumber value indices of a
 ##' \code{repSparse} object that has values that are not used in any
-##' matrix element.
+##' matrix element.  (FIXME: not currently used anywhere)
 ##'
 ##' @param object a \code{repSparse} object
 ##' @export
 simplifyRepSparse <- function(object) {
+    warning("untested")
     keepers <- sort(unique(object$valInds))
     valsOut <- object$vals[keepers]
     valIndsOut <- match(object$valInds, keepers)

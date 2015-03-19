@@ -11,6 +11,6 @@ simplifyRepSparse(object)
 \description{
 Remove unused values and renumber value indices of a
 \code{repSparse} object that has values that are not used in any
-matrix element.
+matrix element.  (FIXME: not currently used anywhere)
 }
 

@@ -3,10 +3,13 @@
 \alias{mmult}
 \title{Standard matrix multiplication for repeated sparse matrices}
 \usage{
-mmult(X, Y)
+mmult(X, Y, trans = "*")
 }
 \arguments{
 \item{X,Y}{\code{repSparse} objects}
+
+\item{trans}{two argument transformation from \code{X$vals} and
+\code{Y$vals} to the repeated values of the resulting matrix}
 }
 \description{
 Standard matrix multiplication for repeated sparse matrices
