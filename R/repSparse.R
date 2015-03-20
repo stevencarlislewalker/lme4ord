@@ -23,7 +23,7 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim) {
     if(length(vals) != max(valInds)) stop("mismatch between vals and valInds")
     if(length(rowInds) != length(colInds)) stop("row and column index mismatch")
     if(length(rowInds) != length(valInds)) stop("row and value index mismatch")
-    if(missing(trans)) trans <- mkIdentityTrans(length(vals))
+    if(missing(trans)) trans <- mkIdentityTrans()
     structure(list(rowInds = as.integer(rowInds - 1),
                    colInds = as.integer(colInds - 1),
                    valInds = valInds,
@@ -33,21 +33,6 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim) {
               Dim = Dim)
 }
 
-##' @param lengthPars length of the parameter vector
-##' @rdname repSparse
-##' @export
-mkIdentityTrans <- function(lengthPars) {
-    local({
-        lengthPars <- lengthPars
-        function(matPars) {
-            if((nPars <- length(matPars)) != lengthPars)
-                stop(paste("length(matPars) = ", nPars,
-                           " but must be ", lengthPars,
-                           collapse = ""))
-            matPars
-        }
-    })
-}
 
 ##' @rdname repSparse
 ##' @export
@@ -57,8 +42,28 @@ print.repSparse <- function(x, ...) str(x, ...)
 ##' @rdname repSparse
 ##' @export
 update.repSparse <- function(object, newPars, ...) {
-    stop("not done, but really should be")
+    object$vals <- object$trans(newPars)
+    return(object)
 }
+
+
+##' @param decreasing see \code{\link{sort}}
+##' @param type sort by column, row, or value indices?
+##' @rdname repSparse
+##' @export
+sort.repSparse <- function(x, decreasing = FALSE,
+                           type = c("col", "row", "val"), ...) {
+    inds <- switch(type[1],
+                   col = x$colInds,
+                   row = x$rowInds,
+                   val = x$valInds)
+    ord <- order(inds, decreasing = decreasing, ...)
+    x$rowInds <- x$rowInds[ord]
+    x$colInds <- x$colInds[ord]
+    x$valInds <- x$valInds[ord]
+    return(x)
+}
+
 
 ##' @rdname repSparse
 ##' @export
@@ -119,7 +124,7 @@ sparse2RepSparse <- function(object, ...) {
               colInds = object@j + 1L,
               valInds = 1:length(object@i),
               vals = object@x,
-              trans = mkIdentityTrans(length(object@x)),
+              trans = mkIdentityTrans(),
               Dim = dim(object))
 }
 
@@ -150,7 +155,6 @@ subset.repSparse <- function(x, rows, cols) {
 ## kron (Kronecker product), kr (Khatri-Rao product)
 ## ----------------------------------------------------------------------
 
-
 ##' Row-wise combination of two repeated sparse matrices
 ##'
 ##' @param X,Y \code{repSparse} objects
@@ -158,7 +162,7 @@ subset.repSparse <- function(x, rows, cols) {
 ##' @export
 rowWiseCombination <- function(X, Y) {
 
-    matchBin <- outer(X$colInds, Y$colInds, "==")
+    matchBin <- outer(X$colInds, Y$colInds, "==") ## this is slow!
     matchInd <- which(matchBin, arr.ind = TRUE)
     
     structure(list(XrowInds  = X$rowInds[matchInd[, 1]],
@@ -174,28 +178,7 @@ rowWiseCombination <- function(X, Y) {
               Dim = c(nrow(X), nrow(Y), ncol(X)))
 }
 
-##' Construct function for a transformed outer product
-##'
-##' @param A,B \code{numeric} \code{vector}s
-##' @param Atrans,Btrans functions for transforming \code{A} and
-##' \code{B}
-##' @param ABtrans function to pass as \code{FUN} in
-##' \code{\link{outer}}
-##' @export
-mkOuterTrans <- function(A, B, Atrans, Btrans, ABtrans) {
-    local({
-        ## FIXME: include indices??  don't think so, but ... actually
-        ## now i think yes
-        Atrans <- Atrans
-        Btrans <- Btrans
-        ABtrans <- ABtrans
-        Aind <- seq_along(A)
-        Bind <- seq_along(B) + length(A) - 1
-        function(matPars) as.vector(outer(Atrans(matPars[Aind]),
-                                          Btrans(matPars[Bind]),
-                                          FUN = ABtrans))
-    })
-}
+
 
 ##' Standard matrix multiplication for repeated sparse matrices
 ##'
@@ -301,6 +284,60 @@ simplifyRepSparse <- function(object) {
     return(object)
 }
 
+
+
+## ----------------------------------------------------------------------
+## Make trans functions
+## ----------------------------------------------------------------------
+
+##' Construct functions for transforming a parameter vector to the
+##' non-zero values of a repeated sparse matrix
+##'
+##' @rdname mkTrans
+##' @export
+mkIdentityTrans <- function() {
+    return(function(matPars) matPars)
+}
+
+
+##' @param A,B \code{numeric} \code{vector}s
+##' @param Atrans,Btrans functions for transforming \code{A} and
+##' \code{B}
+##' @param ABtrans function to pass as \code{FUN} in
+##' \code{\link{outer}}
+##' @rdname mkTrans
+##' @export
+mkOuterTrans <- function(A, B, Atrans, Btrans, ABtrans) {
+    local({
+        ## FIXME: include indices??  don't think so, but ... actually
+        ## now i think yes
+        Atrans <- Atrans
+        Btrans <- Btrans
+        ABtrans <- ABtrans
+        Aind <- seq_along(A)
+        Bind <- seq_along(B) + length(A)
+        function(matPars) as.vector(outer(Atrans(matPars[Aind]),
+                                          Btrans(matPars[Bind]),
+                                          FUN = ABtrans))
+    })
+}
+
+##' @param valsList list of value vectors
+##' @param transList list of transform functions
+##' @rdname mkTrans
+##' @export
+mkListTrans <- function(valsList, transList) {
+    local({
+        transList <- transList
+        indList <- lapply(valsList, seq_along)
+        function(matPars) {
+            unlist(lapply(seq_along(indList),
+                          function(ii) transList[[i]](matPars[indList[[i]]])))
+        }
+    })
+}
+    
+
 ## ----------------------------------------------------------------------
 ## Matrix binding and repeating
 ## ----------------------------------------------------------------------
@@ -338,6 +375,7 @@ bind <- function(...,
                          colInds = unlist(colInds) + colOff + 1,
                          valInds = unlist(valInds) + valOff,
                          vals = unlist(vals),
+                         trans = mkListTrans(vals, trans),
                          Dim = c(sum(nrows), sum(ncols)))
         return(ans)
     })
@@ -377,6 +415,7 @@ rep.repSparse <- function(x, times,
                      colInds = colInds + 1,
                      valInds = rep(x$valInds, times = times),
                      vals = x$vals,
+                     trans = x$trans,
                      Dim = c(rowMult, colMult) * dim(x))
     return(ans)
 }
@@ -397,6 +436,38 @@ t.repSparse <- function(x) {
     return(tx)
 }
 
+
+## ----------------------------------------------------------------------
+## Changing sparse formats 
+## ----------------------------------------------------------------------
+
+##' Changing sparse format
+##'
+##' @param point vector of column pointers
+##' @rdname changeSparseFormat
+##' @export
+point2ind <- function(point) {
+                                        # ?Matrix::sparseMatrix
+    dp <- diff(sort(point))
+    rep.int(seq_along(dp), dp)
+}
+
+##' @param ind vector of column indices
+##' @param maxInd number of rows or columns (could be larger than
+##' \code{max(ind)})
+##' @rdname changeSparseFormat
+##' @export
+ind2point <- function(ind, maxInd) {
+    point <- match(0:maxInd, ind) - 1L
+    point[maxInd + 1] <- maxInd
+    isNaPoint <- is.na(point)
+    for(j in maxInd:1) {
+        point[j] <- ifelse(isNaPoint[j],
+                           point[j + 1],
+                           point[j])
+    }
+    return(point)
+}
 
 ## ----------------------------------------------------------------------
 ## Construct special matrices -- repSparseCompSymm, repSparseDiag,
@@ -468,3 +539,5 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
               valInds = valInds, vals = vals,
               Dim = c(nrows, ncols))
 }
+
+

@@ -5,10 +5,10 @@
 \alias{as.matrix.repSparse}
 \alias{dim.repSparse}
 \alias{image.repSparse}
-\alias{mkIdentityTrans}
 \alias{print.repSparse}
 \alias{repSparse}
 \alias{repSparse2Sparse}
+\alias{sort.repSparse}
 \alias{sparse2RepSparse}
 \alias{subset.repSparse}
 \alias{update.repSparse}
@@ -16,11 +16,12 @@
 \usage{
 repSparse(rowInds, colInds, valInds, vals, trans, Dim)
 
-mkIdentityTrans(lengthPars)
-
 print.repSparse(x, ...)
 
 update.repSparse(object, newPars, ...)
+
+\method{sort}{repSparse}(x, decreasing = FALSE, type = c("col", "row",
+  "val"), ...)
 
 \method{as.data.frame}{repSparse}(x, ...)
 
@@ -57,9 +58,11 @@ which are to be taken as the arguments to \code{trans}.
 
 \item{Dim}{matrix dimensions}
 
-\item{lengthPars}{length of the parameter vector}
-
 \item{newPars}{new parameter values}
+
+\item{decreasing}{see \code{\link{sort}}}
+
+\item{type}{sort by column, row, or value indices?}
 
 \item{keep.rownames}{passed to \code{as.data.table}}
 
