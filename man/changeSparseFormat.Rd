@@ -6,7 +6,7 @@
 \usage{
 point2ind(point)
 
-ind2point(ind, maxInd)
+ind2point(ind, maxInd, fillNA = TRUE)
 }
 \arguments{
 \item{point}{vector of column pointers}
@@ -15,6 +15,9 @@ ind2point(ind, maxInd)
 
 \item{maxInd}{number of rows or columns (could be larger than
 \code{max(ind)})}
+
+\item{fillNA}{fill in \code{NA}'s with repeated column numbers (as
+in \code{Matrix} package)?}
 }
 \description{
 Changing sparse format

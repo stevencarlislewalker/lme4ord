@@ -14,4 +14,8 @@ a row-wise combination of repeated sparse matrices
 \description{
 Row-wise combination of two repeated sparse matrices
 }
+\seealso{
+Other matrixOperations: \code{\link{kr}},
+  \code{\link{kron}}; \code{\link{mmult}}
+}
 

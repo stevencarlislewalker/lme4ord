@@ -14,4 +14,8 @@ mmult(X, Y, trans = "*")
 \description{
 Standard matrix multiplication for repeated sparse matrices
 }
+\seealso{
+Other matrixOperations: \code{\link{kr}},
+  \code{\link{kron}}; \code{\link{rowWiseCombination}}
+}
 

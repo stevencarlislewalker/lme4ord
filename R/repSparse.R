@@ -150,15 +150,20 @@ subset.repSparse <- function(x, rows, cols) {
 ##     with(ans, repSparse(rowInds, colInds, valInds, vals, dim(x)))
 }
 
+
+
 ## ----------------------------------------------------------------------
-## Matrix multiplication -- mmult (standard matrix product),
-## kron (Kronecker product), kr (Khatri-Rao product)
+## Matrix operations -- mmult (standard matrix product), kron
+## (Kronecker product), kr (Khatri-Rao product), madd (standard matrix
+## addition)
 ## ----------------------------------------------------------------------
+
 
 ##' Row-wise combination of two repeated sparse matrices
 ##'
 ##' @param X,Y \code{repSparse} objects
 ##' @return a row-wise combination of repeated sparse matrices
+##' @family matrixOperations
 ##' @export
 rowWiseCombination <- function(X, Y) {
 
@@ -185,6 +190,7 @@ rowWiseCombination <- function(X, Y) {
 ##' @param X,Y \code{repSparse} objects
 ##' @param trans two argument transformation from \code{X$vals} and
 ##' \code{Y$vals} to the repeated values of the resulting matrix
+##' @family matrixOperations
 ##' @export
 mmult <- function(X, Y, trans = "*") {
 
@@ -225,6 +231,7 @@ mmult <- function(X, Y, trans = "*") {
 ##' @param makedimnames ignored
 ##' @param ... ignored
 ##' @rdname kron
+##' @family matrixOperations
 ##' @export
 kron <- function(X, Y, trans = "*",
                  makedimnames = FALSE, ...) {
@@ -246,6 +253,7 @@ kron <- function(X, Y, trans = "*",
 }
 
 ##' @rdname kron
+##' @family matrixOperations
 ##' @export
 kr <- function(X, Y, trans = "*") {
 
@@ -265,6 +273,8 @@ kr <- function(X, Y, trans = "*") {
                   Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
     })
 }
+
+
 
 ##' Simplify a repeated sparse matrix
 ##'
@@ -294,6 +304,7 @@ simplifyRepSparse <- function(object) {
 ##' non-zero values of a repeated sparse matrix
 ##'
 ##' @rdname mkTrans
+##' @family mkTransFunctions
 ##' @export
 mkIdentityTrans <- function() {
     return(function(matPars) matPars)
@@ -306,6 +317,7 @@ mkIdentityTrans <- function() {
 ##' @param ABtrans function to pass as \code{FUN} in
 ##' \code{\link{outer}}
 ##' @rdname mkTrans
+##' @family mkTransFunctions
 ##' @export
 mkOuterTrans <- function(A, B, Atrans, Btrans, ABtrans) {
     local({
@@ -325,6 +337,7 @@ mkOuterTrans <- function(A, B, Atrans, Btrans, ABtrans) {
 ##' @param valsList list of value vectors
 ##' @param transList list of transform functions
 ##' @rdname mkTrans
+##' @family mkTransFunctions
 ##' @export
 mkListTrans <- function(valsList, transList) {
     local({
@@ -336,7 +349,20 @@ mkListTrans <- function(valsList, transList) {
         }
     })
 }
-    
+
+##' @rdname mkTrans
+##' @family mkTransFunctions
+##' @export
+mkCholOneOffDiagTrans <- function() {
+    function(matPars) {
+        with(setNames(as.list(matPars), c("diagVal", "offDiagVal")), {
+            c(sqrt(diagVal),
+              offDiagVal/sqrt(diagVal),
+              sqrt(diagVal - ((offDiagVal^2) / diagVal)))
+        })
+    }
+}
+
 
 ## ----------------------------------------------------------------------
 ## Matrix binding and repeating
@@ -348,6 +374,7 @@ mkListTrans <- function(valsList, transList) {
 ##' @param ... list of \code{repSparse} objects
 ##' @param type type of binding
 ##' @rdname bind
+##' @family matrixBinding
 ##' @export
 bind <- function(...,
                  type = c("row", "col", "diag")) {
@@ -383,6 +410,7 @@ bind <- function(...,
 
 ##' @param lst list of \code{repSparse} objects
 ##' @rdname bind
+##' @family matrixBinding
 ##' @export
 .bind <- function(lst, type = c("row", "col", "diag")) {
     lapply(bind, c(lst, list(type = type)))
@@ -393,6 +421,7 @@ bind <- function(...,
 ##' @param x \code{repSparse} object
 ##' @param times like \code{rep}
 ##' @rdname bind
+##' @family matrixBinding
 ##' @export
 rep.repSparse <- function(x, times,
                           type = c("row", "col", "diag")) {
@@ -455,10 +484,13 @@ point2ind <- function(point) {
 ##' @param ind vector of column indices
 ##' @param maxInd number of rows or columns (could be larger than
 ##' \code{max(ind)})
+##' @param fillNA fill in \code{NA}'s with repeated column numbers (as
+##' in \code{Matrix} package)?
 ##' @rdname changeSparseFormat
 ##' @export
-ind2point <- function(ind, maxInd) {
+ind2point <- function(ind, maxInd, fillNA = TRUE) {
     point <- match(0:maxInd, ind) - 1L
+    if(!fillNA) return(point)
     point[maxInd + 1] <- maxInd
     isNaPoint <- is.na(point)
     for(j in maxInd:1) {
@@ -483,13 +515,35 @@ ind2point <- function(ind, maxInd) {
 repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
     iii <- rep.int(1:(matSize-1), 1:(matSize-1)) + 1
     jjj <- sequence(1:(matSize-1))
-    ii <- c(1:m, iii, jjj)
+    ii <- c(1:m, iii, jjj) ## FIXME: where did m come from?!
     jj <- c(1:m, jjj, iii)
     vi <- rep.int(1:2, c(matSize, 2 * choose(matSize, 2)))
     va <- setNames(c( diagVal ,  offDiagVal ),
                    c("diagVal", "offDiagVal"))
     ans <- repSparse(ii, jj, vi, va, Dim = c(matSize, matSize))
     class(ans) <- c("repSparseCompSymm", class(ans))
+    return(ans)
+}
+
+##' Repeated sparse covariance matrix with equal variances and one
+##' off-diagonal covariance
+##'
+##' @param diagVal value for the diagonal
+##' @param offDiagVal value for the off-diagonal
+##' @param offDiagInds indices for the two correlated objects
+##' @param matSize size of the resulting matrix
+##' @export
+repSparseOneOffDiag <- function(diagVal, offDiagVal, offDiagInds, matSize) {
+    if(length(offDiagInds) != 2L) stop("only one off diagonal element please")
+    if(offDiagInds[1] == offDiagInds[2]) stop("off diagonal must be off the diagonal")
+    iii <- jjj <- 1:matSize
+    ii <- c(iii,     offDiagInds )
+    jj <- c(jjj, rev(offDiagInds))
+    vi <- c(rep(1, matSize), rep(2, 2))
+    va <- setNames(c( diagVal ,  offDiagVal ),
+                   c("diagVal", "offDiagVal"))
+    ans <- repSparse(ii, jj, vi, va, Dim = c(matSize, matSize))
+    class(ans) <- c("repSparseOneOffDiag", class(ans))
     return(ans)
 }
 
@@ -540,4 +594,41 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
               Dim = c(nrows, ncols))
 }
 
+
+## ----------------------------------------------------------------------
+## Cholesky -- 
+## ----------------------------------------------------------------------
+
+##' Cholesky decomposition of repeated sparse matrices
+##'
+##' @note These are often just bailout methods, but some special
+##' \code{repSparse} matrices have exploitable structure, which can be
+##' used to keep the number of repeated values down.
+##' @param x an object that inherits from class
+##' \code{\link{repSparse}}
+##' @param ... passed to subsequent functions
+##' @rdname chol
+##' @export
+chol.repSparse <- function(x, ...) {
+    sparse2RepSparse(chol(as.matrix(x, sparse = TRUE)))
+}
+
+##' @rdname chol
+##' @export
+chol.repSparseOneOffDiag <- function(x, ...) {
+    offRow <- sort(x$rowInds[c(0, -1) + length(x$valInds)]) + 1L
+    va <- c(sqrt(x$vals[1]),
+            x$vals[2]/sqrt(x$vals[1]),
+            sqrt(x$vals[1] - ((x$vals[2]^2) / x$vals[1])))
+    ni <- length(x$valInds)
+    vi <- x$valInds[-ni]
+    ri <- x$rowInds[-ni] + 1L
+    ci <- x$colInds[-ni] + 1L
+    vi[offRow[2]] <- 3
+    vi[length(vi)] <- 2
+    ans <- repSparse(ri, ci, vi, va,
+                     trans = mkCholOneOffDiagTrans(),
+                     Dim = dim(x))
+    return(ans)
+}
 

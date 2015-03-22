@@ -20,4 +20,11 @@ kr(X, Y, trans = "*")
 \description{
 Kronecker and Khatri-Rao products for repeated sparse matrices
 }
+\seealso{
+Other matrixOperations: \code{\link{mmult}};
+  \code{\link{rowWiseCombination}}
+
+Other matrixOperations: \code{\link{mmult}};
+  \code{\link{rowWiseCombination}}
+}
 
