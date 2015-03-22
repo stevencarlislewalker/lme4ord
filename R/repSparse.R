@@ -120,10 +120,18 @@ repSparse2Sparse <- function(object, ...) {
 ##' @export
 sparse2RepSparse <- function(object, ...) {
     object <- as(object, "TsparseMatrix")
+    x <- object@x
+    
+                                        # try to find detectable
+                                        # repeated structure.
+    va <- sort(unique(x))
+    vi <- match(x, va)
+
+                                        # return value
     repSparse(rowInds = object@i + 1L,
               colInds = object@j + 1L,
-              valInds = 1:length(object@i),
-              vals = object@x,
+              valInds = vi,
+              vals = va,
               trans = mkIdentityTrans(),
               Dim = dim(object))
 }
@@ -320,6 +328,19 @@ mkIdentityTrans <- function() {
 ##' @family mkTransFunctions
 ##' @export
 mkOuterTrans <- function(A, B, Atrans, Btrans, ABtrans) {
+
+                                        # check to see if one of the
+                                        # parameter sets is a single
+                                        # 1L, in which case just
+                                        # return an identity
+                                        # transformation (because an
+                                        # outer product involving a
+                                        # scalar of 1L is boring)
+    checkForBordom <- function(xx) (length(xx) == 1L) & (xx[1] == 1L)
+    if(checkForBordom(A) || checkForBordom(B)) return(mkIdentityTrans())
+
+                                        # construct the environment of
+                                        # the transformation function
     local({
         ## FIXME: include indices??  don't think so, but ... actually
         ## now i think yes
