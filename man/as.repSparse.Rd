@@ -4,7 +4,6 @@
 \alias{as.data.table.repSparse}
 \alias{as.matrix.repSparse}
 \alias{as.repSparse}
-\alias{as.repSparse.CsparseMatrix}
 \alias{as.repSparse.dsparseMatrix}
 \alias{as.repSparse.matrix}
 \title{Coerce to and from repeated sparse matrices}
@@ -12,8 +11,6 @@
 as.repSparse(x, ...)
 
 \method{as.repSparse}{dsparseMatrix}(x, ...)
-
-\method{as.repSparse}{CsparseMatrix}(x, ...)
 
 \method{as.repSparse}{matrix}(x, ...)
 

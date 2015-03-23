@@ -2,7 +2,6 @@
 
 S3method(VarCorr,glmerc)
 S3method(as.data.frame,repSparse)
-S3method(as.repSparse,CsparseMatrix)
 S3method(as.repSparse,dsparseMatrix)
 S3method(as.repSparse,matrix)
 S3method(covar,glmerc)

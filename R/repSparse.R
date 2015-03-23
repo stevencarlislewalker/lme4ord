@@ -128,11 +128,6 @@ as.repSparse.dsparseMatrix <- function(x, ...) {
     return(sort(ans))
 }
 
-##' @rdname as.repSparse
-##' @export
-as.repSparse.CsparseMatrix <- function(x, ...) {
-    
-}
 
 ##' @rdname as.repSparse
 ##' @export
@@ -140,8 +135,9 @@ as.repSparse.matrix <- function(x, ...) {
     vecx <- as.numeric(x)
     va <- sort(unique(vecx))
     vi <- match(vecx, va)
-    ii <- seq_along(vecx)
-    ans <- repSparse(rowInds = ii, colInds = ii,
+    ii <- rep.int(1:nrow(x), ncol(x))
+    jj <- rep.int(1:ncol(x), rep.int(nrow(x), ncol(x)))
+    ans <- repSparse(rowInds = ii, colInds = jj,
                      valInds = vi, vals = va,
                      trans = mkIdentityTrans(va),
                      Dim = dim(x))
@@ -181,14 +177,20 @@ as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
     return(as.matrix(ans))
 }
 
-
+repSparse2Csparse <- function(from) as.matrix(from, sparse = TRUE, giveCsparse = TRUE)
+repSparse2Tsparse <- function(from) as.matrix(from, sparse = TRUE, giveCsparse = FALSE)
+setOldClass("repSparse")
+setAs("repSparse", "sparseMatrix",  def = repSparse2Csparse)
+setAs("repSparse", "CsparseMatrix", def = repSparse2Csparse)
+setAs("repSparse", "dgCMatrix",     def = repSparse2Csparse)
+setAs("repSparse", "TsparseMatrix", def = repSparse2Tsparse)
+setAs("repSparse", "dgTMatrix",     def = repSparse2Tsparse)
 
 ## ----------------------------------------------------------------------
 ## Matrix operations -- mmult (standard matrix product), kron
 ## (Kronecker product), kr (Khatri-Rao product), madd (standard matrix
 ## addition)
 ## ----------------------------------------------------------------------
-
 
 ##' Row-wise combination of two repeated sparse matrices
 ##'
