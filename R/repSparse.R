@@ -67,79 +67,13 @@ sort.repSparse <- function(x, decreasing = FALSE,
 
 ##' @rdname repSparse
 ##' @export
-as.data.frame.repSparse <- function(x, ...) {
-    with(x, {
-        data.frame(rowInds = rowInds,
-                   colInds = colInds,
-                   valInds = valInds,
-                   vals = vals[valInds])
-    })
-}
-
-##' @param keep.rownames passed to \code{as.data.table}
-##' @rdname repSparse
-##' @export
-as.data.table.repSparse <- function(x, keep.rownames = FALSE) {
-    as.data.table(as.data.frame(x), keep.rownames = keep.rownames)
-}
-
-##' @rdname repSparse
-##' @param sparse return \code{sparseMatrix}?
-##' @export
-as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
-    ans <- with(x, {
-        sparseMatrix(i = rowInds + 1L,
-                     j = colInds + 1L,
-                     x = vals[valInds],
-                     dims = dim(x), ...)
-    })
-    if(sparse) return(ans)
-    return(as.matrix(ans))
-}
-
-##' @rdname repSparse
-##' @export
 dim.repSparse <- function(x) attr(x, "Dim")
 
 
-##' @param object \code{repSparse} object
-##' @return results of \code{sparseMatrix}
-##' @rdname repSparse
-##' @export
-repSparse2Sparse <- function(object, ...) {
-    with(object, {
-        sparseMatrix(i = rowInds + 1L,
-                     j = colInds + 1L,
-                     x = vals[valInds],
-                     dims = dim(object),
-                     giveCsparse = FALSE)
-    })
-}
 
 ##' @rdname repSparse
 ##' @export
-sparse2RepSparse <- function(object, ...) {
-    object <- as(object, "TsparseMatrix")
-    x <- object@x
-    
-                                        # try to find detectable
-                                        # repeated structure.
-    va <- sort(unique(x))
-    vi <- match(x, va)
-
-                                        # return value
-    repSparse(rowInds = object@i + 1L,
-              colInds = object@j + 1L,
-              valInds = vi,
-              vals = va,
-              trans = mkIdentityTrans(va),
-              Dim = dim(object))
-}
-
-
-##' @rdname repSparse
-##' @export
-image.repSparse <- function(x, ...) image(repSparse2Sparse(x))
+image.repSparse <- function(x, ...) image(as.matrix(x, sparse = TRUE))
 
 ##' @param rows,cols not sure yet
 ##' @rdname repSparse
@@ -156,6 +90,95 @@ subset.repSparse <- function(x, rows, cols) {
 ##         valInds <- valInds[inds]
 ##     })
 ##     with(ans, repSparse(rowInds, colInds, valInds, vals, dim(x)))
+}
+
+
+
+
+## ----------------------------------------------------------------------
+## Coercion -- as...
+## ----------------------------------------------------------------------
+
+
+##' Coerce to and from repeated sparse matrices
+##'
+##' @param x an object
+##' @param ... dots
+##' @export
+as.repSparse <- function(x, ...) {
+    UseMethod("as.repSparse")
+}
+
+##' @rdname as.repSparse
+##' @export
+as.repSparse.dsparseMatrix <- function(x, ...) {
+    x <- as(x, "TsparseMatrix")
+                                        # try to find detectable
+                                        # repeated structure.
+    va <- sort(unique(x@x))
+    vi <- match(x@x, va)
+
+                                        # return value
+    ans <- repSparse(rowInds = x@i + 1L,
+                     colInds = x@j + 1L,
+                     valInds = vi,
+                     vals = va,
+                     trans = mkIdentityTrans(va),
+                     Dim = dim(x))
+    return(sort(ans))
+}
+
+##' @rdname as.repSparse
+##' @export
+as.repSparse.CsparseMatrix <- function(x, ...) {
+    
+}
+
+##' @rdname as.repSparse
+##' @export
+as.repSparse.matrix <- function(x, ...) {
+    vecx <- as.numeric(x)
+    va <- sort(unique(vecx))
+    vi <- match(vecx, va)
+    ii <- seq_along(vecx)
+    ans <- repSparse(rowInds = ii, colInds = ii,
+                     valInds = vi, vals = va,
+                     trans = mkIdentityTrans(va),
+                     Dim = dim(x))
+    return(sort(ans))
+}
+
+
+##' @rdname as.repSparse
+##' @export
+as.data.frame.repSparse <- function(x, ...) {
+    with(x, {
+        data.frame(rowInds = rowInds,
+                   colInds = colInds,
+                   valInds = valInds,
+                   vals = vals[valInds])
+    })
+}
+
+##' @param keep.rownames passed to \code{as.data.table}
+##' @rdname as.repSparse
+##' @export
+as.data.table.repSparse <- function(x, keep.rownames = FALSE) {
+    as.data.table(as.data.frame(x), keep.rownames = keep.rownames)
+}
+
+##' @rdname as.repSparse
+##' @param sparse return \code{sparseMatrix}?
+##' @export
+as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
+    ans <- with(x, {
+        sparseMatrix(i = rowInds + 1L,
+                     j = colInds + 1L,
+                     x = vals[valInds],
+                     dims = dim(x), ...)
+    })
+    if(sparse) return(ans)
+    return(as.matrix(ans))
 }
 
 
@@ -678,7 +701,7 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
 ##' @rdname chol
 ##' @export
 chol.repSparse <- function(x, ...) {
-    sparse2RepSparse(chol(as.matrix(x, sparse = TRUE)))
+    as.repSparse(chol(as.matrix(x, sparse = TRUE)))
 }
 
 ##' @rdname chol
