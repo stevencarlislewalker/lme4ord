@@ -4,6 +4,7 @@
 \alias{image.repSparse}
 \alias{print.repSparse}
 \alias{repSparse}
+\alias{repSparse-class}
 \alias{sort.repSparse}
 \alias{subset.repSparse}
 \alias{update.repSparse}
@@ -58,5 +59,7 @@ object of class \code{repSparse} with list elements
 }
 \description{
 Sparse matrix with repeated values
+
+\code{repSparse} class
 }
 

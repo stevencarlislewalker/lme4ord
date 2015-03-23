@@ -33,6 +33,12 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim) {
               Dim = Dim)
 }
 
+##' \code{repSparse} class
+##'
+##' @name repSparse-class
+##' @rdname repSparse
+##' @exportClass repSparse
+setOldClass("repSparse")
 
 ##' @rdname repSparse
 ##' @export
@@ -179,12 +185,49 @@ as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
 
 repSparse2Csparse <- function(from) as.matrix(from, sparse = TRUE, giveCsparse = TRUE)
 repSparse2Tsparse <- function(from) as.matrix(from, sparse = TRUE, giveCsparse = FALSE)
-setOldClass("repSparse")
-setAs("repSparse", "sparseMatrix",  def = repSparse2Csparse)
+
+##' @usage as("repSparse", "sparseMatrix")
+##' 
+##' @name as
+##' 
+##' @rdname as.repSparse
+##' @importClassesFrom Matrix sparseMatrix
+setAs("repSparse",  "sparseMatrix", def = repSparse2Csparse)
+
+
+##' @name as
+##'
+##' @usage as("repSparse", "CsparseMatrix")
+##' 
+##' @rdname as.repSparse
+##' @importClassesFrom Matrix CsparseMatrix
 setAs("repSparse", "CsparseMatrix", def = repSparse2Csparse)
-setAs("repSparse", "dgCMatrix",     def = repSparse2Csparse)
+
+##' @usage as("repSparse", "dgCMatrix")
+##' 
+##' @name as
+##' 
+##' @rdname as.repSparse
+##' @importClassesFrom Matrix dgCMatrix
+setAs("repSparse",     "dgCMatrix", def = repSparse2Csparse)
+
+##' @usage as("repSparse", "TsparseMatrix")
+##' 
+##' @name as
+##' 
+##' @rdname as.repSparse
+##' @importClassesFrom Matrix TsparseMatrix
 setAs("repSparse", "TsparseMatrix", def = repSparse2Tsparse)
-setAs("repSparse", "dgTMatrix",     def = repSparse2Tsparse)
+
+##' @usage as("repSparse", "dgTMatrix")
+##' 
+##' @name as
+##' 
+##' @rdname as.repSparse
+##' @importClassesFrom Matrix dgTMatrix
+setAs("repSparse",     "dgTMatrix", def = repSparse2Tsparse)
+
+
 
 ## ----------------------------------------------------------------------
 ## Matrix operations -- mmult (standard matrix product), kron
