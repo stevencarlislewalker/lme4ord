@@ -7,13 +7,13 @@
 \title{Construct functions for transforming a parameter vector to the
 non-zero values of a repeated sparse matrix}
 \usage{
-mkIdentityTrans()
+mkIdentityTrans(init)
 
 mkOuterTrans(A, B, Atrans, Btrans, ABtrans)
 
 mkListTrans(valsList, transList)
 
-mkCholOneOffDiagTrans()
+mkCholOneOffDiagTrans(init)
 }
 \arguments{
 \item{A,B}{\code{numeric} \code{vector}s}
@@ -27,6 +27,8 @@ mkCholOneOffDiagTrans()
 \item{valsList}{list of value vectors}
 
 \item{transList}{list of transform functions}
+
+\item{init}{initial parameter values}
 }
 \description{
 Construct functions for transforming a parameter vector to the

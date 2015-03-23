@@ -6,7 +6,7 @@
 \title{Row, column, and block-diagonal binding for repeated sparse
 matrices}
 \usage{
-bind(..., type = c("row", "col", "diag"))
+bind(..., type = c("row", "col", "diag"), saveComponents = TRUE)
 
 .bind(mats, type = c("row", "col", "diag"))
 
@@ -16,6 +16,8 @@ bind(..., type = c("row", "col", "diag"))
 \item{...}{list of \code{repSparse} objects}
 
 \item{type}{type of binding}
+
+\item{saveComponents}{should component matrices be saved?}
 
 \item{mats}{list of \code{repSparse} matrix objects}
 

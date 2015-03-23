@@ -4,9 +4,9 @@
 \alias{kron}
 \title{Kronecker and Khatri-Rao products for repeated sparse matrices}
 \usage{
-kron(X, Y, trans = "*", makedimnames = FALSE, ...)
+kron(X, Y, trans = "*", makedimnames = FALSE, saveComponents = TRUE, ...)
 
-kr(X, Y, trans = "*")
+kr(X, Y, trans = "*", saveComponents = TRUE)
 }
 \arguments{
 \item{X,Y}{\code{repSparse} objects}
@@ -14,6 +14,8 @@ kr(X, Y, trans = "*")
 \item{trans}{see argument \code{FUN} in \code{\link{outer}}}
 
 \item{makedimnames}{ignored}
+
+\item{saveComponents}{should component matrices be saved?}
 
 \item{...}{ignored}
 }
