@@ -202,6 +202,9 @@ rowWiseCombination <- function(X, Y) {
 ##' @export
 mmult <- function(X, Y, trans = "*") {
 
+    warning("this is slow and bad.  ",
+            "please construct standard matrix products with standard tools.")
+
     with(rowWiseCombination(X, t(Y)), {
 
         outerColInds <- XYcolInds
@@ -283,27 +286,6 @@ kr <- function(X, Y, trans = "*") {
 }
 
 
-
-##' Simplify a repeated sparse matrix
-##'
-##' Remove unused values and renumber value indices of a
-##' \code{repSparse} object that has values that are not used in any
-##' matrix element.  (FIXME: not currently used anywhere)
-##'
-##' @param object a \code{repSparse} object
-##' @export
-simplifyRepSparse <- function(object) {
-    warning("untested")
-    keepers <- sort(unique(object$valInds))
-    valsOut <- object$vals[keepers]
-    valIndsOut <- match(object$valInds, keepers)
-    object$vals <- valsOut
-    object$valInds <- valIndsOut
-    return(object)
-}
-
-
-
 ## ----------------------------------------------------------------------
 ## Make trans functions
 ## ----------------------------------------------------------------------
@@ -336,6 +318,7 @@ mkOuterTrans <- function(A, B, Atrans, Btrans, ABtrans) {
                                         # transformation (because an
                                         # outer product involving a
                                         # scalar of 1L is boring)
+    ## FIXME: shouldn't immediately assume identity
     checkForBordom <- function(xx) (length(xx) == 1L) & (xx[1] == 1L)
     if(checkForBordom(A) || checkForBordom(B)) return(mkIdentityTrans())
 
@@ -362,11 +345,15 @@ mkOuterTrans <- function(A, B, Atrans, Btrans, ABtrans) {
 ##' @export
 mkListTrans <- function(valsList, transList) {
     local({
+        ## FIXME: implicitly assumes vals are parameters
         transList <- transList
         indList <- lapply(valsList, seq_along)
+        for(ii in 2:length(indList)) {
+            indList[[ii]] <- indList[[ii-1]] + max(indList[[ii]])
+        }
         function(matPars) {
             unlist(lapply(seq_along(indList),
-                          function(ii) transList[[i]](matPars[indList[[i]]])))
+                          function(ii) transList[[ii]](matPars[indList[[ii]]])))
         }
     })
 }
@@ -401,6 +388,7 @@ bind <- function(...,
                  type = c("row", "col", "diag")) {
     mats <- list(...)
     nmat <- length(mats)
+    type <- type[[1]]
     if(nmat == 1L) return(mats[[1]])
     with(listTranspose(mats), {
         rowOff <- colOff <- 0
@@ -425,16 +413,18 @@ bind <- function(...,
                          vals = unlist(vals),
                          trans = mkListTrans(vals, trans),
                          Dim = c(sum(nrows), sum(ncols)))
+        class(ans) <- c("repSparseBind", class(ans))
+        ans$components <- list(FUN = .bind, mats = mats, type = type)
         return(ans)
     })
 }
 
-##' @param lst list of \code{repSparse} objects
+##' @param mats list of \code{repSparse} matrix objects
 ##' @rdname bind
 ##' @family matrixBinding
 ##' @export
-.bind <- function(lst, type = c("row", "col", "diag")) {
-    lapply(bind, c(lst, list(type = type)))
+.bind <- function(mats, type = c("row", "col", "diag")) {
+    do.call(bind, c(mats, list(type = type)))
 }
 
 
@@ -447,6 +437,7 @@ bind <- function(...,
 rep.repSparse <- function(x, times,
                           type = c("row", "col", "diag")) {
 
+    type = type[[1]]
     len <- length(x$rowInds)
     rowInds <- rep.int(x$rowInds, times)
     colInds <- rep.int(x$colInds, times)
@@ -467,11 +458,13 @@ rep.repSparse <- function(x, times,
                      vals = x$vals,
                      trans = x$trans,
                      Dim = c(rowMult, colMult) * dim(x))
+    class(ans) <- c("repSparseRep", class(ans))
+    ans$components <- list(FUN = rep, x = x, times = times, type = type)
     return(ans)
 }
 
 ## ----------------------------------------------------------------------
-## Matrix reshaping -- t
+## Matrix reshaping -- t, simplifyRepSparse
 ## ----------------------------------------------------------------------
 
 ##' Repeated sparse matrix transpose
@@ -485,6 +478,27 @@ t.repSparse <- function(x) {
     attr(tx, "Dim") <- rev(dim(x))
     return(tx)
 }
+
+
+##' Simplify a repeated sparse matrix
+##'
+##' Remove unused values and renumber value indices of a
+##' \code{repSparse} object that has values that are not used in any
+##' matrix element.  (FIXME: not currently used anywhere)
+##'
+##' @param object a \code{repSparse} object
+##' @export
+simplifyRepSparse <- function(object) {
+    warning("untested")
+    keepers <- sort(unique(object$valInds))
+    valsOut <- object$vals[keepers]
+    valIndsOut <- match(object$valInds, keepers)
+    object$vals <- valsOut
+    object$valInds <- valIndsOut
+    return(object)
+}
+
+
 
 
 ## ----------------------------------------------------------------------
@@ -653,3 +667,16 @@ chol.repSparseOneOffDiag <- function(x, ...) {
     return(ans)
 }
 
+
+
+## ----------------------------------------------------------------------
+## History tree -- 
+## ----------------------------------------------------------------------
+
+##' Grow the history tree
+##' 
+##' @param newNodes list of new component \code{repSparse} objects
+##' @param oldTree existing tree (can be \code{NULL})
+growTree <- function(newNodes, oldTree) {
+    if(is.null(oldTree)) return(newNodes)
+}
