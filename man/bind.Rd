@@ -8,7 +8,7 @@ matrices}
 \usage{
 bind(..., type = c("row", "col", "diag"))
 
-.bind(lst, type = c("row", "col", "diag"))
+.bind(mats, type = c("row", "col", "diag"))
 
 \method{rep}{repSparse}(x, times, type = c("row", "col", "diag"))
 }
@@ -17,7 +17,7 @@ bind(..., type = c("row", "col", "diag"))
 
 \item{type}{type of binding}
 
-\item{lst}{list of \code{repSparse} objects}
+\item{mats}{list of \code{repSparse} matrix objects}
 
 \item{x}{\code{repSparse} object}
 

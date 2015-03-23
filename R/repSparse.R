@@ -23,7 +23,7 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim) {
     if(length(vals) != max(valInds)) stop("mismatch between vals and valInds")
     if(length(rowInds) != length(colInds)) stop("row and column index mismatch")
     if(length(rowInds) != length(valInds)) stop("row and value index mismatch")
-    if(missing(trans)) trans <- mkIdentityTrans()
+    if(missing(trans)) trans <- mkIdentityTrans(vals)
     structure(list(rowInds = as.integer(rowInds - 1),
                    colInds = as.integer(colInds - 1),
                    valInds = valInds,
@@ -132,7 +132,7 @@ sparse2RepSparse <- function(object, ...) {
               colInds = object@j + 1L,
               valInds = vi,
               vals = va,
-              trans = mkIdentityTrans(),
+              trans = mkIdentityTrans(va),
               Dim = dim(object))
 }
 
@@ -240,12 +240,20 @@ mmult <- function(X, Y, trans = "*") {
 ##' @param X,Y \code{repSparse} objects
 ##' @param trans see argument \code{FUN} in \code{\link{outer}}
 ##' @param makedimnames ignored
+##' @param saveComponents should component matrices be saved?
 ##' @param ... ignored
 ##' @rdname kron
 ##' @family matrixOperations
 ##' @export
 kron <- function(X, Y, trans = "*",
-                 makedimnames = FALSE, ...) {
+                 makedimnames = FALSE, saveComponents = TRUE, ...) {
+
+    if(saveComponents) {
+        components <- list(FUN = kron, X = X, Y = Y, trans = trans)
+    } else {
+        components <- NULL
+    }
+    
     lenX <- length(X$rowInds)
     lenY <- length(Y$rowInds)
     lenRep <- rep.int(lenY, lenX)
@@ -259,17 +267,24 @@ kron <- function(X, Y, trans = "*",
                    valInds = XYvalInds,
                    vals = XYvals,
                    trans = XYtrans),
-              class = "repSparse",
-              Dim = dim(X) * dim(Y))
+              class = c("repSparseKron", "repSparse"),
+              Dim = dim(X) * dim(Y),
+              components = components)
 }
 
 ##' @rdname kron
 ##' @family matrixOperations
 ##' @export
-kr <- function(X, Y, trans = "*") {
+kr <- function(X, Y, trans = "*", saveComponents = TRUE) {
 
-    with(rowWiseCombination(X, Y), {
+    if(saveComponents) {
+        components <- list(FUN = kr, X = X, Y = Y, trans = trans)
+    } else {
+        components <- NULL
+    }
     
+    with(rowWiseCombination(X, Y), {
+        
         XYvalInds <- YvalInds + (length(Yvals) * (XvalInds - 1))
         XYtrans <- mkOuterTrans(Yvals, Xvals, Ytrans, Xtrans, trans)
         XYvals <- as.vector(outer(Yvals, Xvals, FUN = trans))
@@ -280,8 +295,9 @@ kr <- function(X, Y, trans = "*") {
                        valInds = XYvalInds,
                        vals = XYvals,
                        trans = XYtrans),
-                  class = "repSparse",
-                  Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
+                  class = c("repSparseKron", "repSparse"),
+                  Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]),
+                  components = components)
     })
 }
 
@@ -296,8 +312,11 @@ kr <- function(X, Y, trans = "*") {
 ##' @rdname mkTrans
 ##' @family mkTransFunctions
 ##' @export
-mkIdentityTrans <- function() {
-    return(function(matPars) matPars)
+mkIdentityTrans <- function(init) {
+    local({
+        init <- init
+        function(matPars) matPars
+    })
 }
 
 
@@ -318,9 +337,10 @@ mkOuterTrans <- function(A, B, Atrans, Btrans, ABtrans) {
                                         # transformation (because an
                                         # outer product involving a
                                         # scalar of 1L is boring)
-    ## FIXME: shouldn't immediately assume identity
     checkForBordom <- function(xx) (length(xx) == 1L) & (xx[1] == 1L)
-    if(checkForBordom(A) || checkForBordom(B)) return(mkIdentityTrans())
+    if(checkForBordom(A) && !checkForBordom(B)) return(mkIdentityTrans(B$vals))
+    if(!checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(A$vals))
+    if(checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(1))
 
                                         # construct the environment of
                                         # the transformation function
@@ -358,17 +378,21 @@ mkListTrans <- function(valsList, transList) {
     })
 }
 
+##' @param init initial parameter values
 ##' @rdname mkTrans
 ##' @family mkTransFunctions
 ##' @export
-mkCholOneOffDiagTrans <- function() {
-    function(matPars) {
-        with(setNames(as.list(matPars), c("diagVal", "offDiagVal")), {
-            c(sqrt(diagVal),
-              offDiagVal/sqrt(diagVal),
-              sqrt(diagVal - ((offDiagVal^2) / diagVal)))
-        })
-    }
+mkCholOneOffDiagTrans <- function(init) {
+    local({
+        init <- init
+        function(matPars) {
+            with(setNames(as.list(matPars), c("diagVal", "offDiagVal")), {
+                c(sqrt(diagVal),
+                  offDiagVal/sqrt(diagVal),
+                  sqrt(diagVal - ((offDiagVal^2) / diagVal)))
+            })
+        }
+    })
 }
 
 
@@ -381,12 +405,21 @@ mkCholOneOffDiagTrans <- function() {
 ##'
 ##' @param ... list of \code{repSparse} objects
 ##' @param type type of binding
+##' @param saveComponents should component matrices be saved?
 ##' @rdname bind
 ##' @family matrixBinding
 ##' @export
 bind <- function(...,
-                 type = c("row", "col", "diag")) {
+                 type = c("row", "col", "diag"),
+                 saveComponents = TRUE) {
     mats <- list(...)
+
+    if(saveComponents) {
+        components <- list(FUN = .bind, mats = mats, type = type)
+    } else {
+        components <- NULL
+    }
+    
     nmat <- length(mats)
     type <- type[[1]]
     if(nmat == 1L) return(mats[[1]])
@@ -414,7 +447,7 @@ bind <- function(...,
                          trans = mkListTrans(vals, trans),
                          Dim = c(sum(nrows), sum(ncols)))
         class(ans) <- c("repSparseBind", class(ans))
-        ans$components <- list(FUN = .bind, mats = mats, type = type)
+        ans$components <- components
         return(ans)
     })
 }
@@ -662,7 +695,7 @@ chol.repSparseOneOffDiag <- function(x, ...) {
     vi[offRow[2]] <- 3
     vi[length(vi)] <- 2
     ans <- repSparse(ri, ci, vi, va,
-                     trans = mkCholOneOffDiagTrans(),
+                     trans = mkCholOneOffDiagTrans(x$vals),
                      Dim = dim(x))
     return(ans)
 }
