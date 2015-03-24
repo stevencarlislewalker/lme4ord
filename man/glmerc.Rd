@@ -17,7 +17,11 @@ print.glmerc(x, ...)
 
 \item{family}{family}
 
-\item{covList}{covList}
+\item{covList}{list of covariance matrices tagged by the names of
+grouping factors}
+
+\item{strList}{list of structure matrices tagged by the names of
+grouping factors}
 
 \item{tileCov}{in kronecker products, should the covariance
 matrices in \code{covList} be tiled (\code{tileCov = TRUE}) or
@@ -30,6 +34,8 @@ representations (\code{TRUE}), or triplet-form
 \item{optControl}{optControl}
 
 \item{...}{...}
+
+\item{x}{\code{glmerc} object}
 }
 \description{
 When fitting generalized linear mixed model with

@@ -23,16 +23,6 @@ as.repSparse(x, ...)
 as.data.table.repSparse(x, keep.rownames = FALSE)
 
 as.matrix.repSparse(x, sparse = FALSE, ...)
-
-as("repSparse", "sparseMatrix")
-
-as("repSparse", "CsparseMatrix")
-
-as("repSparse", "dgCMatrix")
-
-as("repSparse", "TsparseMatrix")
-
-as("repSparse", "dgTMatrix")
 }
 \arguments{
 \item{x}{an object}
@@ -45,6 +35,16 @@ as("repSparse", "dgTMatrix")
 }
 \description{
 Coerce to and from repeated sparse matrices
+
+as("repSparse", "sparseMatrix")
+
+as("repSparse", "CsparseMatrix")
+
+as("repSparse", "dgCMatrix")
+
+as("repSparse", "TsparseMatrix")
+
+as("repSparse", "dgTMatrix")
 }
 \examples{
 set.seed(1)

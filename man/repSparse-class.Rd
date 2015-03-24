@@ -13,16 +13,22 @@ print.repSparse(x, ...)
 
 update.repSparse(object, newPars, ...)
 
+image.repSparse(x, ...)
+
+t.repSparse(x)
+
 \method{sort}{repSparse}(x, decreasing = FALSE, type = c("col", "row",
   "val"), ...)
 
 \method{dim}{repSparse}(x)
-
-image.repSparse(x, ...)
-
-t.repSparse(x)
 }
 \arguments{
+\item{x}{\code{repSparse} object}
+
+\item{...}{passed to subsequent functions}
+
+\item{object}{\code{repSparse} object}
+
 \item{newPars}{new parameter values}
 
 \item{decreasing}{see \code{\link{sort}}}

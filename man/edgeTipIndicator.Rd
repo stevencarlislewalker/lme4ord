@@ -32,6 +32,8 @@ through its ancestor nodes (output of \code{findFromNode})}
 
 \item{scale}{scaling factor for edges (i.e., vector of branch lengths)}
 
+\item{...}{not used}
+
 \item{ntip}{number of tips}
 }
 \description{

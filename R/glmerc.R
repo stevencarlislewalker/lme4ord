@@ -10,7 +10,10 @@
 ##' @param formula formula
 ##' @param data data
 ##' @param family family
-##' @param covList covList
+##' @param covList list of covariance matrices tagged by the names of
+##' grouping factors
+##' @param strList list of structure matrices tagged by the names of
+##' grouping factors
 ##' @param tileCov in kronecker products, should the covariance
 ##' matrices in \code{covList} be tiled (\code{tileCov = TRUE}) or
 ##' distributed (\code{tileCov = FALSE})?
@@ -134,6 +137,7 @@ vcov.glmerc <- function(object, justFixef = TRUE, ...) {
     diag(x)
 }
 
+##' @param x \code{glmerc} object
 ##' @rdname glmerc
 ##' @export
 print.glmerc <- function(x, ...) {

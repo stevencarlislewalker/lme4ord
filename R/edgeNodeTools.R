@@ -39,6 +39,7 @@ findEdgesFromPath <- function(path, edge, scale=1) {
     col2 <- edge[, 2] %in% path[-length(path)]
     (col1 & col2)*scale
 }
+##' @param ... not used
 ##' @rdname edgeTipIndicator
 ##' @export
 edgeTipIndicator <- function(object, ...) {

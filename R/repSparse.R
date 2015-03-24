@@ -47,6 +47,8 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim) {
 ##' @exportClass repSparse
 setOldClass("repSparse")
 
+##' @param x \code{repSparse} object
+##' @param ... passed to subsequent functions
 ##' @rdname repSparse-class
 ##' @export
 print.repSparse <- function(x, ...) {
@@ -54,6 +56,7 @@ print.repSparse <- function(x, ...) {
     str(x, ...)
 }
 
+##' @param object \code{repSparse} object
 ##' @param newPars new parameter values
 ##' @rdname repSparse-class
 ##' @export
@@ -61,6 +64,20 @@ update.repSparse <- function(object, newPars, ...) {
     if(missing(newPars)) newPars <- getInit(object)
     object$vals <- object$trans(newPars)
     return(object)
+}
+
+##' @rdname repSparse-class
+##' @export
+image.repSparse <- function(x, ...) image(as.matrix(x, sparse = TRUE))
+
+##' @rdname repSparse-class
+##' @export
+t.repSparse <- function(x) {
+    tx <- x
+    tx$rowInds <- x$colInds
+    tx$colInds <- x$rowInds
+    attr(tx, "Dim") <- rev(dim(x))
+    return(tx)
 }
 
 ##' @param decreasing see \code{\link{sort}}
@@ -83,20 +100,6 @@ sort.repSparse <- function(x, decreasing = FALSE,
 ##' @rdname repSparse-class
 ##' @export
 dim.repSparse <- function(x) attr(x, "Dim")
-
-##' @rdname repSparse-class
-##' @export
-image.repSparse <- function(x, ...) image(as.matrix(x, sparse = TRUE))
-
-##' @rdname repSparse-class
-##' @export
-t.repSparse <- function(x) {
-    tx <- x
-    tx$rowInds <- x$colInds
-    tx$colInds <- x$rowInds
-    attr(tx, "Dim") <- rev(dim(x))
-    return(tx)
-}
 
 
 ## ----------------------------------------------------------------------
@@ -199,31 +202,31 @@ as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
 repSparse2Csparse <- function(from) as.matrix(from, sparse = TRUE, giveCsparse = TRUE)
 repSparse2Tsparse <- function(from) as.matrix(from, sparse = TRUE, giveCsparse = FALSE)
 
-##' @usage as("repSparse", "sparseMatrix")
+##' as("repSparse", "sparseMatrix")
 ##' @name as
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix sparseMatrix
 setAs("repSparse",  "sparseMatrix", def = repSparse2Csparse)
 
+##' as("repSparse", "CsparseMatrix")
 ##' @name as
-##' @usage as("repSparse", "CsparseMatrix")
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix CsparseMatrix
 setAs("repSparse", "CsparseMatrix", def = repSparse2Csparse)
 
-##' @usage as("repSparse", "dgCMatrix")
+##' as("repSparse", "dgCMatrix")
 ##' @name as
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix dgCMatrix
 setAs("repSparse",     "dgCMatrix", def = repSparse2Csparse)
 
-##' @usage as("repSparse", "TsparseMatrix")
+##' as("repSparse", "TsparseMatrix")
 ##' @name as
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix TsparseMatrix
 setAs("repSparse", "TsparseMatrix", def = repSparse2Tsparse)
 
-##' @usage as("repSparse", "dgTMatrix")
+##' as("repSparse", "dgTMatrix")
 ##' @name as
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix dgTMatrix
@@ -261,7 +264,7 @@ getInit.repSparse <- function(x, ...) environment(x$trans)$init
 ##' @export
 getInit.function <- function(x, ...) environment(x)$init
 
-##' @param init
+##' @param init initial value for the parameter vector
 ##' @rdname getInit
 ##' @export
 setInit <- function(x, init, ...) UseMethod("setInit")
@@ -311,9 +314,6 @@ rowWiseCombination <- function(X, Y) {
 
 ##' Standard matrix multiplication for repeated sparse matrices
 ##'
-##' @param X,Y \code{repSparse} objects
-##' @param trans two argument transformation from \code{X$vals} and
-##' \code{Y$vals} to the repeated values of the resulting matrix
 ##' @rdname matrixOperations
 ##' @export
 mmult <- function(X, Y, trans = "*") {
@@ -352,7 +352,6 @@ mmult <- function(X, Y, trans = "*") {
 
 ##' Kronecker and Khatri-Rao products for repeated sparse matrices
 ##'
-##' @param X,Y \code{repSparse} objects
 ##' @param trans see argument \code{FUN} in \code{\link{outer}}
 ##' @param makedimnames ignored
 ##' @param saveComponents should component matrices be saved?
@@ -665,13 +664,7 @@ repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
     return(ans)
 }
 
-##' Repeated sparse covariance matrix with equal variances and one
-##' off-diagonal covariance
-##'
-##' @param diagVal value for the diagonal
-##' @param offDiagVal value for the off-diagonal
 ##' @param offDiagInds indices for the two correlated objects
-##' @param matSize size of the resulting matrix
 ##' @rdname specialRepSparse
 ##' @export
 repSparseOneOffDiag <- function(diagVal, offDiagVal, offDiagInds, matSize) {
@@ -704,7 +697,6 @@ repSparseDiag <- function(vals, valInds) {
 
 ##' Identity repeated sparse matrix
 ##'
-##' @param matSize size of matrix
 ##' @rdname specialRepSparse
 ##' @export
 repSparseIdent <- function(matSize) {

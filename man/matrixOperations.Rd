@@ -17,13 +17,6 @@ kr(X, Y, trans = "*", saveComponents = TRUE)
 \arguments{
 \item{X,Y}{\code{repSparse} objects}
 
-\item{X,Y}{\code{repSparse} objects}
-
-\item{trans}{two argument transformation from \code{X$vals} and
-\code{Y$vals} to the repeated values of the resulting matrix}
-
-\item{X,Y}{\code{repSparse} objects}
-
 \item{trans}{see argument \code{FUN} in \code{\link{outer}}}
 
 \item{makedimnames}{ignored}

@@ -31,7 +31,7 @@ setInit(x, init, ...)
 
 \item{...}{not yet used}
 
-\item{init}{}
+\item{init}{initial value for the parameter vector}
 }
 \description{
 Get and set initial parameter values for repeated sparse matrices

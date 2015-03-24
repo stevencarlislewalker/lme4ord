@@ -24,19 +24,11 @@ rRepSparse(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...)
 
 \item{matSize}{size of the resulting matrix}
 
-\item{diagVal}{value for the diagonal}
-
-\item{offDiagVal}{value for the off-diagonal}
-
 \item{offDiagInds}{indices for the two correlated objects}
-
-\item{matSize}{size of the resulting matrix}
 
 \item{vals}{vector of values}
 
 \item{valInds}{vector of value indices}
-
-\item{matSize}{size of matrix}
 
 \item{nrows,ncols}{numbers of rows and columns}
 
@@ -50,9 +42,6 @@ rRepSparse(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...)
 }
 \description{
 Repeated sparse matrix with compound symmetry
-
-Repeated sparse covariance matrix with equal variances and one
-off-diagonal covariance
 
 Diagonal repeated sparse matrix
 
