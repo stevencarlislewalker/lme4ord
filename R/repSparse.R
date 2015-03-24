@@ -54,7 +54,7 @@ setOldClass("repSparse")
 ##' @rdname repSparse-class
 ##' @export
 print.repSparse <- function(x, ...) {
-    x$components <- NULL
+    attr(x, "components") <- NULL
     str(x, ...)
 }
 
@@ -134,7 +134,10 @@ as.repSparse <- function(x, ...) {
 
 ##' @rdname as.repSparse
 ##' @export
-as.repSparse.repSparse <- function(x, ...) x
+as.repSparse.repSparse <- function(x, ...) {
+    class(x) <- "repSparse"
+    return(x)
+}
 
 ##' @rdname as.repSparse
 ##' @export
@@ -172,6 +175,12 @@ as.repSparse.matrix <- function(x, ...) {
 
 ##' @rdname as.repSparse
 ##' @export
+as.repSparse.factor <- function(x, ...) {
+    as.repSparse(as(x, "sparseMatrix"))
+}
+
+##' @rdname as.repSparse
+##' @export
 as.data.frame.repSparse <- function(x, ...) {
     with(x, {
         data.frame(rowInds = rowInds,
@@ -202,8 +211,22 @@ as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
     return(as.matrix(ans))
 }
 
-repSparse2Csparse <- function(from) as.matrix(from, sparse = TRUE, giveCsparse = TRUE)
-repSparse2Tsparse <- function(from) as.matrix(from, sparse = TRUE, giveCsparse = FALSE)
+repSparse2Csparse <- function(from) {
+    ans <- new("dgCMatrix")
+    ans@i <- as.integer(from$rowInds)
+    ans@p <- as.integer(ind2point(from$colInds, ncol(from)))
+    ans@x <- as.numeric(with(from, vals[valInds]))
+    ans@Dim <- dim(from)
+    return(ans)
+}
+repSparse2Tsparse <- function(from) {
+    ans <- new("dgTMatrix")
+    ans@i <- as.integer(from$rowInds)
+    ans@j <- as.integer(from$colInds)
+    ans@x <- as.numeric(with(from, vals[valInds]))
+    ans@Dim <- dim(from)
+    return(ans)
+}
 
 ##' as("repSparse", "sparseMatrix")
 ##' @name as
@@ -444,7 +467,7 @@ mkIdentityTrans <- function(init) {
 ##' @export
 mkOuterTrans <- function(Atrans, Btrans, ABtrans) {
     A <- Atrans(getInit(Atrans))
-    B <- Btran(getInit(Btrans))
+    B <- Btrans(getInit(Btrans))
 
                                         # check to see if one of the
                                         # parameter sets is a single
@@ -513,13 +536,34 @@ mkCholOneOffDiagTrans <- function(init) {
 
 
 ## ----------------------------------------------------------------------
+## Reset trans functions
+## ----------------------------------------------------------------------
+
+##' Reset the transformation function of a repeated sparse matrix
+##'
+##' @param object repeated sparse matrix
+##' @rdname resetTrans
+##' @export
+resetTransConst <- function(object) {
+    object$trans <- local({
+        init <- object$vals
+        function(matPars = NULL) {
+            return(init)
+        }
+    })
+    return(object)
+}
+
+
+## ----------------------------------------------------------------------
 ## Matrix binding and repeating
 ## ----------------------------------------------------------------------
 
 ##' Row, column, and block-diagonal binding for repeated sparse
 ##' matrices
 ##'
-##' @param ... list of \code{repSparse} objects
+##' @param ... list of \code{repSparse} objects (but not used for
+##' \code{rep.repSparse})
 ##' @param type type of binding
 ##' @param saveComponents should component matrices be saved?
 ##' @rdname bind
@@ -581,7 +625,8 @@ bind <- function(...,
 ##' @rdname bind
 ##' @export
 rep.repSparse <- function(x, times,
-                          type = c("row", "col", "diag")) {
+                          type = c("row", "col", "diag"),
+                          ...) {
 
     type = type[[1]]
     len <- length(x$rowInds)
@@ -636,7 +681,7 @@ point2ind <- function(point) {
 ind2point <- function(ind, maxInd, fillNA = TRUE) {
     point <- match(0:maxInd, ind) - 1L
     if(!fillNA) return(point)
-    point[maxInd + 1] <- maxInd
+    point[maxInd + 1] <- max(maxInd, length(ind))
     isNaPoint <- is.na(point)
     for(j in maxInd:1) {
         point[j] <- ifelse(isNaPoint[j],

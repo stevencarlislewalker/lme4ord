@@ -6,6 +6,7 @@
 \alias{as.matrix.repSparse}
 \alias{as.repSparse}
 \alias{as.repSparse.dsparseMatrix}
+\alias{as.repSparse.factor}
 \alias{as.repSparse.matrix}
 \alias{as.repSparse.repSparse}
 \title{Coerce to and from repeated sparse matrices}
@@ -17,6 +18,8 @@ as.repSparse(x, ...)
 \method{as.repSparse}{dsparseMatrix}(x, ...)
 
 \method{as.repSparse}{matrix}(x, ...)
+
+\method{as.repSparse}{factor}(x, ...)
 
 \method{as.data.frame}{repSparse}(x, ...)
 

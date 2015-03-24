@@ -10,10 +10,11 @@ bind(..., type = c("row", "col", "diag"), saveComponents = TRUE)
 
 .bind(mats, type = c("row", "col", "diag"))
 
-\method{rep}{repSparse}(x, times, type = c("row", "col", "diag"))
+\method{rep}{repSparse}(x, times, type = c("row", "col", "diag"), ...)
 }
 \arguments{
-\item{...}{list of \code{repSparse} objects}
+\item{...}{list of \code{repSparse} objects (but not used for
+\code{rep.repSparse})}
 
 \item{type}{type of binding}
 
@@ -39,6 +40,7 @@ Other repSparseTopics: \code{\link{as}}, \code{\link{as}},
   \code{\link{as.matrix.repSparse}},
   \code{\link{as.repSparse}},
   \code{\link{as.repSparse.dsparseMatrix}},
+  \code{\link{as.repSparse.factor}},
   \code{\link{as.repSparse.matrix}},
   \code{\link{as.repSparse.repSparse}};
   \code{\link{chol.repSparse}},
