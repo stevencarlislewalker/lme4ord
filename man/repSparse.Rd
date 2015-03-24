@@ -6,7 +6,6 @@
 \alias{repSparse}
 \alias{repSparse-class}
 \alias{sort.repSparse}
-\alias{subset.repSparse}
 \alias{update.repSparse}
 \title{Sparse matrix with repeated values}
 \usage{
@@ -22,8 +21,6 @@ update.repSparse(object, newPars, ...)
 \method{dim}{repSparse}(x)
 
 image.repSparse(x, ...)
-
-\method{subset}{repSparse}(x, rows, cols)
 }
 \arguments{
 \item{rowInds}{1-based row indices (converted to 0-based in
@@ -49,8 +46,6 @@ which are to be taken as the arguments to \code{trans}.
 \item{decreasing}{see \code{\link{sort}}}
 
 \item{type}{sort by column, row, or value indices?}
-
-\item{rows,cols}{not sure yet}
 }
 \value{
 object of class \code{repSparse} with list elements

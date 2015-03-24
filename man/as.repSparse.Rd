@@ -7,9 +7,12 @@
 \alias{as.repSparse}
 \alias{as.repSparse.dsparseMatrix}
 \alias{as.repSparse.matrix}
+\alias{as.repSparse.repSparse}
 \title{Coerce to and from repeated sparse matrices}
 \usage{
 as.repSparse(x, ...)
+
+\method{as.repSparse}{repSparse}(x, ...)
 
 \method{as.repSparse}{dsparseMatrix}(x, ...)
 
@@ -42,5 +45,19 @@ as("repSparse", "dgTMatrix")
 }
 \description{
 Coerce to and from repeated sparse matrices
+}
+\examples{
+set.seed(1)
+m1 <- as.repSparse(matrix(rnorm(6), 2, 3))
+m2 <- as.repSparse(matrix(rbinom(6, 1, 0.5), 2, 3))
+m3 <- sparseMatrix(i = 1:10, j = rep(1:5, 2),
+                   x = as.integer(rbinom(10, 1, 0.5)),
+                   giveCsparse = FALSE)
+as.repSparse(m1)
+as.repSparse(m2)
+as.repSparse(m3)
+as(m1, "TsparseMatrix")
+as(m2, "dgCMatrix")
+as(m2, "sparseMatrix")
 }
 

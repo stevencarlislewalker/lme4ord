@@ -9,22 +9,18 @@ non-zero values of a repeated sparse matrix}
 \usage{
 mkIdentityTrans(init)
 
-mkOuterTrans(A, B, Atrans, Btrans, ABtrans)
+mkOuterTrans(Atrans, Btrans, ABtrans)
 
-mkListTrans(valsList, transList)
+mkListTrans(transList)
 
 mkCholOneOffDiagTrans(init)
 }
 \arguments{
-\item{A,B}{\code{numeric} \code{vector}s}
-
 \item{Atrans,Btrans}{functions for transforming \code{A} and
 \code{B}}
 
 \item{ABtrans}{function to pass as \code{FUN} in
 \code{\link{outer}}}
-
-\item{valsList}{list of value vectors}
 
 \item{transList}{list of transform functions}
 

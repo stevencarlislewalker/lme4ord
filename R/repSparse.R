@@ -42,12 +42,16 @@ setOldClass("repSparse")
 
 ##' @rdname repSparse
 ##' @export
-print.repSparse <- function(x, ...) str(x, ...)
+print.repSparse <- function(x, ...) {
+    x$components <- NULL
+    str(x, ...)
+}
 
 ##' @param newPars new parameter values
 ##' @rdname repSparse
 ##' @export
 update.repSparse <- function(object, newPars, ...) {
+    if(missing(newPars)) newPars <- getInit(object)
     object$vals <- object$trans(newPars)
     return(object)
 }
@@ -81,24 +85,6 @@ dim.repSparse <- function(x) attr(x, "Dim")
 ##' @export
 image.repSparse <- function(x, ...) image(as.matrix(x, sparse = TRUE))
 
-##' @param rows,cols not sure yet
-##' @rdname repSparse
-##' @export
-subset.repSparse <- function(x, rows, cols) {
-    stop("not done, but really should be")
-##     ri <- x$rowInds %in% rows
-##     ci <- x$colInds %in% cols
-##     inds <- ri & ci
-##     print(inds)
-##     ans <- within(unclass(x), {
-##         rowInds <- rowInds[inds]
-##         colInds <- colInds[inds]
-##         valInds <- valInds[inds]
-##     })
-##     with(ans, repSparse(rowInds, colInds, valInds, vals, dim(x)))
-}
-
-
 
 
 ## ----------------------------------------------------------------------
@@ -111,9 +97,26 @@ subset.repSparse <- function(x, rows, cols) {
 ##' @param x an object
 ##' @param ... dots
 ##' @export
+##' @examples
+##' set.seed(1)
+##' m1 <- as.repSparse(matrix(rnorm(6), 2, 3))
+##' m2 <- as.repSparse(matrix(rbinom(6, 1, 0.5), 2, 3))
+##' m3 <- sparseMatrix(i = 1:10, j = rep(1:5, 2),
+##'                    x = as.integer(rbinom(10, 1, 0.5)),
+##'                    giveCsparse = FALSE)
+##' as.repSparse(m1)
+##' as.repSparse(m2)
+##' as.repSparse(m3)
+##' as(m1, "TsparseMatrix")
+##' as(m2, "dgCMatrix")
+##' as(m2, "sparseMatrix")
 as.repSparse <- function(x, ...) {
     UseMethod("as.repSparse")
 }
+
+##' @rdname as.repSparse
+##' @export
+as.repSparse.repSparse <- function(x, ...) x
 
 ##' @rdname as.repSparse
 ##' @export
@@ -228,6 +231,58 @@ setAs("repSparse", "TsparseMatrix", def = repSparse2Tsparse)
 setAs("repSparse",     "dgTMatrix", def = repSparse2Tsparse)
 
 
+## ----------------------------------------------------------------------
+## Initial values -- get and set init parameter vectors for repeated
+## sparse matrices
+## ----------------------------------------------------------------------
+
+##' Get and set initial parameter values for repeated sparse matrices
+##'
+##' @param x object
+##' @param ... not yet used
+##' @rdname getInit
+##' @export
+##' @examples
+##' set.seed(1)
+##' m1 <- as.repSparse(matrix(rnorm(6), 2, 3))
+##' m2 <- repSparseCompSymm(1.2, -0.2, 5)
+##' getInit(m1)
+##' getInit(m2)
+getInit <- function(x, ...) {
+    UseMethod("getInit")
+}
+
+##' @rdname getInit
+##' @export
+getInit.default <- function(x, ...) x$init
+
+##' @rdname getInit
+##' @export
+getInit.repSparse <- function(x, ...) environment(x$trans)$init
+
+##' @rdname getInit
+##' @export
+getInit.function <- function(x, ...) environment(x)$init
+
+##' @param init
+##' @rdname getInit
+##' @export
+setInit <- function(x, init, ...) {
+    UseMethod("setInit")
+}
+
+##' @rdname getInit
+##' @export
+setInit.default <- function(x, init, ...) assign("init", init, envir = as.environment(x))
+
+##' @rdname getInit
+##' @export
+setInit.repSparse <- function(x, init, ...) assign("init", init, envir = environment(x$trans))
+
+##' @rdname getInit
+##' @export
+setInit.function <- function(x, init, ...) assign("init", init, envir = environment(x))
+
 
 ## ----------------------------------------------------------------------
 ## Matrix operations -- mmult (standard matrix product), kron
@@ -277,7 +332,7 @@ mmult <- function(X, Y, trans = "*") {
 
         outerColInds <- XYcolInds
         outerValInds <- YvalInds + (length(Yvals) * (XvalInds - 1))
-        outerTrans <- mkOuterTrans(Xvals, Yvals, Xtrans, Ytrans, trans)
+        outerTrans <- mkOuterTrans(Xtrans, Ytrans, trans)
         outerVals <- as.vector(outer(Xvals, Yvals, trans))
         outerRowInds <- YrowInds + (dim(Y)[2] * XrowInds)
         
@@ -328,7 +383,7 @@ kron <- function(X, Y, trans = "*",
     XYrowInds <- rep.int(Y$rowInds, lenX) + dim(Y)[1] * rep.int(X$rowInds, lenRep)
     XYcolInds <- rep.int(Y$colInds, lenX) + dim(Y)[2] * rep.int(X$colInds, lenRep)
     XYvalInds <- as.vector(outer(Y$valInds, max(Y$valInds) * (X$valInds - 1), "+"))
-    XYtrans <- mkOuterTrans(Y$vals, X$vals, Y$trans, X$trans, trans)
+    XYtrans <- mkOuterTrans(Y$trans, X$trans, trans)
     XYvals <- as.vector(outer(Y$vals, X$vals, FUN = trans))
     structure(list(rowInds = XYrowInds,
                    colInds = XYcolInds,
@@ -354,7 +409,7 @@ kr <- function(X, Y, trans = "*", saveComponents = TRUE) {
     with(rowWiseCombination(X, Y), {
         
         XYvalInds <- YvalInds + (length(Yvals) * (XvalInds - 1))
-        XYtrans <- mkOuterTrans(Yvals, Xvals, Ytrans, Xtrans, trans)
+        XYtrans <- mkOuterTrans(Ytrans, Xtrans, trans)
         XYvals <- as.vector(outer(Yvals, Xvals, FUN = trans))
         XYrowInds <- YrowInds + (dim(Y)[1] * XrowInds)
         
@@ -388,7 +443,6 @@ mkIdentityTrans <- function(init) {
 }
 
 
-##' @param A,B \code{numeric} \code{vector}s
 ##' @param Atrans,Btrans functions for transforming \code{A} and
 ##' \code{B}
 ##' @param ABtrans function to pass as \code{FUN} in
@@ -396,7 +450,9 @@ mkIdentityTrans <- function(init) {
 ##' @rdname mkTrans
 ##' @family mkTransFunctions
 ##' @export
-mkOuterTrans <- function(A, B, Atrans, Btrans, ABtrans) {
+mkOuterTrans <- function(Atrans, Btrans, ABtrans) {
+    A <- Atrans(getInit(Atrans))
+    B <- Btran(getInit(Btrans))
 
                                         # check to see if one of the
                                         # parameter sets is a single
@@ -406,39 +462,42 @@ mkOuterTrans <- function(A, B, Atrans, Btrans, ABtrans) {
                                         # outer product involving a
                                         # scalar of 1L is boring)
     checkForBordom <- function(xx) (length(xx) == 1L) & (xx[1] == 1L)
-    if(checkForBordom(A) && !checkForBordom(B)) return(mkIdentityTrans(B$vals))
-    if(!checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(A$vals))
-    if(checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(1))
+    if(checkForBordom(A) && !checkForBordom(B)) return(mkIdentityTrans(getInit(Btrans)))
+    if(!checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(getInit(Atrans)))
+    if(checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(1)) ## FIXME:
+                                                                          ## too
+                                                                          ## presumptuous
 
                                         # construct the environment of
                                         # the transformation function
     local({
-        ## FIXME: include indices??  don't think so, but ... actually
-        ## now i think yes
         Atrans <- Atrans
         Btrans <- Btrans
         ABtrans <- ABtrans
-        Aind <- seq_along(A)
-        Bind <- seq_along(B) + length(A)
+        Ainit <- getInit(Atrans)
+        Binit <- getInit(Btrans)
+        Aind <- seq_along(Ainit)
+        Bind <- seq_along(Binit) + length(Ainit)
+        init <- c(Ainit, Binit)
         function(matPars) as.vector(outer(Atrans(matPars[Aind]),
                                           Btrans(matPars[Bind]),
                                           FUN = ABtrans))
     })
 }
 
-##' @param valsList list of value vectors
 ##' @param transList list of transform functions
 ##' @rdname mkTrans
 ##' @family mkTransFunctions
 ##' @export
-mkListTrans <- function(valsList, transList) {
+mkListTrans <- function(transList) {
     local({
-        ## FIXME: implicitly assumes vals are parameters
         transList <- transList
-        indList <- lapply(valsList, seq_along)
+        parList <- lapply(transList, getInit)
+        indList <- lapply(parList, seq_along)
         for(ii in 2:length(indList)) {
-            indList[[ii]] <- indList[[ii-1]] + max(indList[[ii]])
+            indList[[ii]] <- indList[[ii]] + max(indList[[ii-1]])
         }
+        init <- unlist(parList)
         function(matPars) {
             unlist(lapply(seq_along(indList),
                           function(ii) transList[[ii]](matPars[indList[[ii]]])))
@@ -512,7 +571,7 @@ bind <- function(...,
                          colInds = unlist(colInds) + colOff + 1,
                          valInds = unlist(valInds) + valOff,
                          vals = unlist(vals),
-                         trans = mkListTrans(vals, trans),
+                         trans = mkListTrans(trans),
                          Dim = c(sum(nrows), sum(ncols)))
         class(ans) <- c("repSparseBind", class(ans))
         ans$components <- components
@@ -649,10 +708,10 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 ##' @param matSize size of the resulting matrix
 ##' @export
 repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
-    iii <- rep.int(1:(matSize-1), 1:(matSize-1)) + 1
+    iii <- rep.int(1:(matSize-1), 1:(matSize-1)) + 1L
     jjj <- sequence(1:(matSize-1))
-    ii <- c(1:m, iii, jjj) ## FIXME: where did m come from?!
-    jj <- c(1:m, jjj, iii)
+    ii <- c(1:matSize, iii, jjj)
+    jj <- c(1:matSize, jjj, iii)
     vi <- rep.int(1:2, c(matSize, 2 * choose(matSize, 2)))
     va <- setNames(c( diagVal ,  offDiagVal ),
                    c("diagVal", "offDiagVal"))
