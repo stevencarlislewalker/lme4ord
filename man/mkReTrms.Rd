@@ -5,20 +5,26 @@
 \alias{mkSparseTrans}
 \title{Make general random effects terms}
 \usage{
-mkGeneralReTrms(trmList, ...)
+mkGeneralReTrms(reStructList, parsedForm, ...)
 
 mkSparseTrans(object)
 
-mkIdentityReTrms(trm, ...)
+mkIdentityReTrms(modMat, grpFac, grpName)
 }
 \arguments{
-\item{trmList}{list of terms}
+\item{reStructList}{list of random effects structure functions}
+
+\item{parsedForm}{list parsed random effects terms}
 
 \item{...}{potential extra parameters}
 
 \item{object}{repeated sparse matrix object}
 
-\item{trm}{random effects term}
+\item{modMat}{raw random effects model matrix}
+
+\item{grpFac}{grouping factor}
+
+\item{grpName}{grouping factor name}
 }
 \description{
 Make general random effects terms

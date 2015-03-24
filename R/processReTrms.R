@@ -1,10 +1,12 @@
 ##' Make general random effects terms
 ##'
-##' @param trmList list of terms
+##' @param reStructList list of random effects structure functions
+##' @param parsedForm list parsed random effects terms
 ##' @param ... potential extra parameters
 ##' @rdname mkReTrms
 ##' @export
-mkGeneralReTrms <- function(trmList, ...) {
+mkGeneralReTrms <- function(reStructList, parsedForm, ...) {
+    trmList <- mapply(do.call, reStructList, parsedForm$random, SIMPLIFY = FALSE)
     trmList <- listTranspose(trmList)
          ZtBind <- as.repSparse(sort(.bind(trmList$Zt,      "row" )))
     LambdatBind <- as.repSparse(sort(.bind(trmList$Lambdat, "diag")))
@@ -27,11 +29,13 @@ mkSparseTrans <- function(object) {
     })
 }
 
-##' @param trm random effects term
+##' @param modMat raw random effects model matrix
+##' @param grpFac grouping factor
+##' @param grpName grouping factor name
 ##' @rdname mkReTrms
 ##' @export
-mkIdentityReTrms <- function(trm, ...) {
-    Zt <- kr(t(as.repSparse(trm$modMat)), as.repSparse(trm$grpFac))
+mkIdentityReTrms <- function(modMat, grpFac, grpName) {
+    Zt <- kr(t(as.repSparse(modMat)), as.repSparse(grpFac))
     return(list(Zt = resetTransConst(Zt),
-                Lambdat = repSparseIdent(nlevels(trm$grpFac))))
+                Lambdat = repSparseIdent(nlevels(grpFac))))
 }
