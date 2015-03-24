@@ -7,10 +7,12 @@
 ##' @param valInds indices for the nonzero values
 ##' @param vals nonzero values
 ##' @param trans function for transforming some parameters into
-##' \code{vals}.  the \code{\link{environment}} of this function must
-##' contain a named list of these parameters (called \code{matPars}),
-##' which are to be taken as the arguments to \code{trans}.
-##' \code{update} will update these parameters (in the future).
+##' \code{vals}.  the \code{\link{environment}} of this function
+##' should contain a vector of these parameters (called \code{init}),
+##' which could be taken as the arguments to \code{trans}.  these
+##' initial values can be obtained by \code{\link{getInit}} and set by
+##' \code{\link{setInit}}.  an \code{\link{update.repSparse}} method
+##' will update these parameters.
 ##' @param Dim matrix dimensions
 ##' @return object of class \code{repSparse} with list elements
 ##' \code{rowInds}, \code{colInds}, \code{valInds}, \code{vals}, and
@@ -19,8 +21,8 @@
 ##' @export
 repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim) {
     if(missing(Dim)) Dim <- c(max(rowInds), max(colInds))
-    if(!all(1:max(valInds) %in% valInds)) stop("max(valInds) unnecessarily large")
-    if(length(vals) != max(valInds)) stop("mismatch between vals and valInds")
+    if(!all(1:max(valInds) %in% valInds))  stop("max(valInds) unnecessarily large")
+    if(length(vals) != max(valInds))       stop("mismatch between vals and valInds")
     if(length(rowInds) != length(colInds)) stop("row and column index mismatch")
     if(length(rowInds) != length(valInds)) stop("row and value index mismatch")
     if(missing(trans)) trans <- mkIdentityTrans(vals)
@@ -33,14 +35,19 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim) {
               Dim = Dim)
 }
 
+
+## ----------------------------------------------------------------------
+## repSparse-class
+## ----------------------------------------------------------------------
+
 ##' \code{repSparse} class
 ##'
 ##' @name repSparse-class
-##' @rdname repSparse
+##' @rdname repSparse-class
 ##' @exportClass repSparse
 setOldClass("repSparse")
 
-##' @rdname repSparse
+##' @rdname repSparse-class
 ##' @export
 print.repSparse <- function(x, ...) {
     x$components <- NULL
@@ -48,7 +55,7 @@ print.repSparse <- function(x, ...) {
 }
 
 ##' @param newPars new parameter values
-##' @rdname repSparse
+##' @rdname repSparse-class
 ##' @export
 update.repSparse <- function(object, newPars, ...) {
     if(missing(newPars)) newPars <- getInit(object)
@@ -56,10 +63,9 @@ update.repSparse <- function(object, newPars, ...) {
     return(object)
 }
 
-
 ##' @param decreasing see \code{\link{sort}}
 ##' @param type sort by column, row, or value indices?
-##' @rdname repSparse
+##' @rdname repSparse-class
 ##' @export
 sort.repSparse <- function(x, decreasing = FALSE,
                            type = c("col", "row", "val"), ...) {
@@ -74,28 +80,34 @@ sort.repSparse <- function(x, decreasing = FALSE,
     return(x)
 }
 
-
-##' @rdname repSparse
+##' @rdname repSparse-class
 ##' @export
 dim.repSparse <- function(x) attr(x, "Dim")
 
-
-
-##' @rdname repSparse
+##' @rdname repSparse-class
 ##' @export
 image.repSparse <- function(x, ...) image(as.matrix(x, sparse = TRUE))
 
+##' @rdname repSparse-class
+##' @export
+t.repSparse <- function(x) {
+    tx <- x
+    tx$rowInds <- x$colInds
+    tx$colInds <- x$rowInds
+    attr(tx, "Dim") <- rev(dim(x))
+    return(tx)
+}
 
 
 ## ----------------------------------------------------------------------
 ## Coercion -- as...
 ## ----------------------------------------------------------------------
 
-
 ##' Coerce to and from repeated sparse matrices
 ##'
 ##' @param x an object
 ##' @param ... dots
+##' @rdname as.repSparse
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -137,7 +149,6 @@ as.repSparse.dsparseMatrix <- function(x, ...) {
     return(sort(ans))
 }
 
-
 ##' @rdname as.repSparse
 ##' @export
 as.repSparse.matrix <- function(x, ...) {
@@ -152,7 +163,6 @@ as.repSparse.matrix <- function(x, ...) {
                      Dim = dim(x))
     return(sort(ans))
 }
-
 
 ##' @rdname as.repSparse
 ##' @export
@@ -190,42 +200,31 @@ repSparse2Csparse <- function(from) as.matrix(from, sparse = TRUE, giveCsparse =
 repSparse2Tsparse <- function(from) as.matrix(from, sparse = TRUE, giveCsparse = FALSE)
 
 ##' @usage as("repSparse", "sparseMatrix")
-##' 
 ##' @name as
-##' 
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix sparseMatrix
 setAs("repSparse",  "sparseMatrix", def = repSparse2Csparse)
 
-
 ##' @name as
-##'
 ##' @usage as("repSparse", "CsparseMatrix")
-##' 
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix CsparseMatrix
 setAs("repSparse", "CsparseMatrix", def = repSparse2Csparse)
 
 ##' @usage as("repSparse", "dgCMatrix")
-##' 
 ##' @name as
-##' 
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix dgCMatrix
 setAs("repSparse",     "dgCMatrix", def = repSparse2Csparse)
 
 ##' @usage as("repSparse", "TsparseMatrix")
-##' 
 ##' @name as
-##' 
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix TsparseMatrix
 setAs("repSparse", "TsparseMatrix", def = repSparse2Tsparse)
 
 ##' @usage as("repSparse", "dgTMatrix")
-##' 
 ##' @name as
-##' 
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix dgTMatrix
 setAs("repSparse",     "dgTMatrix", def = repSparse2Tsparse)
@@ -248,9 +247,7 @@ setAs("repSparse",     "dgTMatrix", def = repSparse2Tsparse)
 ##' m2 <- repSparseCompSymm(1.2, -0.2, 5)
 ##' getInit(m1)
 ##' getInit(m2)
-getInit <- function(x, ...) {
-    UseMethod("getInit")
-}
+getInit <- function(x, ...) UseMethod("getInit")
 
 ##' @rdname getInit
 ##' @export
@@ -267,9 +264,7 @@ getInit.function <- function(x, ...) environment(x)$init
 ##' @param init
 ##' @rdname getInit
 ##' @export
-setInit <- function(x, init, ...) {
-    UseMethod("setInit")
-}
+setInit <- function(x, init, ...) UseMethod("setInit")
 
 ##' @rdname getInit
 ##' @export
@@ -294,7 +289,7 @@ setInit.function <- function(x, init, ...) assign("init", init, envir = environm
 ##'
 ##' @param X,Y \code{repSparse} objects
 ##' @return a row-wise combination of repeated sparse matrices
-##' @family matrixOperations
+##' @rdname matrixOperations
 ##' @export
 rowWiseCombination <- function(X, Y) {
 
@@ -314,18 +309,16 @@ rowWiseCombination <- function(X, Y) {
               Dim = c(nrow(X), nrow(Y), ncol(X)))
 }
 
-
-
 ##' Standard matrix multiplication for repeated sparse matrices
 ##'
 ##' @param X,Y \code{repSparse} objects
 ##' @param trans two argument transformation from \code{X$vals} and
 ##' \code{Y$vals} to the repeated values of the resulting matrix
-##' @family matrixOperations
+##' @rdname matrixOperations
 ##' @export
 mmult <- function(X, Y, trans = "*") {
 
-    warning("this is slow and bad.  ",
+    warning("this is slow and bad and probably even just wrong.  ",
             "please construct standard matrix products with standard tools.")
 
     with(rowWiseCombination(X, t(Y)), {
@@ -357,7 +350,6 @@ mmult <- function(X, Y, trans = "*") {
     })
 }
 
-
 ##' Kronecker and Khatri-Rao products for repeated sparse matrices
 ##'
 ##' @param X,Y \code{repSparse} objects
@@ -365,8 +357,7 @@ mmult <- function(X, Y, trans = "*") {
 ##' @param makedimnames ignored
 ##' @param saveComponents should component matrices be saved?
 ##' @param ... ignored
-##' @rdname kron
-##' @family matrixOperations
+##' @rdname matrixOperations
 ##' @export
 kron <- function(X, Y, trans = "*",
                  makedimnames = FALSE, saveComponents = TRUE, ...) {
@@ -395,8 +386,7 @@ kron <- function(X, Y, trans = "*",
               components = components)
 }
 
-##' @rdname kron
-##' @family matrixOperations
+##' @rdname matrixOperations
 ##' @export
 kr <- function(X, Y, trans = "*", saveComponents = TRUE) {
 
@@ -418,7 +408,7 @@ kr <- function(X, Y, trans = "*", saveComponents = TRUE) {
                        valInds = XYvalInds,
                        vals = XYvals,
                        trans = XYtrans),
-                  class = c("repSparseKron", "repSparse"),
+                  class = c("repSparseKr", "repSparse"),
                   Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]),
                   components = components)
     })
@@ -433,7 +423,6 @@ kr <- function(X, Y, trans = "*", saveComponents = TRUE) {
 ##' non-zero values of a repeated sparse matrix
 ##'
 ##' @rdname mkTrans
-##' @family mkTransFunctions
 ##' @export
 mkIdentityTrans <- function(init) {
     local({
@@ -442,13 +431,11 @@ mkIdentityTrans <- function(init) {
     })
 }
 
-
 ##' @param Atrans,Btrans functions for transforming \code{A} and
 ##' \code{B}
 ##' @param ABtrans function to pass as \code{FUN} in
 ##' \code{\link{outer}}
 ##' @rdname mkTrans
-##' @family mkTransFunctions
 ##' @export
 mkOuterTrans <- function(Atrans, Btrans, ABtrans) {
     A <- Atrans(getInit(Atrans))
@@ -464,9 +451,8 @@ mkOuterTrans <- function(Atrans, Btrans, ABtrans) {
     checkForBordom <- function(xx) (length(xx) == 1L) & (xx[1] == 1L)
     if(checkForBordom(A) && !checkForBordom(B)) return(mkIdentityTrans(getInit(Btrans)))
     if(!checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(getInit(Atrans)))
-    if(checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(1)) ## FIXME:
-                                                                          ## too
-                                                                          ## presumptuous
+    if(checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(1)) ## FIXME: too
+                                                                          ## presumptuous?
 
                                         # construct the environment of
                                         # the transformation function
@@ -487,7 +473,6 @@ mkOuterTrans <- function(Atrans, Btrans, ABtrans) {
 
 ##' @param transList list of transform functions
 ##' @rdname mkTrans
-##' @family mkTransFunctions
 ##' @export
 mkListTrans <- function(transList) {
     local({
@@ -507,7 +492,6 @@ mkListTrans <- function(transList) {
 
 ##' @param init initial parameter values
 ##' @rdname mkTrans
-##' @family mkTransFunctions
 ##' @export
 mkCholOneOffDiagTrans <- function(init) {
     local({
@@ -534,7 +518,6 @@ mkCholOneOffDiagTrans <- function(init) {
 ##' @param type type of binding
 ##' @param saveComponents should component matrices be saved?
 ##' @rdname bind
-##' @family matrixBinding
 ##' @export
 bind <- function(...,
                  type = c("row", "col", "diag"),
@@ -581,18 +564,15 @@ bind <- function(...,
 
 ##' @param mats list of \code{repSparse} matrix objects
 ##' @rdname bind
-##' @family matrixBinding
 ##' @export
 .bind <- function(mats, type = c("row", "col", "diag")) {
     do.call(bind, c(mats, list(type = type)))
 }
 
-
 ##' Repeat repeated sparse matrix
 ##' @param x \code{repSparse} object
 ##' @param times like \code{rep}
 ##' @rdname bind
-##' @family matrixBinding
 ##' @export
 rep.repSparse <- function(x, times,
                           type = c("row", "col", "diag")) {
@@ -622,43 +602,6 @@ rep.repSparse <- function(x, times,
     ans$components <- list(FUN = rep, x = x, times = times, type = type)
     return(ans)
 }
-
-## ----------------------------------------------------------------------
-## Matrix reshaping -- t, simplifyRepSparse
-## ----------------------------------------------------------------------
-
-##' Repeated sparse matrix transpose
-##'
-##' @param x \code{repSparse} object
-##' @export
-t.repSparse <- function(x) {
-    tx <- x
-    tx$rowInds <- x$colInds
-    tx$colInds <- x$rowInds
-    attr(tx, "Dim") <- rev(dim(x))
-    return(tx)
-}
-
-
-##' Simplify a repeated sparse matrix
-##'
-##' Remove unused values and renumber value indices of a
-##' \code{repSparse} object that has values that are not used in any
-##' matrix element.  (FIXME: not currently used anywhere)
-##'
-##' @param object a \code{repSparse} object
-##' @export
-simplifyRepSparse <- function(object) {
-    warning("untested")
-    keepers <- sort(unique(object$valInds))
-    valsOut <- object$vals[keepers]
-    valIndsOut <- match(object$valInds, keepers)
-    object$vals <- valsOut
-    object$valInds <- valIndsOut
-    return(object)
-}
-
-
 
 
 ## ----------------------------------------------------------------------
@@ -696,6 +639,7 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
     return(point)
 }
 
+
 ## ----------------------------------------------------------------------
 ## Construct special matrices -- repSparseCompSymm, repSparseDiag,
 ## repSparseIdent, rRepSparse
@@ -706,6 +650,7 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 ##' @param diagVal value for the diagonal
 ##' @param offDiagVal value for the off-diagonal
 ##' @param matSize size of the resulting matrix
+##' @rdname specialRepSparse
 ##' @export
 repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
     iii <- rep.int(1:(matSize-1), 1:(matSize-1)) + 1L
@@ -727,6 +672,7 @@ repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
 ##' @param offDiagVal value for the off-diagonal
 ##' @param offDiagInds indices for the two correlated objects
 ##' @param matSize size of the resulting matrix
+##' @rdname specialRepSparse
 ##' @export
 repSparseOneOffDiag <- function(diagVal, offDiagVal, offDiagInds, matSize) {
     if(length(offDiagInds) != 2L) stop("only one off diagonal element please")
@@ -746,6 +692,7 @@ repSparseOneOffDiag <- function(diagVal, offDiagVal, offDiagInds, matSize) {
 ##'
 ##' @param vals vector of values
 ##' @param valInds vector of value indices
+##' @rdname specialRepSparse
 ##' @export
 repSparseDiag <- function(vals, valInds) {
     if(missing(valInds)) valInds <- seq_along(vals)
@@ -758,13 +705,13 @@ repSparseDiag <- function(vals, valInds) {
 ##' Identity repeated sparse matrix
 ##'
 ##' @param matSize size of matrix
+##' @rdname specialRepSparse
 ##' @export
 repSparseIdent <- function(matSize) {
     ans <- repSparseDiag(1, rep(1, matSize))
     class(ans) <- c("repSparseIdent", class(ans))
     return(ans)
 }
-
 
 ##' Random repeated sparse matrix
 ##'
@@ -773,6 +720,7 @@ repSparseIdent <- function(matSize) {
 ##' @param nnonzeros number of nonzero elements
 ##' @param rfunc random number function
 ##' @param ... dots
+##' @rdname specialRepSparse
 ##' @export
 rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
     if(nnonzeros < nvals)
@@ -825,18 +773,4 @@ chol.repSparseOneOffDiag <- function(x, ...) {
                      trans = mkCholOneOffDiagTrans(x$vals),
                      Dim = dim(x))
     return(ans)
-}
-
-
-
-## ----------------------------------------------------------------------
-## History tree -- 
-## ----------------------------------------------------------------------
-
-##' Grow the history tree
-##' 
-##' @param newNodes list of new component \code{repSparse} objects
-##' @param oldTree existing tree (can be \code{NULL})
-growTree <- function(newNodes, oldTree) {
-    if(is.null(oldTree)) return(newNodes)
 }
