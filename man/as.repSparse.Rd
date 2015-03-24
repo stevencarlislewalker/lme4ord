@@ -60,4 +60,33 @@ as(m1, "TsparseMatrix")
 as(m2, "dgCMatrix")
 as(m2, "sparseMatrix")
 }
+\seealso{
+Other repSparseTopics: \code{\link{.bind}},
+  \code{\link{bind}}, \code{\link{rep.repSparse}};
+  \code{\link{chol.repSparse}},
+  \code{\link{chol.repSparseOneOffDiag}};
+  \code{\link{dim.repSparse}},
+  \code{\link{image.repSparse}},
+  \code{\link{print.repSparse}},
+  \code{\link{repSparse-class}},
+  \code{\link{sort.repSparse}}, \code{\link{t.repSparse}},
+  \code{\link{update.repSparse}}; \code{\link{getInit}},
+  \code{\link{getInit.default}},
+  \code{\link{getInit.function}},
+  \code{\link{getInit.repSparse}}, \code{\link{setInit}},
+  \code{\link{setInit.default}},
+  \code{\link{setInit.function}},
+  \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
+  \code{\link{point2ind}}; \code{\link{kr}},
+  \code{\link{kron}}, \code{\link{mmult}},
+  \code{\link{rowWiseCombination}};
+  \code{\link{mkCholOneOffDiagTrans}},
+  \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
+  \code{\link{mkOuterTrans}}; \code{\link{rRepSparse}},
+  \code{\link{repSparseCompSymm}},
+  \code{\link{repSparseDiag}},
+  \code{\link{repSparseIdent}},
+  \code{\link{repSparseOneOffDiag}};
+  \code{\link{repSparse}}
+}
 

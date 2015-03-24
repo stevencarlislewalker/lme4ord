@@ -22,4 +22,40 @@ These are often just bailout methods, but some special
 \code{repSparse} matrices have exploitable structure, which can be
 used to keep the number of repeated values down.
 }
+\seealso{
+Other repSparseTopics: \code{\link{.bind}},
+  \code{\link{bind}}, \code{\link{rep.repSparse}};
+  \code{\link{as}}, \code{\link{as}}, \code{\link{as}},
+  \code{\link{as}}, \code{\link{as}},
+  \code{\link{as.data.frame.repSparse}},
+  \code{\link{as.data.table.repSparse}},
+  \code{\link{as.matrix.repSparse}},
+  \code{\link{as.repSparse}},
+  \code{\link{as.repSparse.dsparseMatrix}},
+  \code{\link{as.repSparse.matrix}},
+  \code{\link{as.repSparse.repSparse}};
+  \code{\link{dim.repSparse}},
+  \code{\link{image.repSparse}},
+  \code{\link{print.repSparse}},
+  \code{\link{repSparse-class}},
+  \code{\link{sort.repSparse}}, \code{\link{t.repSparse}},
+  \code{\link{update.repSparse}}; \code{\link{getInit}},
+  \code{\link{getInit.default}},
+  \code{\link{getInit.function}},
+  \code{\link{getInit.repSparse}}, \code{\link{setInit}},
+  \code{\link{setInit.default}},
+  \code{\link{setInit.function}},
+  \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
+  \code{\link{point2ind}}; \code{\link{kr}},
+  \code{\link{kron}}, \code{\link{mmult}},
+  \code{\link{rowWiseCombination}};
+  \code{\link{mkCholOneOffDiagTrans}},
+  \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
+  \code{\link{mkOuterTrans}}; \code{\link{rRepSparse}},
+  \code{\link{repSparseCompSymm}},
+  \code{\link{repSparseDiag}},
+  \code{\link{repSparseIdent}},
+  \code{\link{repSparseOneOffDiag}};
+  \code{\link{repSparse}}
+}
 

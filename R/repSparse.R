@@ -18,6 +18,7 @@
 ##' \code{rowInds}, \code{colInds}, \code{valInds}, \code{vals}, and
 ##' \code{trans}, and a \code{Dim} attibute
 ##' @rdname repSparse
+##' @family repSparseTopics
 ##' @export
 repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim) {
     if(missing(Dim)) Dim <- c(max(rowInds), max(colInds))
@@ -44,6 +45,7 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim) {
 ##'
 ##' @name repSparse-class
 ##' @rdname repSparse-class
+##' @family repSparseTopics
 ##' @exportClass repSparse
 setOldClass("repSparse")
 
@@ -111,6 +113,7 @@ dim.repSparse <- function(x) attr(x, "Dim")
 ##' @param x an object
 ##' @param ... dots
 ##' @rdname as.repSparse
+##' @family repSparseTopics
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -243,6 +246,7 @@ setAs("repSparse",     "dgTMatrix", def = repSparse2Tsparse)
 ##' @param x object
 ##' @param ... not yet used
 ##' @rdname getInit
+##' @family repSparseTopics
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -293,6 +297,7 @@ setInit.function <- function(x, init, ...) assign("init", init, envir = environm
 ##' @param X,Y \code{repSparse} objects
 ##' @return a row-wise combination of repeated sparse matrices
 ##' @rdname matrixOperations
+##' @family repSparseTopics
 ##' @export
 rowWiseCombination <- function(X, Y) {
 
@@ -422,6 +427,7 @@ kr <- function(X, Y, trans = "*", saveComponents = TRUE) {
 ##' non-zero values of a repeated sparse matrix
 ##'
 ##' @rdname mkTrans
+##' @family repSparseTopics
 ##' @export
 mkIdentityTrans <- function(init) {
     local({
@@ -517,6 +523,7 @@ mkCholOneOffDiagTrans <- function(init) {
 ##' @param type type of binding
 ##' @param saveComponents should component matrices be saved?
 ##' @rdname bind
+##' @family repSparseTopics
 ##' @export
 bind <- function(...,
                  type = c("row", "col", "diag"),
@@ -611,6 +618,7 @@ rep.repSparse <- function(x, times,
 ##'
 ##' @param point vector of column pointers
 ##' @rdname changeSparseFormat
+##' @family repSparseTopics
 ##' @export
 point2ind <- function(point) {
                                         # ?Matrix::sparseMatrix
@@ -650,6 +658,7 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 ##' @param offDiagVal value for the off-diagonal
 ##' @param matSize size of the resulting matrix
 ##' @rdname specialRepSparse
+##' @family repSparseTopics
 ##' @export
 repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
     iii <- rep.int(1:(matSize-1), 1:(matSize-1)) + 1L
@@ -743,6 +752,7 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
 ##' \code{\link{repSparse}}
 ##' @param ... passed to subsequent functions
 ##' @rdname chol
+##' @family repSparseTopics
 ##' @export
 chol.repSparse <- function(x, ...) {
     as.repSparse(chol(as.matrix(x, sparse = TRUE)))
