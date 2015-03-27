@@ -48,6 +48,7 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{as.repSparse.matrix}},
   \code{\link{as.repSparse.repSparse}};
   \code{\link{chol.repSparse}},
+  \code{\link{chol.repSparseCompSymm}},
   \code{\link{chol.repSparseOneOffDiag}};
   \code{\link{dim.repSparse}},
   \code{\link{image.repSparse}},

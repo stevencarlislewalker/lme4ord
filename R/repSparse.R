@@ -535,6 +535,35 @@ mkCholOneOffDiagTrans <- function(init) {
 }
 
 
+
+mkGenCholInPlaceTrans <- function(init) {
+    local({
+        init <- init
+        m <- length(init)
+        n <- as.integer((sqrt(1 + 8 * m)-1)/2)
+        diagInds <- choose(3:(n + 1), 2)
+        col1Inds <- choose(1:n, 2) + 1L
+        function(matPars) {
+            print(matPars[col1Inds] <- matPars[col1Inds]/sqrt(matPars[1]))
+            matPars
+            k <- 3
+            for(i in 3:n) {
+                for(j in 1:(i-1)) {
+                    k <- k + 1
+                    matPars[k] <-
+                        (matPars[k] - sum(matPars[col1Inds[i-1] + (0:(j-1))] *
+                                          matPars[col1Inds[j-1] + (0:(j-1))])) /
+                        matPars[diagInds[i]]
+                }
+                k <- k + 1
+                matPars[k] <- sqrt(matPars[k] - sum(matPars[(k-i-1):(k-1)]^2))
+            }
+            return(matPars)
+        }
+    })
+}
+
+
 ## ----------------------------------------------------------------------
 ## Reset trans functions
 ## ----------------------------------------------------------------------
@@ -706,6 +735,8 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 ##' @family repSparseTopics
 ##' @export
 repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
+    if((!(diagVal > offDiagVal)) || (!(offDiagVal > (1-diagVal)/(matSize-1))))
+        stop("resulting matrix not positive definite")
     iii <- rep.int(1:(matSize-1), 1:(matSize-1)) + 1L
     jjj <- sequence(1:(matSize-1))
     ii <- c(1:matSize, iii, jjj)
@@ -821,3 +852,32 @@ chol.repSparseOneOffDiag <- function(x, ...) {
                      Dim = dim(x))
     return(ans)
 }
+
+##' @rdname chol
+##' @export
+##' @examples
+##' x <- repSparseCompSymm(1.2, -0.11, 4)
+##' as.matrix(chol(x))
+##' t(chol(as.matrix(x)))
+chol.repSparseCompSymm <- function(x, ...) {
+    n <- nrow(x)
+    md0 <- x$vals[1]
+    od0 <- x$vals[2]
+    md <- numeric(n) # main diagonal
+    od <- numeric(n-1) # off diagonal
+    md[1] <- md0
+    od[1] <- od0/sqrt(md0)
+    for(i in 2:n) {
+        md[i] <- md[i-1] - od[i-1]^2
+        if(i == n) break
+        od[i] <- (od0 - md0 + md[i])/sqrt(md[i])
+    }
+    sa <- seq_along(md)
+    ii <- rep.int(1:(n-1), (n-1):1)
+    ri <- c(sa, unlist(lapply(2:n, ":", n)))
+    ci <- c(sa, ii)
+    vi <- c(sa, ii + n)
+    va <- c(sqrt(md), od)
+    repSparse(ri, ci, vi, va, Dim = dim(x))
+}
+

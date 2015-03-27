@@ -1,17 +1,19 @@
+##' Get random effects term
+##' 
 ##' @param modMat raw random effects model matrix
 ##' @param grpFac grouping factor
 ##' @param grpName grouping factor name
-##' @rdname reStruct
+##' @rdname getReTrm
 ##' @export
-reStructIdentity <- function() {
-    list(getReTrms =
-         function(modMat, grpFac, grpName) {
-             Zt <- kr(t(as.repSparse(modMat)), as.repSparse(grpFac))
-             return(list(Zt = resetTransConst(Zt),
-                         Lambdat = repSparseIdent(nlevels(grpFac))))
-         },
-         printReTrms =
-         function() {
-             print("identity reStruct")
-         })
+getReTrm <- function(modMat, grpFac, grpName) {
+    UseMethod("getReTrm")
 }
+
+##' @rdname getReTrm
+##' @export
+getReTrm.identity <- function(modMat, grpFac, grpName) {
+    Zt <- kr(t(as.repSparse(modMat)), as.repSparse(grpFac))
+    return(list(Zt = resetTransConst(Zt),
+                Lambdat = repSparseIdent(nlevels(grpFac))))
+}
+
