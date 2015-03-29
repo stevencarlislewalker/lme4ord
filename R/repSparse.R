@@ -735,8 +735,8 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 ##' @family repSparseTopics
 ##' @export
 repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
-    if((!(diagVal > offDiagVal)) || (!(offDiagVal > (1-diagVal)/(matSize-1))))
-        stop("resulting matrix not positive definite")
+    if((!(diagVal > offDiagVal)) || (!(offDiagVal > (-diagVal)/(matSize-1))))
+        warning("resulting matrix not positive definite")
     iii <- rep.int(1:(matSize-1), 1:(matSize-1)) + 1L
     jjj <- sequence(1:(matSize-1))
     ii <- c(1:matSize, iii, jjj)
