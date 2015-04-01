@@ -2,7 +2,20 @@ library(lme4ord)
 library(lme4)
 library(ape)
 
-td <- simTestPhyloDat(9, n = 10, m = 100, power = 0.1)
+td <- simTestPhyloDat(9, n = 10, m = 100,
+                      form = y ~ 1 + (1 | species),
+                      power = 0.1)
+getReTrm.edgeStruct <- function(){}
+
+
+form <- y ~ x * z + edgeStruct(1 | species, ph = uu, aa = bam) + 1 + (x | sites)
+splitForm(form)
+
+
+
+
+
+generalParseFormula(form, as.data.frame(td$dl))
 
 edgeInd <- edgeTipIndicator(td$ph)
 dummy <- as.data.frame(t(edgeInd))

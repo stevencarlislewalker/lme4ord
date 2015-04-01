@@ -6,7 +6,9 @@
 ##' indicating the edges associated with a particular path.
 ##' \code{edgeTipIndicator} returns a \code{logical} matrix giving the
 ##' relationship between tips and the edges associated with their
-##' history.
+##' history.  \code{reorderPhylo} is a convenience function for
+##' ordering the edges of a \code{phylo} object in a way that makes it
+##' easier to build edge-based phylogenetic models.
 ##' 
 ##' @param node vector of node indices
 ##' @param edge phylogenetic edge matrix
@@ -53,7 +55,7 @@ edgeTipIndicator.default <- function(object, ...) {
 ##' @param ntip number of tips
 ##' @rdname edgeTipIndicator
 ##' @export
-edgeTipIndicator.matrix <- function(object, ntip, scale=1, ...) {
+edgeTipIndicator.matrix <- function(object, ntip, scale = 1, ...) {
     if(ncol(object) != 2L) stop("not an edge matrix")
     sapply(lapply(1:ntip, findPathFromNode, object),
            findEdgesFromPath, object)
@@ -61,9 +63,25 @@ edgeTipIndicator.matrix <- function(object, ntip, scale=1, ...) {
 ##' @rdname edgeTipIndicator
 ##' @export
 edgeTipIndicator.phylo <- function(object, ...) {
-    ## FIXME: do all phylo objects have edge lengths or can they
-    ##  be implicit?
-    ans <- edgeTipIndicator(object$edge, Ntip(object), object$edge.length)
+    scl <- ifelse(is.null(object$edge.length), 1, object$edge.length)
+    ans <- edgeTipIndicator(object$edge, Ntip(object), scl)
     colnames(ans) <- object$tip.label
     return(ans)
 }
+
+
+##' @rdname edgeTipIndicator
+##' @seealso \code{\link{reorder.phylo}}
+##' @export
+reorderPhylo <- function(object, ...) {
+    structure(within(unclass(object), {
+        for(i in 2:1) {
+            ord <- order(edge[, i], decreasing = TRUE)
+            edge <- edge[ord, ]
+            if(!is.null(object$edge.length)) {
+                object$edge.length <- object$edge.length[ord]
+            }
+        }
+    }), class = class(object))
+}
+

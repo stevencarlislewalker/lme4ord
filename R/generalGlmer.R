@@ -22,8 +22,8 @@ generalParseFormula <- function(formula, data, ...) {
     reTrmsList <- lapply(findbars(formula), getModMatAndGrpFac, fr = data)
     names(reTrmsList) <- sapply(reTrmsList, "[[", "grpName")
 
-    return(list(response = model.response(model.frame(nobars(formula), data)),
-                fixed    = model.matrix(nobars(formula), data),
+    return(list(response = model.response(model.frame(nobarsWithSpecials(formula), data)),
+                fixed    = model.matrix(nobarsWithSpecials(formula), data),
                 random   = reTrmsList))
 }
 
@@ -99,6 +99,12 @@ splitForm <- function(formula) {
                                         # random effects terms
                                         # (including special terms)
     formSplits <- fbas(formula)
+                                        # calls with additional
+                                        # arguments
+    addArgs <- lapply(formSplits, "[", -2)
+                                        # and remove these additional
+                                        # arguments
+    formSplits <- lapply(formSplits, "[", 1:2)
                                         # vector to identify what
                                         # special (by name), or give
                                         # "(" for standard terms, or
@@ -129,7 +135,8 @@ splitForm <- function(formula) {
                  "please use lmer or glmer")
 
 
-    fixedFormula <- formula(paste(formula[[2]], "~", as.character(nobars(formula))[[3]]))
+    fixedFormula <- formula(paste(formula[[2]], "~",
+                                  as.character(nobarsWithSpecials(formula))[[3]]))
     reTrmFormulas <- c(lapply(formSplitStan, "[[", 2),
                        lapply(formSplitSpec, "[[", 2))
     reTrmClasses <- c(rep("reTrmFull", length(formSplitStan)),
@@ -137,7 +144,43 @@ splitForm <- function(formula) {
     
     return(list(fixedFormula = fixedFormula,
                 reTrmFormulas = reTrmFormulas,
+                reTrmAddArgs = addArgs,
                 reTrmClasses = reTrmClasses))
+}
+
+##' Version of the recursive nobars function from lme4
+##'
+##' @param term term
+##' @export
+nobarsWithSpecials <- function (term) {
+    specials <- findReTrmClasses()
+    if(length(term) > 2L) {
+        if(any(as.character(term[[1]]) == specials)) {
+            term <- term[1:2]
+        }
+    }
+    if (!any(c("|", "||") %in% all.names(term))) 
+        return(term)
+    if (is.call(term) && term[[1]] == as.name("|")) 
+        return(NULL)
+    if (is.call(term) && term[[1]] == as.name("||")) 
+        return(NULL)
+    if (length(term) == 2) {
+        nb <- nobarsWithSpecials(term[[2]])
+        if (is.null(nb)) 
+            return(NULL)
+        term[[2]] <- nb
+        return(term)
+    }
+    nb2 <- nobarsWithSpecials(term[[2]])
+    nb3 <- nobarsWithSpecials(term[[3]])
+    if (is.null(nb2)) 
+        return(nb3)
+    if (is.null(nb3)) 
+        return(nb2)
+    term[[2]] <- nb2
+    term[[3]] <- nb3
+    term
 }
 
 ##' Make random effects term structure
