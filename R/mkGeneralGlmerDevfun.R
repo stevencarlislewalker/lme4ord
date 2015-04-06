@@ -33,16 +33,24 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                                  mapToCovFact, mapToModMat,
                                  family = binomial(),
                                  tolPwrss = 1e-6,
-                                 verbose = 0L, pureR = FALSE) {
+                                 verbose = 0L, pureR = FALSE,
+                                 Lind = NULL) {
     if(pureR) {
         return(pirls(X, y, Zt, Lambdat, mapToCovFact,
                      initPars, weights, offset,
                      family = family, tol = tolPwrss))
     }
-    devfun <- local({
+    if(is.null(Lind)) {
+        theta <- Lambdat@x
         Lind <- seq_along(Lambdat@x)
+    } else {
+        theta <- initPars[parInds$covar]
+    }
+        
+    devfun <- local({
+        Lind <- Lind
         pp <- lme4:::merPredD$new(X = X, Zt = Zt, Lambdat = Lambdat, Lind = Lind,
-                           theta = as.double(Lambdat@x), n = nrow(X))
+                           theta = as.double(theta), n = nrow(X))
         resp <- lme4:::glmResp$new(y = y, family = family, weights = weights)
         lp0 <- pp$linPred(1)
         baseOffset <- offset

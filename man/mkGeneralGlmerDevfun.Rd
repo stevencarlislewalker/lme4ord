@@ -5,7 +5,7 @@
 \usage{
 mkGeneralGlmerDevfun(y, X, Zt, Lambdat, weights, offset, initPars, parInds,
   mapToCovFact, mapToModMat, family = binomial(), tolPwrss = 1e-06,
-  verbose = 0L, pureR = FALSE)
+  verbose = 0L, pureR = FALSE, Lind = NULL)
 }
 \arguments{
 \item{y}{response vector}

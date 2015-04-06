@@ -25,19 +25,38 @@ generalGlmer <- function(formula, data, addArgs = list(),
              loads = seq_along(loads) + length(covar) + length(fixef))
     })
     parInds[sapply(parInds, length) == 0L] <- NULL
+    initPars <- unlist(init)
     
-    mkGeneralGlmerDevfun(y = y,
-                         X = X,
-                         Zt = as(Zt, "dgCMatrix"),
-                         Lambdat = as(Lambdat, "dgCMatrix"),
-                         ## FIXME: allow user-specified weights and offsets
-                         weights = rep(1, length(pForm$response)),
-                         offset = rep(0, length(pForm$response)),
-                         initPars = unlist(init),
-                         parInds = parInds,
-                         mapToCovFact = Lambdat$trans,
-                         mapToModMat = Zt$trans,
-                         ...)
+    dfun <- mkGeneralGlmerDevfun(y = y,
+                                 X = X,
+                                 Zt = as(Zt, "dgCMatrix"),
+                                 Lambdat = as(Lambdat, "dgCMatrix"),
+                                 ## FIXME: allow user-specified weights and offsets
+                                 weights = rep(1, length(pForm$response)),
+                                 offset = rep(0, length(pForm$response)),
+                                 initPars = initPars,
+                                 parInds = parInds,
+                                 mapToCovFact = mkSparseTrans(Lambdat),
+                                 mapToModMat = mkSparseTrans(Zt),
+                                 ...)
+
+    dfun(initPars)
+    lower <- c(ifelse(init$covar, 0, -Inf),
+               rep(0, length(initPars) - length(init$covar)))
+    names(lower) <- names(initPars)
+    # lower <- ifelse(initPars, 0, -Inf)
+    opt <- minqa:::bobyqa(initPars, dfun, lower = lower)
+                  ## control = optControl)
+    if(FALSE) {for(i in 1:5) {
+        opt <- minqa:::bobyqa(opt$par, dfun, lower = lower)
+                      ## control = optControl)
+    }}
+    names(opt$par) <- names(initPars)
+
+    ans <- list(opt = opt, parsedForm = pForm, dfun = dfun,
+                parInds = parInds,
+                lower = lower)
+    return(ans)
 }
 
 ##' Parse a mixed model formula
@@ -70,9 +89,7 @@ generalParseFormula <- function(formula, data, addArgs = list(), ...) {
     LambdatBind <- .bind(lapply(random, "[[", "Lambdat"), "diag")
 
     return(list(response = response, fixed = fixed, random = random,
-                Zt = ZtBind, Lambdat = LambdatBind,
-                ZtTrans = mkSparseTrans(ZtBind),
-                LambdatTrans = mkSparseTrans(LambdatBind)))
+                Zt = ZtBind, Lambdat = LambdatBind))
 }
 
 

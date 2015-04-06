@@ -596,7 +596,7 @@ mkGenCholInPlaceTrans <- function(init) {
 ##' @export
 resetTransConst <- function(object) {
     object$trans <- local({
-        baseline <- with(object, vals[valInds])
+        baseline <- object$vals
         init <- numeric(0)
         function(matPars = NULL) {
             return(baseline)
