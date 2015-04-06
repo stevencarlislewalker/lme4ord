@@ -6,25 +6,35 @@ generalGlmer <- function(formula, data, ...) {
 ##'
 ##' @param formula mixed model formula
 ##' @param data an object coercible to data frame
+##' @param addArgs list of additional arguments to
+##' \code{\link{setReTrm}} methods
 ##' @param ... additional parameters to \code{\link{as.data.frame}}
 ##' @export
-generalParseFormula <- function(formula, data, ...) {
-    formula <- splitForm(formula)
+generalParseFormula <- function(formula, data, addArgs = list(), ...) {
+    sf <- splitForm(formula)
     data <- as.data.frame(data, ...)
 
-    with(formula, mapply(mkReTrmStruct,
-                         reTrmFormulas,
-                         reTrmClasses,
-                         SIMPLIFY = FALSE))
-    
-                                        # get model matrix, grouping
-                                        # factor, and term name
-    reTrmsList <- lapply(findbars(formula), getModMatAndGrpFac, fr = data)
-    names(reTrmsList) <- sapply(reTrmsList, "[[", "grpName")
+    reTrmsList <- lapply(sf$reTrmFormulas, getModMatAndGrpFac, fr = data)
+    names(reTrmsList) <- paste(sapply(reTrmsList, "[[", "grpName"),
+                               sf$reTrmClasses, sep = ".")
+    nUnStr <- sum(sf$reTrmClasses == "unstruc")
+    for(i in seq_along(reTrmsList)) {
+        clsi <- sf$reTrmClasses[[i]]
+        if(clsi != "unstruc") reTrmsList[[i]]$addArgs <- sf$reTrmAddArgs[[i - nUnStr]]
+        class(reTrmsList[[i]]) <- clsi
+    }
 
-    return(list(response = model.response(model.frame(nobarsWithSpecials(formula), data)),
-                fixed    = model.matrix(nobarsWithSpecials(formula), data),
-                random   = reTrmsList))
+    response <- model.response(model.frame(nobarsWithSpecials(formula), data))
+    fixed <- model.matrix(sf$fixedFormula, data)
+    random <- lapply(reTrmsList, setReTrm, addArgs = addArgs)
+
+    ZtBind      <- .bind(lapply(random, "[[", "Zt"),      "row")
+    LambdatBind <- .bind(lapply(random, "[[", "Lambdat"), "diag")
+    
+    return(list(response = response, fixed = fixed, random = random,
+                Zt = ZtBind, Lambdat = LambdatBind,
+                ZtTrans = mkSparseTrans(ZtBind),
+                LambdatTrans = mkSparseTrans(LambdatBind)))
 }
 
 ##' Make general random effects terms
@@ -58,7 +68,7 @@ mkSparseTrans <- function(object) {
     })
 }
 
-##' Find classes with a \code{getReTrm} method
+##' Find classes with a \code{setReTrm} method
 ##'
 ##' @param formula generalized mixed model formula.  if \code{NULL}
 ##' (the default) \code{findReTrmClasses} returns classes available
@@ -66,7 +76,7 @@ mkSparseTrans <- function(object) {
 ##' @export
 findReTrmClasses <- function(formula = NULL) {
     if(is.null(formula)) {
-        return(as.character(sub("getReTrm.", "", methods("getReTrm"))))
+        return(as.character(sub("setReTrm.", "", methods("setReTrm"))))
     }
     classInds <- attr(terms(formula, specials = findReTrmClasses()), "specials")
     unlist(mapply(rep, names(classInds),
@@ -82,6 +92,11 @@ findReTrmClasses <- function(formula = NULL) {
 splitForm <- function(formula) {
 
     specials <- findReTrmClasses()
+                                        # ignore any specials not in
+                                        # formula
+    specialsToKeep <- sapply(lapply(specials, grep,
+                                    x = as.character(form[[length(form)]])), length) > 0L
+    specials <- specials[specialsToKeep]
 
     ## Recursive function: (f)ind (b)ars (a)nd (s)pecials
     ## cf. fb function in findbars (i.e. this is a little DRY)
@@ -99,23 +114,20 @@ splitForm <- function(formula) {
                                         # random effects terms
                                         # (including special terms)
     formSplits <- fbas(formula)
-                                        # calls with additional
-                                        # arguments
-    addArgs <- lapply(formSplits, "[", -2)
-                                        # and remove these additional
-                                        # arguments
-    formSplits <- lapply(formSplits, "[", 1:2)
                                         # vector to identify what
                                         # special (by name), or give
                                         # "(" for standard terms, or
                                         # give "|" for specials
-                                        # without a getReTrm method
+                                        # without a setReTrm method
     formSplitID <- sapply(lapply(formSplits, "[[", 1), as.character)
                                         # warn about terms without a
-                                        # getReTrm method
+                                        # setReTrm method
     badTrms <- formSplitID == "|"
     if(any(badTrms)) {
-        warning(paste("can't find getReTrm method(s) for term number(s)",
+        stop("can't find setReTrm method(s)\n",
+             "use findReTrmClasses() for available methods")
+        # FIXME: coerce bad terms to unstructured as attempted below
+        warning(paste("can't find setReTrm method(s) for term number(s)",
                       paste(which(badTrms), collapse = ", "),
                       "\ntreating those terms as unstructured"))
         formSplitID[badTrms] <- "("
@@ -125,6 +137,14 @@ splitForm <- function(formula) {
         }
         formSplits[badTrms] <- lapply(formSplits[badTrms], fixBadTrm)
     }
+
+                                        # find additional arguments
+    reTrmAddArgs <- lapply(formSplits, "[", -2)[!(formSplitID == "(")]
+                                        # change call name
+    reTrmAddArgs <- lapply(reTrmAddArgs, "[[<-", 1, as.name("c"))
+                                        # remove these additional
+                                        # arguments
+    formSplits <- lapply(formSplits, "[", 1:2)
                                         # standard RE terms
     formSplitStan <- formSplits[formSplitID == "("]
                                         # structured RE terms
@@ -139,12 +159,12 @@ splitForm <- function(formula) {
                                   as.character(nobarsWithSpecials(formula))[[3]]))
     reTrmFormulas <- c(lapply(formSplitStan, "[[", 2),
                        lapply(formSplitSpec, "[[", 2))
-    reTrmClasses <- c(rep("reTrmFull", length(formSplitStan)),
+    reTrmClasses <- c(rep("unstruc", length(formSplitStan)),
                       sapply(lapply(formSplitSpec, "[[", 1), as.character))
     
     return(list(fixedFormula = fixedFormula,
                 reTrmFormulas = reTrmFormulas,
-                reTrmAddArgs = addArgs,
+                reTrmAddArgs = reTrmAddArgs,
                 reTrmClasses = reTrmClasses))
 }
 

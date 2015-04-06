@@ -3,12 +3,15 @@
 \alias{generalParseFormula}
 \title{Parse a mixed model formula}
 \usage{
-generalParseFormula(formula, data, ...)
+generalParseFormula(formula, data, addArgs = list(), ...)
 }
 \arguments{
 \item{formula}{mixed model formula}
 
 \item{data}{an object coercible to data frame}
+
+\item{addArgs}{list of additional arguments to
+\code{\link{setReTrm}} methods}
 
 \item{...}{additional parameters to \code{\link{as.data.frame}}}
 }

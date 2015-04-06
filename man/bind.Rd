@@ -6,7 +6,7 @@
 \title{Row, column, and block-diagonal binding for repeated sparse
 matrices}
 \usage{
-bind(..., type = c("row", "col", "diag"), saveComponents = TRUE)
+bind(..., type = c("row", "col", "diag"), saveComponents = FALSE)
 
 .bind(mats, type = c("row", "col", "diag"))
 
@@ -67,7 +67,7 @@ Other repSparseTopics: \code{\link{as}}, \code{\link{as}},
   \code{\link{repSparseCompSymm}},
   \code{\link{repSparseDiag}},
   \code{\link{repSparseIdent}},
-  \code{\link{repSparseOneOffDiag}};
-  \code{\link{repSparse}}
+  \code{\link{repSparseOneOffDiag}},
+  \code{\link{repSparseTri}}; \code{\link{repSparse}}
 }
 

@@ -10,9 +10,9 @@ rowWiseCombination(X, Y)
 
 mmult(X, Y, trans = "*")
 
-kron(X, Y, trans = "*", makedimnames = FALSE, saveComponents = TRUE, ...)
+kron(X, Y, trans = "*", makedimnames = FALSE, saveComponents = FALSE, ...)
 
-kr(X, Y, trans = "*", saveComponents = TRUE)
+kr(X, Y, trans = "*", saveComponents = FALSE)
 }
 \arguments{
 \item{X,Y}{\code{repSparse} objects}
@@ -70,7 +70,7 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{repSparseCompSymm}},
   \code{\link{repSparseDiag}},
   \code{\link{repSparseIdent}},
-  \code{\link{repSparseOneOffDiag}};
-  \code{\link{repSparse}}
+  \code{\link{repSparseOneOffDiag}},
+  \code{\link{repSparseTri}}; \code{\link{repSparse}}
 }
 

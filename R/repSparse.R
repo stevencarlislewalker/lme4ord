@@ -387,7 +387,7 @@ mmult <- function(X, Y, trans = "*") {
 ##' @rdname matrixOperations
 ##' @export
 kron <- function(X, Y, trans = "*",
-                 makedimnames = FALSE, saveComponents = TRUE, ...) {
+                 makedimnames = FALSE, saveComponents = FALSE, ...) {
 
     if(saveComponents) {
         components <- list(FUN = kron, X = X, Y = Y, trans = trans)
@@ -415,7 +415,7 @@ kron <- function(X, Y, trans = "*",
 
 ##' @rdname matrixOperations
 ##' @export
-kr <- function(X, Y, trans = "*", saveComponents = TRUE) {
+kr <- function(X, Y, trans = "*", saveComponents = FALSE) {
 
     if(saveComponents) {
         components <- list(FUN = kr, X = X, Y = Y, trans = trans)
@@ -600,7 +600,7 @@ resetTransConst <- function(object) {
 ##' @export
 bind <- function(...,
                  type = c("row", "col", "diag"),
-                 saveComponents = TRUE) {
+                 saveComponents = FALSE) {
     mats <- list(...)
 
     if(saveComponents) {
@@ -787,6 +787,28 @@ repSparseDiag <- function(vals, valInds) {
 repSparseIdent <- function(matSize) {
     ans <- repSparseDiag(1, rep(1, matSize))
     class(ans) <- c("repSparseIdent", class(ans))
+    return(ans)
+}
+
+##' Triangular repeated sparse matrix
+##'
+##' @param diagVals values for the diagonal
+##' @param offDiagVals values for the off-diagonal
+##' @param low lower triangular?
+##' @rdname specialRepSparse
+##' @export
+repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
+    matSize <- length(diagVals)
+    diagIndices <- 1:matSize
+    rowIndices <- rep(diagIndices, diagIndices)
+    colIndices <- sequence(diagIndices)
+    diagIndices <- rowIndices == colIndices
+    vals <- numeric(length(diagIndices))
+    vals[ diagIndices] <- diagVals
+    vals[!diagIndices] <- offDiagVals
+    ans <- repSparse(rowIndices, colIndices, seq_along(vals), vals)
+    if(!low) ans <- t(ans)
+    class(ans) <- c("repSparseTri", class(ans))
     return(ans)
 }
 

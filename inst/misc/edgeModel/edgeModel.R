@@ -8,8 +8,8 @@ td <- simTestPhyloDat(9, n = 10, m = 100,
 getReTrm.edgeStruct <- function(){}
 
 
-form <- y ~ x * z + edgeStruct(1 | species, ph = uu, aa = bam) + 1 + (x | sites)
-splitForm(form)
+form <- y ~ x * z + edgeStruct(1 | species, ph = ph) + 1 + (x | sites)
+splitForm(form)$reTrmAddArgs[[1]]
 
 
 

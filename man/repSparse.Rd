@@ -71,6 +71,7 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{repSparseCompSymm}},
   \code{\link{repSparseDiag}},
   \code{\link{repSparseIdent}},
-  \code{\link{repSparseOneOffDiag}}
+  \code{\link{repSparseOneOffDiag}},
+  \code{\link{repSparseTri}}
 }
 

@@ -5,6 +5,7 @@
 \alias{repSparseDiag}
 \alias{repSparseIdent}
 \alias{repSparseOneOffDiag}
+\alias{repSparseTri}
 \title{Repeated sparse matrix with compound symmetry}
 \usage{
 repSparseCompSymm(diagVal, offDiagVal, matSize)
@@ -14,6 +15,8 @@ repSparseOneOffDiag(diagVal, offDiagVal, offDiagInds, matSize)
 repSparseDiag(vals, valInds)
 
 repSparseIdent(matSize)
+
+repSparseTri(diagVals, offDiagVals, low = TRUE)
 
 rRepSparse(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...)
 }
@@ -29,6 +32,12 @@ rRepSparse(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...)
 \item{vals}{vector of values}
 
 \item{valInds}{vector of value indices}
+
+\item{diagVals}{values for the diagonal}
+
+\item{offDiagVals}{values for the off-diagonal}
+
+\item{low}{lower triangular?}
 
 \item{nrows,ncols}{numbers of rows and columns}
 
@@ -46,6 +55,8 @@ Repeated sparse matrix with compound symmetry
 Diagonal repeated sparse matrix
 
 Identity repeated sparse matrix
+
+Triangular repeated sparse matrix
 
 Random repeated sparse matrix
 }
