@@ -1,5 +1,43 @@
-generalGlmer <- function(formula, data, ...) {
-    generalParseFormula(formula, data, ...)
+##' General glmer
+##'
+##' @param formula extended mixed model formula
+##' @param data data frame
+##' @param addArgs list of additional arguments to pass to
+##' \code{\link{setReTrm}} methods
+##' @param ... further arguments to \code{\link{mkGeneralGlmerDevfun}}
+##' @export
+generalGlmer <- function(formula, data, addArgs = list(),
+                         ...) {
+    
+    pForm <- generalParseFormula(formula, data, addArgs, ...)
+    
+    Zt      <- sort(sort(pForm$Zt,      type = "row"), type = "col")
+    Lambdat <- sort(sort(pForm$Lambdat, type = "row"), type = "col")
+    X       <- pForm$fixed
+    y       <- pForm$response
+
+    init <- list(covar = getInit(Lambdat),
+                 fixef = rep(0, ncol(X)),
+                 loads = getInit(Zt))
+    parInds <- with(init, {
+        list(covar = seq_along(covar),
+             fixef = seq_along(fixef) + length(covar),
+             loads = seq_along(loads) + length(covar) + length(fixef))
+    })
+    parInds[sapply(parInds, length) == 0L] <- NULL
+    
+    mkGeneralGlmerDevfun(y = y,
+                         X = X,
+                         Zt = as(Zt, "dgCMatrix"),
+                         Lambdat = as(Lambdat, "dgCMatrix"),
+                         ## FIXME: allow user-specified weights and offsets
+                         weights = rep(1, length(pForm$response)),
+                         offset = rep(0, length(pForm$response)),
+                         initPars = unlist(init),
+                         parInds = parInds,
+                         mapToCovFact = Lambdat$trans,
+                         mapToModMat = Zt$trans,
+                         ...)
 }
 
 ##' Parse a mixed model formula
@@ -30,12 +68,13 @@ generalParseFormula <- function(formula, data, addArgs = list(), ...) {
 
     ZtBind      <- .bind(lapply(random, "[[", "Zt"),      "row")
     LambdatBind <- .bind(lapply(random, "[[", "Lambdat"), "diag")
-    
+
     return(list(response = response, fixed = fixed, random = random,
                 Zt = ZtBind, Lambdat = LambdatBind,
                 ZtTrans = mkSparseTrans(ZtBind),
                 LambdatTrans = mkSparseTrans(LambdatBind)))
 }
+
 
 ##' Make general random effects terms
 ##'

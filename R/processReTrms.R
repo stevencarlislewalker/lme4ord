@@ -26,9 +26,11 @@ setReTrm.default <- function(object, addArgs) {
 ##' @export
 setReTrm.identity <- function(object, addArgs) {
     Zt <- kr(t(as.repSparse(object$modMat)), as.repSparse(object$grpFac))
+    nl <- nlevels(object$grpFac)
+    nc <- ncol(object$modMat)
     return(structure(c(object,
                        list(Zt = resetTransConst(Zt),
-                            Lambdat = repSparseIdent(nlevels(object$grpFac)))),
+                            Lambdat = repSparseIdent(nl * nc))),
                      class = class(object)))
 }
 
@@ -40,8 +42,10 @@ setReTrm.edge <- function(object, addArgs) {
     Jspp <- as(object$grpFac, "sparseMatrix")
     Jt <- as.repSparse(Jedge %*% Jspp)
     Zt <- kr(t(as.repSparse(object$modMat)), Jt)
+    nl <- nrow(Jedge)
+    nc <- ncol(object$modMat)
     return(structure(c(object,
                        list(Zt = resetTransConst(Zt),
-                            Lambdat = repSparseIdent(nlevels(object$grpFac)))),
+                            Lambdat = repSparseIdent(nl * nc))),
                      class = class(object)))
 }

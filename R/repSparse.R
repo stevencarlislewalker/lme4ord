@@ -413,6 +413,13 @@ kron <- function(X, Y, trans = "*",
               components = components)
 }
 
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @family repSparseTopics
+##' @exportClass repSparseKron
+setOldClass("repSparseKron")
+setIs("repSparseKron", "repSparse")
+
 ##' @rdname matrixOperations
 ##' @export
 kr <- function(X, Y, trans = "*", saveComponents = FALSE) {
@@ -441,6 +448,13 @@ kr <- function(X, Y, trans = "*", saveComponents = FALSE) {
     })
 }
 
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @family repSparseTopics
+##' @exportClass repSparseKr
+setOldClass("repSparseKr")
+setIs("repSparseKr", "repSparse")
+
 
 ## ----------------------------------------------------------------------
 ## Make trans functions
@@ -448,6 +462,12 @@ kr <- function(X, Y, trans = "*", saveComponents = FALSE) {
 
 ##' Construct functions for transforming a parameter vector to the
 ##' non-zero values of a repeated sparse matrix
+##'
+##' Each \code{trans} function must take one vector argument called
+##' \code{matPars}, which are the parameters of the matrix.  The
+##' environment of these transformation functions must contain a
+##' vector called \code{init}, which contains the initial values (aka,
+##' the prototype) of \code{matPars}.
 ##'
 ##' @rdname mkTrans
 ##' @family repSparseTopics
@@ -477,10 +497,10 @@ mkOuterTrans <- function(Atrans, Btrans, ABtrans) {
                                         # outer product involving a
                                         # scalar of 1L is boring)
     checkForBordom <- function(xx) (length(xx) == 1L) & (xx[1] == 1L)
-    if(checkForBordom(A) && !checkForBordom(B)) return(mkIdentityTrans(getInit(Btrans)))
-    if(!checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(getInit(Atrans)))
-    if(checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(1)) ## FIXME: too
-                                                                          ## presumptuous?
+    ## if(checkForBordom(A) && !checkForBordom(B)) return(mkIdentityTrans(getInit(Btrans)))
+    ## if(!checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(getInit(Atrans)))
+    ## if(checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(1)) ## FIXME: too
+                                                                             ## presumptuous?
 
                                         # construct the environment of
                                         # the transformation function
@@ -508,7 +528,7 @@ mkListTrans <- function(transList) {
         parList <- lapply(transList, getInit)
         indList <- lapply(parList, seq_along)
         for(ii in 2:length(indList)) {
-            indList[[ii]] <- indList[[ii]] + max(indList[[ii-1]])
+            indList[[ii]] <- indList[[ii]] + max(0L, indList[[ii-1]])
         }
         init <- unlist(parList)
         function(matPars) {
@@ -535,7 +555,8 @@ mkCholOneOffDiagTrans <- function(init) {
 }
 
 
-
+##' @rdname mkTrans
+##' @export
 mkGenCholInPlaceTrans <- function(init) {
     local({
         init <- init
@@ -575,13 +596,15 @@ mkGenCholInPlaceTrans <- function(init) {
 ##' @export
 resetTransConst <- function(object) {
     object$trans <- local({
-        init <- object$vals
+        baseline <- with(object, vals[valInds])
+        init <- numeric(0)
         function(matPars = NULL) {
-            return(init)
+            return(baseline)
         }
     })
     return(object)
 }
+
 
 
 ## ----------------------------------------------------------------------
@@ -641,6 +664,13 @@ bind <- function(...,
     })
 }
 
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @family repSparseTopics
+##' @exportClass repSparseBind
+setOldClass("repSparseBind")
+setIs("repSparseBind", "repSparse")
+
 ##' @param mats list of \code{repSparse} matrix objects
 ##' @rdname bind
 ##' @export
@@ -682,6 +712,13 @@ rep.repSparse <- function(x, times,
     ans$components <- list(FUN = rep, x = x, times = times, type = type)
     return(ans)
 }
+
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @family repSparseTopics
+##' @exportClass repSparseRep
+setOldClass("repSparseRep")
+setIs("repSparseRep", "repSparse")
 
 
 ## ----------------------------------------------------------------------
@@ -749,6 +786,13 @@ repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
     return(ans)
 }
 
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @family repSparseTopics
+##' @exportClass repSparseCompSymm
+setOldClass("repSparseCompSymm")
+setIs("repSparseCompSymm", "repSparse")
+
 ##' @param offDiagInds indices for the two correlated objects
 ##' @rdname specialRepSparse
 ##' @export
@@ -766,6 +810,13 @@ repSparseOneOffDiag <- function(diagVal, offDiagVal, offDiagInds, matSize) {
     return(ans)
 }
 
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @family repSparseTopics
+##' @exportClass repSparseOneOffDiag
+setOldClass("repSparseOneOffDiag")
+setIs("repSparseOneOffDiag", "repSparse")
+
 ##' Diagonal repeated sparse matrix
 ##'
 ##' @param vals vector of values
@@ -780,6 +831,13 @@ repSparseDiag <- function(vals, valInds) {
     return(ans)
 }
 
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @family repSparseTopics
+##' @exportClass repSparseDiag
+setOldClass("repSparseDiag")
+setIs("repSparseDiag", "repSparse")
+
 ##' Identity repeated sparse matrix
 ##'
 ##' @rdname specialRepSparse
@@ -789,6 +847,13 @@ repSparseIdent <- function(matSize) {
     class(ans) <- c("repSparseIdent", class(ans))
     return(ans)
 }
+
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @family repSparseTopics
+##' @exportClass repSparseIdent
+setOldClass("repSparseIdent")
+setIs("repSparseIdent", "repSparse")
 
 ##' Triangular repeated sparse matrix
 ##'
@@ -811,6 +876,13 @@ repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
     class(ans) <- c("repSparseTri", class(ans))
     return(ans)
 }
+
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @family repSparseTopics
+##' @exportClass repSparseTri
+setOldClass("repSparseTri")
+setIs("repSparseTri", "repSparse")
 
 ##' Random repeated sparse matrix
 ##'
