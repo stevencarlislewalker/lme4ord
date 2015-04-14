@@ -336,20 +336,15 @@ setInit.function <- function(x, init, ...) assign("init", init, envir = environm
 ##' @export
 rowWiseCombination <- function(X, Y) {
 
-    matchBin <- outer(X$colInds, Y$colInds, "==") ## this is slow!
-                                                  ## the problem
-                                                  ## seems to be that
-                                                  ## i am not
-                                                  ## exploiting the
-                                                  ## block-diagonal
-                                                  ## structure of
-                                                  ## matchBin that
-                                                  ## arises when X and
-                                                  ## Y are sorted with:
-                                                  ## sort(sort(., type = "row"), type = "col")
-                                                  ## in particular, each
-                                                  ## column gets its own
-                                                  ## block
+    ## this is slow!  the problem seems to be that i am not exploiting
+    ## the block-diagonal structure of matchBin that arises when X and
+    ## Y are sorted with: sort(sort(., type = "row"), type = "col") in
+    ## particular, each column gets its own block.
+
+    ## update: don't really use this function anymore (see kr and cf
+    ## kr0)
+
+    matchBin <- outer(X$colInds, Y$colInds, "==")
     matchInd <- which(matchBin, arr.ind = TRUE)
 
     structure(list(XrowInds  = X$rowInds[matchInd[, 1]],
@@ -487,7 +482,8 @@ kr <- function(X, Y, trans = "*", saveComponents = FALSE) {
                    vals = newVals,
                    trans = newTrans),
               class = c("repSparseKr", "repSparse"),
-              Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
+              Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]),
+              components = components)
 }
 
 ##' @rdname matrixOperations
@@ -519,7 +515,8 @@ kr0 <- function(X, Y, trans = "*", saveComponents = FALSE) {
                        vals = XYvals,
                        trans = XYtrans),
                   class = c("repSparseKr", "repSparse"),
-                  Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
+                  Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]),
+                  components = components)
     })
 }
 
@@ -636,7 +633,7 @@ mkGenCholInPlaceTrans <- function(init) {
     local({
         init <- init
         m <- length(init)
-        n <- as.integer((sqrt(1 + 8 * m)-1)/2)
+        n <- nChoose2Inv(m) - 1 # as.integer((sqrt(1 + 8 * m) - 1)/2)
         diagInds <- choose(3:(n + 1), 2)
         col1Inds <- choose(1:n, 2) + 1L
         function(matPars) {
@@ -958,6 +955,28 @@ repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
 ##' @exportClass repSparseTri
 setOldClass("repSparseTri")
 setIs("repSparseTri", "repSparse")
+
+
+repSparseConstVarChol <- function(varVal, offDiagVals, low = TRUE) {
+
+    ## FIXME: kind of working, but wrong update function and vals
+    ## elements
+    matSize <- nChoose2Inv(length(offDiagVals))
+    diagIndices <- 1:matSize
+    rowIndices <- rep(diagIndices, diagIndices)
+    colIndices <- sequence(diagIndices)
+    diagIndices <- rowIndices == colIndices
+    vals <- numeric(length(diagIndices))
+    innProd <- (varVal^2) - c(0, tapply(offDiagVals^2, rowIndices[!diagIndices], sum))
+    if(any(innProd) < 0L) stop("resulting matrix not positive definite")
+    diagVals <- sqrt(innProd)
+    vals[ diagIndices] <- diagVals
+    vals[!diagIndices] <- offDiagVals
+    ans <- repSparse(rowIndices, colIndices, seq_along(vals), vals)
+    if(!low) ans <- t(ans)
+    class(ans) <- c("repSparseTri", class(ans))
+    return(ans)
+}
 
 ##' Random repeated sparse matrix
 ##'

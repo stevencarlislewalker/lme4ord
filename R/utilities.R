@@ -102,6 +102,16 @@ simTestPhyloDat <- function(seed = 1, n = 10, m = 30,
 }
 
 
+##' Inverse of the n-choose-2 function
+##'
+##' @param m a vector coercible to integer
+##' @export
+##' @examples
+##' nChoose2Inv(choose(1:10, 2)) # = 1:10
+nChoose2Inv <- function(m) as.integer((sqrt(1 + 8 * as.integer(m)) + 1)/2)
+
+
+
 
 ## Modified from lme4's modification of stats simulate() functions
 

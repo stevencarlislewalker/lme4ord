@@ -3,14 +3,17 @@
 ##' @param formula extended mixed model formula
 ##' @param data data frame
 ##' @param addArgs list of additional arguments to pass to
+##' @param optVerb verbose
 ##' \code{\link{setReTrm}} methods
 ##' @param ... further arguments to \code{\link{mkGeneralGlmerDevfun}}
 ##' @export
-generalGlmer <- function(formula, data, addArgs = list(),
+generalGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
                          ...) {
-    
+
+    cat("\nConstructing vectors and matrices...\n")
     pForm <- generalParseFormula(formula, data, addArgs, ...)
 
+    cat("\nConstructing deviance function...\n")
     dfun <- mkGeneralGlmerDevfun(y = pForm$response,
                                  X = pForm$fixed,
                                  Zt = as(pForm$Zt, "dgCMatrix"),
@@ -24,9 +27,12 @@ generalGlmer <- function(formula, data, addArgs = list(),
                                  mapToModMat = mkSparseTrans(pForm$Zt),
                                  ...)
 
+    cat("\nInitializing deviance function...\n")
     dfun(pForm$initPars)
-    
-    opt <- minqa:::bobyqa(pForm$initPars, dfun, lower = pForm$lower)
+
+    cat("\nOptimizing deviance function...\n")
+    opt <- minqa:::bobyqa(pForm$initPars, dfun, lower = pForm$lower,
+                          control = list(iprint = optVerb))
                   ## control = optControl)
     if(FALSE) {for(i in 1:5) {
         opt <- minqa:::bobyqa(opt$par, dfun, lower = pForm$lower)

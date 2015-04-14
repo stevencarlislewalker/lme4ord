@@ -3,14 +3,16 @@
 \alias{generalGlmer}
 \title{General glmer}
 \usage{
-generalGlmer(formula, data, addArgs = list(), ...)
+generalGlmer(formula, data, addArgs = list(), optVerb = 0L, ...)
 }
 \arguments{
 \item{formula}{extended mixed model formula}
 
 \item{data}{data frame}
 
-\item{addArgs}{list of additional arguments to pass to
+\item{addArgs}{list of additional arguments to pass to}
+
+\item{optVerb}{verbose
 \code{\link{setReTrm}} methods}
 
 \item{...}{further arguments to \code{\link{mkGeneralGlmerDevfun}}}
