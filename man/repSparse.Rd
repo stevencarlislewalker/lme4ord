@@ -3,7 +3,7 @@
 \alias{repSparse}
 \title{Sparse matrix with repeated values}
 \usage{
-repSparse(rowInds, colInds, valInds, vals, trans, Dim)
+repSparse(rowInds, colInds, valInds, vals, trans, Dim, sortFun = standardSort)
 }
 \arguments{
 \item{rowInds}{1-based row indices (converted to 0-based in
@@ -25,6 +25,12 @@ initial values can be obtained by \code{\link{getInit}} and set by
 will update these parameters.}
 
 \item{Dim}{matrix dimensions}
+
+\item{sortFun}{a function with which to sort the indices of the
+resulting matrix.  please note that by default the
+\code{standardSort} function is used, which provides a convenient
+ordering for computing Khatri-Rao products (and maybe standard
+matrix products).}
 }
 \value{
 object of class \code{repSparse} with list elements
@@ -63,7 +69,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
-  \code{\link{sort.repSparse}}, \code{\link{t.repSparse}},
+  \code{\link{sort.repSparse}}, \code{\link{standardSort}},
+  \code{\link{t.repSparse}},
   \code{\link{update.repSparse}}; \code{\link{getInit}},
   \code{\link{getInit.default}},
   \code{\link{getInit.function}},
@@ -72,8 +79,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}, \code{\link{mmult}},
-  \code{\link{rowWiseCombination}};
+  \code{\link{kr0}}, \code{\link{kron}},
+  \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},

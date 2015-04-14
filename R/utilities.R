@@ -100,3 +100,80 @@ simTestPhyloDat <- function(seed = 1, n = 10, m = 30,
                 cv = Vphy,
                 ph = phy))
 }
+
+
+
+## Modified from lme4's modification of stats simulate() functions
+
+gaussian_simfun <- function(wts, nsim, ftd) {
+    if (any(wts != 1)) warning("ignoring prior weights")
+    rnorm(nsim*length(ftd), ftd, sd=sigma(object))
+}
+
+binomial_simfun <- function(wts, nsim, ftd=fitted(object)) {
+    rbinom(nsim, size = wts, prob = ftd)/wts
+}
+
+poisson_simfun <- function(wts, nsim, ftd) {
+        ## A Poisson GLM has dispersion fixed at 1, so prior weights
+        ## do not have a simple unambiguous interpretation:
+        ## they might be frequency weights or indicate averages.
+        if (any(wts != 1)) warning("ignoring prior weights")
+        rpois(nsim*length(ftd), ftd)
+    }
+
+
+##' FIXME: need a gamma.shape.merMod method in order for this to work.
+##'        (see initial shot at gamma.shape.merMod below)
+Gamma_simfun <- function(object, nsim, ftd=fitted(object)) {
+    stop("not implemented")
+    wts <- weights(object)
+    if (any(wts != 1)) message("using weights as shape parameters")
+    ## ftd <- fitted(object)
+    shape <- MASS::gamma.shape(object)$alpha * wts
+    rgamma(nsim*length(ftd), shape = shape, rate = shape/ftd)
+}
+
+gamma.shape.merMod <- function(object, ...) {
+    stop("not implemented")
+    if(family(object)$family != "Gamma")
+	stop("Can not fit gamma shape parameter because Gamma family not used")
+
+    y <- getME(object, "y")
+    mu <- getME(object, "mu")
+    w <- weights(object)
+                                        # Sec 8.3.2 (MN)
+    L <- w*(log(y/mu)-((y-mu)/mu))
+    dev <- -2*sum(L)
+                                        # Eqs. between 8.2 & 8.3 (MN)
+    Dbar <- dev/length(y)
+    structure(list(alpha = (6+2*Dbar)/(Dbar*(6+Dbar)),
+		   SE = NA), # FIXME: obtain standard error
+	      class = "gamma.shape")
+}
+
+
+## FIXME: include without inducing SuppDists dependency?
+## inverse.gaussian_simfun <- function(object, nsim, ftd=fitted(object)) {
+##     if(is.null(tryCatch(loadNamespace("SuppDists"),
+##                         error = function(e) NULL)))
+##         stop("need CRAN package 'SuppDists' for the 'inverse.gaussian' family")
+##     wts <- weights(object)
+##     if (any(wts != 1)) message("using weights as inverse variances")
+##     SuppDists::rinvGauss(nsim * length(ftd), nu = ftd,
+##                          lambda = wts/summary(object)$dispersion)
+## }
+
+## in the original MASS version, .Theta is assigned into the environment
+## (triggers a NOTE in R CMD check)
+negative.binomial_simfun <- function (object, nsim, ftd=fitted(object))
+{
+    stop("not implemented yet")
+    ## val <- rnbinom(nsim * length(ftd), mu=ftd, size=.Theta)
+}
+
+simfunList <- list(gaussian = gaussian_simfun,
+		   binomial = binomial_simfun,
+		   poisson  = poisson_simfun,
+		   Gamma    = Gamma_simfun,
+		   negative.binomial = negative.binomial_simfun)

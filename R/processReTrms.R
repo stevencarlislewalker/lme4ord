@@ -49,3 +49,39 @@ setReTrm.edge <- function(object, addArgs) {
                             Lambdat = repSparseIdent(nl * nc))),
                      class = class(object)))
 }
+
+
+
+##' Simulate additional arguments
+##'
+##' @param object a \code{\link{reTrmStruct}} object
+##' @param ... dots
+##' @rdname simAddArgs
+##' @export
+simAddArgs <- function(object, ...) {
+    UseMethod("simAddArgs")
+}
+
+##' @rdname simAddArgs
+##' @export
+simAddArgsList <- function(object, ...) {
+    l... <- list(...)
+    unlist(do.call(lapply, c(list(unname(object), simAddArgs), l...)), FALSE)
+}
+
+##' @rdname simAddArgs
+##' @export
+simAddArgs.default <- function(objects, ...) list()
+
+##' @param rtreeArgs arguments for \code{\link{rtree}}
+##' @param compute.brlenArgs arguments for \code{\link{compute.brlen}}
+##' @rdname simAddArgs
+##' @export
+simAddArgs.edge <- function(object, rtreeArgs = list(),
+                            compute.brlenArgs = list(), ...) {
+    namePhy <- as.character(object$addArgs$phy)
+    phy <- do.call(rtree, c(list(nlevels(object$grpFac)), rtreeArgs))
+    phy <- do.call(compute.brlen, c(list(phy), compute.brlenArgs))
+    phy$tip.label <- unique(as.character(object$grpFac))
+    return(setNames(list(phy), namePhy))
+}

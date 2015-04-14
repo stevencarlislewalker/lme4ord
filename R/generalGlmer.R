@@ -10,14 +10,81 @@ generalGlmer <- function(formula, data, addArgs = list(),
                          ...) {
     
     pForm <- generalParseFormula(formula, data, addArgs, ...)
+
+    dfun <- mkGeneralGlmerDevfun(y = pForm$response,
+                                 X = pForm$fixed,
+                                 Zt = as(pForm$Zt, "dgCMatrix"),
+                                 Lambdat = as(pForm$Lambdat, "dgCMatrix"),
+                                 ## FIXME: allow user-specified weights and offsets
+                                 weights = rep(1, length(pForm$response)),
+                                 offset = rep(0, length(pForm$response)),
+                                 initPars = pForm$initPars,
+                                 parInds = pForm$parInds,
+                                 mapToCovFact = mkSparseTrans(pForm$Lambdat),
+                                 mapToModMat = mkSparseTrans(pForm$Zt),
+                                 ...)
+
+    dfun(pForm$initPars)
     
-    Zt      <- sort(sort(pForm$Zt,      type = "row"), type = "col")
-    Lambdat <- sort(sort(pForm$Lambdat, type = "row"), type = "col")
-    X       <- pForm$fixed
-    y       <- pForm$response
+    opt <- minqa:::bobyqa(pForm$initPars, dfun, lower = pForm$lower)
+                  ## control = optControl)
+    if(FALSE) {for(i in 1:5) {
+        opt <- minqa:::bobyqa(opt$par, dfun, lower = pForm$lower)
+                      ## control = optControl)
+    }}
+    names(opt$par) <- names(pForm$initPars)
+
+    ans <- list(opt = opt, parsedForm = pForm, dfun = dfun)
+    return(ans)
+}
+
+##' Construct random effects structures
+##'
+##' @param splitFormula results of \code{link{splitForm}}
+##' @param data data
+##' @export
+mkReStructs <- function(splitFormula, data) {
+    reTrmsList <- lapply(splitFormula$reTrmFormulas, getModMatAndGrpFac, fr = data)
+    names(reTrmsList) <- paste(sapply(reTrmsList, "[[", "grpName"),
+                               splitFormula$reTrmClasses, sep = ".")
+    nUnStr <- sum(splitFormula$reTrmClasses == "unstruc")
+    for(i in seq_along(reTrmsList)) {
+        clsi <- splitFormula$reTrmClasses[[i]]
+        if(clsi != "unstruc") reTrmsList[[i]]$addArgs <- splitFormula$reTrmAddArgs[[i - nUnStr]]
+        class(reTrmsList[[i]]) <- clsi
+    }
+    return(reTrmsList)
+}
+
+
+##' Parse a mixed model formula
+##'
+##' @param formula mixed model formula
+##' @param data an object coercible to data frame
+##' @param addArgs list of additional arguments to
+##' \code{\link{setReTrm}} methods
+##' @param reTrmsList if \code{NULL} \code{\link{mkReStructs}} is used
+##' @param ... additional parameters to \code{\link{as.data.frame}}
+##' @rdname generalParseFormula
+##' @export
+generalParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL, ...) {
+    sf <- splitForm(formula)
+    data <- as.data.frame(data, ...)
+
+    if(is.null(reTrmsList)) reTrmsList <- mkReStructs(sf, data)
+    
+    response <- model.response(model.frame(nobarsWithSpecials(formula), data))
+    fixed <- model.matrix(sf$fixedFormula, data)
+    random <- lapply(reTrmsList, setReTrm, addArgs = addArgs)
+
+    ZtBind      <- .bind(lapply(random, "[[", "Zt"),      "row")
+    LambdatBind <- .bind(lapply(random, "[[", "Lambdat"), "diag")
+
+    Zt      <- sort(sort(ZtBind,      type = "row"), type = "col")
+    Lambdat <- sort(sort(LambdatBind, type = "row"), type = "col")
 
     init <- list(covar = getInit(Lambdat),
-                 fixef = rep(0, ncol(X)),
+                 fixef = rep(0, ncol(fixed)),
                  loads = getInit(Zt))
     parInds <- with(init, {
         list(covar = seq_along(covar),
@@ -26,71 +93,36 @@ generalGlmer <- function(formula, data, addArgs = list(),
     })
     parInds[sapply(parInds, length) == 0L] <- NULL
     initPars <- unlist(init)
-    
-    dfun <- mkGeneralGlmerDevfun(y = y,
-                                 X = X,
-                                 Zt = as(Zt, "dgCMatrix"),
-                                 Lambdat = as(Lambdat, "dgCMatrix"),
-                                 ## FIXME: allow user-specified weights and offsets
-                                 weights = rep(1, length(pForm$response)),
-                                 offset = rep(0, length(pForm$response)),
-                                 initPars = initPars,
-                                 parInds = parInds,
-                                 mapToCovFact = mkSparseTrans(Lambdat),
-                                 mapToModMat = mkSparseTrans(Zt),
-                                 ...)
 
-    dfun(initPars)
     lower <- c(ifelse(init$covar, 0, -Inf),
-               rep(0, length(initPars) - length(init$covar)))
+               rep(-Inf, length(initPars) - length(init$covar)))
     names(lower) <- names(initPars)
-    # lower <- ifelse(initPars, 0, -Inf)
-    opt <- minqa:::bobyqa(initPars, dfun, lower = lower)
-                  ## control = optControl)
-    if(FALSE) {for(i in 1:5) {
-        opt <- minqa:::bobyqa(opt$par, dfun, lower = lower)
-                      ## control = optControl)
-    }}
-    names(opt$par) <- names(initPars)
-
-    ans <- list(opt = opt, parsedForm = pForm, dfun = dfun,
-                parInds = parInds,
-                lower = lower)
-    return(ans)
-}
-
-##' Parse a mixed model formula
-##'
-##' @param formula mixed model formula
-##' @param data an object coercible to data frame
-##' @param addArgs list of additional arguments to
-##' \code{\link{setReTrm}} methods
-##' @param ... additional parameters to \code{\link{as.data.frame}}
-##' @export
-generalParseFormula <- function(formula, data, addArgs = list(), ...) {
-    sf <- splitForm(formula)
-    data <- as.data.frame(data, ...)
-
-    reTrmsList <- lapply(sf$reTrmFormulas, getModMatAndGrpFac, fr = data)
-    names(reTrmsList) <- paste(sapply(reTrmsList, "[[", "grpName"),
-                               sf$reTrmClasses, sep = ".")
-    nUnStr <- sum(sf$reTrmClasses == "unstruc")
-    for(i in seq_along(reTrmsList)) {
-        clsi <- sf$reTrmClasses[[i]]
-        if(clsi != "unstruc") reTrmsList[[i]]$addArgs <- sf$reTrmAddArgs[[i - nUnStr]]
-        class(reTrmsList[[i]]) <- clsi
-    }
-
-    response <- model.response(model.frame(nobarsWithSpecials(formula), data))
-    fixed <- model.matrix(sf$fixedFormula, data)
-    random <- lapply(reTrmsList, setReTrm, addArgs = addArgs)
-
-    ZtBind      <- .bind(lapply(random, "[[", "Zt"),      "row")
-    LambdatBind <- .bind(lapply(random, "[[", "Lambdat"), "diag")
 
     return(list(response = response, fixed = fixed, random = random,
-                Zt = ZtBind, Lambdat = LambdatBind))
+                Zt = Zt, Lambdat = Lambdat,
+                initPars = initPars, parInds = parInds, lower = lower))
 }
+
+##' @param parsedForm result of \code{generalParseFormula}
+##' @param family family object
+##' @param weights optional weights
+##' @param ... not used
+##' @rdname generalParseFormula
+##' @export
+simGeneralParsedForm <- function(parsedForm, family = binomial,
+                                 weights, ...) {
+    if(missing(weights)) weights <- rep(1, length(parsedForm$response))
+    with(parsedForm, {
+        reMM <- t(as(Zt, "dgCMatrix")) %*% t(as(Lambdat, "dgCMatrix"))
+        feMM <- fixed
+        fe <- as.numeric(feMM %*% initPars[parInds$fixef])
+        re <- as.numeric(reMM %*% rnorm(ncol(reMM)))
+        simFun <- simfunList[[family()$family]]
+        return(simFun(weights, length(weights), family()$linkinv(fe + re)))
+    })
+}
+
+
 
 
 ##' Make general random effects terms
@@ -144,6 +176,7 @@ findReTrmClasses <- function(formula = NULL) {
 ##' Split a formula
 ##'
 ##' @param formula Generalized mixed model formula
+##' @rdname splitForm
 ##' @export
 splitForm <- function(formula) {
 
@@ -223,6 +256,22 @@ splitForm <- function(formula) {
                 reTrmAddArgs = reTrmAddArgs,
                 reTrmClasses = reTrmClasses))
 }
+
+reParen <- function(reTrm) paste("(", deparse(reTrm), ")", sep = "", collapse = "")
+
+##' @rdname splitForm
+##' @param splitFormula results of \code{splitForm}
+##' @export
+reForm <- function(splitFormula) {
+    characterPieces <- c(list(deparse(splitFormula$fixedFormula)),
+                         lapply(splitFormula$reTrmFormulas, reParen))
+    as.formula(do.call(paste, c(characterPieces, list(sep = " + "))))
+}
+
+##' @rdname splitForm
+##' @export
+removeSpecials <- function(formula) reForm(splitForm(formula))
+
 
 ##' Version of the recursive nobars function from lme4
 ##'

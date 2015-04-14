@@ -14,26 +14,32 @@
 ##' \code{\link{setInit}}.  an \code{\link{update.repSparse}} method
 ##' will update these parameters.
 ##' @param Dim matrix dimensions
+##' @param sortFun a function with which to sort the indices of the
+##' resulting matrix.  please note that by default the
+##' \code{standardSort} function is used, which provides a convenient
+##' ordering for computing Khatri-Rao products (and maybe standard
+##' matrix products).
 ##' @return object of class \code{repSparse} with list elements
 ##' \code{rowInds}, \code{colInds}, \code{valInds}, \code{vals}, and
 ##' \code{trans}, and a \code{Dim} attibute
 ##' @rdname repSparse
 ##' @family repSparseTopics
 ##' @export
-repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim) {
+repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim,
+                      sortFun = standardSort) {
     if(missing(Dim)) Dim <- c(max(rowInds), max(colInds))
     if(!all(1:max(valInds) %in% valInds))  stop("max(valInds) unnecessarily large")
     if(length(vals) != max(valInds))       stop("mismatch between vals and valInds")
     if(length(rowInds) != length(colInds)) stop("row and column index mismatch")
     if(length(rowInds) != length(valInds)) stop("row and value index mismatch")
     if(missing(trans)) trans <- mkIdentityTrans(vals)
-    structure(list(rowInds = as.integer(rowInds - 1),
-                   colInds = as.integer(colInds - 1),
-                   valInds = valInds,
-                   vals = vals,
-                   trans = trans),
-              class = "repSparse",
-              Dim = Dim)
+    sortFun(structure(list(rowInds = as.integer(rowInds - 1),
+                           colInds = as.integer(colInds - 1),
+                           valInds = valInds,
+                           vals = vals,
+                           trans = trans),
+                      class = "repSparse",
+                      Dim = Dim))
 }
 
 
@@ -97,6 +103,12 @@ sort.repSparse <- function(x, decreasing = FALSE,
     x$colInds <- x$colInds[ord]
     x$valInds <- x$valInds[ord]
     return(x)
+}
+
+##' @rdname repSparse-class
+##' @export
+standardSort <- function(x) {
+    sort(sort(x, type = "row"), type = "col")
 }
 
 ##' @rdname repSparse-class
@@ -216,7 +228,7 @@ repSparse2Csparse <- function(from) {
     ans@i <- as.integer(from$rowInds)
     ans@p <- as.integer(ind2point(from$colInds, ncol(from)))
     ans@x <- as.numeric(with(from, vals[valInds]))
-    ans@Dim <- dim(from)
+    ans@Dim <- as.integer(dim(from))
     return(ans)
 }
 repSparse2Tsparse <- function(from) {
@@ -224,7 +236,7 @@ repSparse2Tsparse <- function(from) {
     ans@i <- as.integer(from$rowInds)
     ans@j <- as.integer(from$colInds)
     ans@x <- as.numeric(with(from, vals[valInds]))
-    ans@Dim <- dim(from)
+    ans@Dim <- as.integer(dim(from))
     return(ans)
 }
 
@@ -325,8 +337,21 @@ setInit.function <- function(x, init, ...) assign("init", init, envir = environm
 rowWiseCombination <- function(X, Y) {
 
     matchBin <- outer(X$colInds, Y$colInds, "==") ## this is slow!
+                                                  ## the problem
+                                                  ## seems to be that
+                                                  ## i am not
+                                                  ## exploiting the
+                                                  ## block-diagonal
+                                                  ## structure of
+                                                  ## matchBin that
+                                                  ## arises when X and
+                                                  ## Y are sorted with:
+                                                  ## sort(sort(., type = "row"), type = "col")
+                                                  ## in particular, each
+                                                  ## column gets its own
+                                                  ## block
     matchInd <- which(matchBin, arr.ind = TRUE)
-    
+
     structure(list(XrowInds  = X$rowInds[matchInd[, 1]],
                    YrowInds  = Y$rowInds[matchInd[, 2]],
                    XYcolInds = X$colInds[matchInd[, 1]],
@@ -356,18 +381,18 @@ mmult <- function(X, Y, trans = "*") {
         outerTrans <- mkOuterTrans(Xtrans, Ytrans, trans)
         outerVals <- as.vector(outer(Xvals, Yvals, trans))
         outerRowInds <- YrowInds + (dim(Y)[2] * XrowInds)
-        
+
         sumInds <- lapply(tapply(outerValInds, outerRowInds, I), sort)
         uniqueSumInds <- unique(sumInds)
-        
+
         groupNames <- as.numeric(names(sumInds))
         matchNames <- match(groupNames, outerRowInds)
-        
+
         XYrowInds <- XrowInds[matchNames]
         XYcolInds <- YrowInds[matchNames]
         XYvals <- sapply(uniqueSumInds, function(ii) sum(outerVals[ii]))
         XYvalInds <- match(sumInds, uniqueSumInds)
-        
+
         structure(list(rowInds = XYrowInds,
                        colInds = XYcolInds,
                        valInds = XYvalInds,
@@ -394,7 +419,7 @@ kron <- function(X, Y, trans = "*",
     } else {
         components <- NULL
     }
-    
+
     lenX <- length(X$rowInds)
     lenY <- length(Y$rowInds)
     lenRep <- rep.int(lenY, lenX)
@@ -429,22 +454,72 @@ kr <- function(X, Y, trans = "*", saveComponents = FALSE) {
     } else {
         components <- NULL
     }
+
+    ## modified Matrix::KhatriRao to allow for repeated sparse case
+
+    p <- ncol(X)
+    xp <- as.integer(ind2point(X$colInds, p))
+    yp <- as.integer(ind2point(Y$colInds, ncol(Y)))
+    xn <- diff(xp)
+    yn <- diff(yp)
+    newp <- as.integer(diffinv(xn * yn))
+
+    xn.yp <- xn[as.logical(yn)]
+    yj <- factor(Y$colInds)
+    rep.yn <- rep.int(yn, xn)
+    i1 <- rep.int(X$rowInds, rep.yn)
+    i2 <- unlist(rep(split.default(Y$rowInds, yj), xn.yp))
+    n1 <- nrow(X); n2 <- nrow(Y)
+    dim <- as.integer(c(n1 * n2, p))
+
+    v1 <- rep.int(X$valInds, rep.yn)
+    v2 <- unlist(rep(split.default(Y$valInds, yj), xn.yp))
+
+    newRowInds <- i1 * n2 + i2
+    newColInds <- point2ind(newp) - 1L
+    newValInds <- (v1 - 1L) * length(Y$vals) + v2
+    newVals <- as.vector(outer(Y$vals, X$vals, FUN = trans))
+    newTrans <- mkOuterTrans(Y$trans, X$trans, trans)
+
+    structure(list(rowInds = newRowInds,
+                   colInds = newColInds,
+                   valInds = newValInds,
+                   vals = newVals,
+                   trans = newTrans),
+              class = c("repSparseKr", "repSparse"),
+              Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
+}
+
+##' @rdname matrixOperations
+##' @export
+kr0 <- function(X, Y, trans = "*", saveComponents = FALSE) {
+
+    warning("this is the old version of kr.\n",
+            "might delete soon, but keeping for now for testing.")
+
+    if(saveComponents) {
+        components <- list(FUN = kr, X = X, Y = Y, trans = trans)
+    } else {
+        components <- NULL
+    }
     
+    ## FIXME: stop using rowWiseCombination, and just coerce to CSC
+    ## and use Matrix::KhatriRao.  i suspect this will be much faster.
+
     with(rowWiseCombination(X, Y), {
-        
+
         XYvalInds <- YvalInds + (length(Yvals) * (XvalInds - 1))
         XYtrans <- mkOuterTrans(Ytrans, Xtrans, trans)
         XYvals <- as.vector(outer(Yvals, Xvals, FUN = trans))
         XYrowInds <- YrowInds + (dim(Y)[1] * XrowInds)
-        
+
         structure(list(rowInds = XYrowInds,
                        colInds = XYcolInds,
                        valInds = XYvalInds,
                        vals = XYvals,
                        trans = XYtrans),
                   class = c("repSparseKr", "repSparse"),
-                  Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]),
-                  components = components)
+                  Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
     })
 }
 
@@ -631,7 +706,7 @@ bind <- function(...,
     } else {
         components <- NULL
     }
-    
+
     nmat <- length(mats)
     type <- type[[1]]
     if(nmat == 1L) return(mats[[1]])
@@ -722,7 +797,7 @@ setIs("repSparseRep", "repSparse")
 
 
 ## ----------------------------------------------------------------------
-## Changing sparse formats 
+## Changing sparse formats
 ## ----------------------------------------------------------------------
 
 ##' Changing sparse format
@@ -910,7 +985,7 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
 
 
 ## ----------------------------------------------------------------------
-## Cholesky -- 
+## Cholesky --
 ## ----------------------------------------------------------------------
 
 ##' Cholesky decomposition of repeated sparse matrices
@@ -974,4 +1049,3 @@ chol.repSparseCompSymm <- function(x, ...) {
     va <- c(sqrt(md), od)
     repSparse(ri, ci, vi, va, Dim = dim(x))
 }
-

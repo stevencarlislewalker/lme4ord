@@ -5,6 +5,7 @@
 \alias{print.repSparse}
 \alias{repSparse-class}
 \alias{sort.repSparse}
+\alias{standardSort}
 \alias{t.repSparse}
 \alias{update.repSparse}
 \title{\code{repSparse} class}
@@ -19,6 +20,8 @@ t.repSparse(x)
 
 \method{sort}{repSparse}(x, decreasing = FALSE, type = c("col", "row",
   "val"), ...)
+
+standardSort(x)
 
 \method{dim}{repSparse}(x)
 }
@@ -61,8 +64,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}, \code{\link{mmult}},
-  \code{\link{rowWiseCombination}};
+  \code{\link{kr0}}, \code{\link{kron}},
+  \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
@@ -95,8 +98,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}, \code{\link{mmult}},
-  \code{\link{rowWiseCombination}};
+  \code{\link{kr0}}, \code{\link{kron}},
+  \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
@@ -129,8 +132,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}, \code{\link{mmult}},
-  \code{\link{rowWiseCombination}};
+  \code{\link{kr0}}, \code{\link{kron}},
+  \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
@@ -163,8 +166,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}, \code{\link{mmult}},
-  \code{\link{rowWiseCombination}};
+  \code{\link{kr0}}, \code{\link{kron}},
+  \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
@@ -197,8 +200,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}, \code{\link{mmult}},
-  \code{\link{rowWiseCombination}};
+  \code{\link{kr0}}, \code{\link{kron}},
+  \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
@@ -231,8 +234,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}, \code{\link{mmult}},
-  \code{\link{rowWiseCombination}};
+  \code{\link{kr0}}, \code{\link{kron}},
+  \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
@@ -265,8 +268,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}, \code{\link{mmult}},
-  \code{\link{rowWiseCombination}};
+  \code{\link{kr0}}, \code{\link{kron}},
+  \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
@@ -299,8 +302,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}, \code{\link{mmult}},
-  \code{\link{rowWiseCombination}};
+  \code{\link{kr0}}, \code{\link{kron}},
+  \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
@@ -333,8 +336,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}, \code{\link{mmult}},
-  \code{\link{rowWiseCombination}};
+  \code{\link{kr0}}, \code{\link{kron}},
+  \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
@@ -367,8 +370,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}, \code{\link{mmult}},
-  \code{\link{rowWiseCombination}};
+  \code{\link{kr0}}, \code{\link{kron}},
+  \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
