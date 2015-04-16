@@ -112,7 +112,6 @@ generalParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NU
 ##' @param parsedForm result of \code{generalParseFormula}
 ##' @param family family object
 ##' @param weights optional weights
-##' @param ... not used
 ##' @rdname generalParseFormula
 ##' @export
 simGeneralParsedForm <- function(parsedForm, family = binomial,

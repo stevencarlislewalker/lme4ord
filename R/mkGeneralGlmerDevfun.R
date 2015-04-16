@@ -23,6 +23,8 @@
 ##' @param verbose verbose
 ##' @param pureR should the PIRLS algorithm be run in
 ##' \code{lme4pureR}?
+##' @param Lind optional indices mapping covariance parameters to the
+##' non-zero elements of the relative covariance factor
 ##' @return a deviance function with an environment
 ##' @importFrom lme4pureR pirls
 ##' @importFrom lme4 GHrule

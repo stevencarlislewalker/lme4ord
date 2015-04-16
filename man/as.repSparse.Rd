@@ -25,7 +25,7 @@ as.repSparse(x, ...)
 
 as.data.table.repSparse(x, keep.rownames = FALSE)
 
-as.matrix.repSparse(x, sparse = FALSE, ...)
+\method{as.matrix}{repSparse}(x, sparse = FALSE, ...)
 }
 \arguments{
 \item{x}{an object}
@@ -82,6 +82,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
   \code{\link{sort.repSparse}}, \code{\link{standardSort}},
   \code{\link{t.repSparse}},
   \code{\link{update.repSparse}}; \code{\link{getInit}},
@@ -95,10 +97,14 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{kr0}}, \code{\link{kron}},
   \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
+  \code{\link{mkConstVarCholTrans}},
+  \code{\link{mkCorMatCholTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
   \code{\link{mkOuterTrans}}; \code{\link{rRepSparse}},
   \code{\link{repSparseCompSymm}},
+  \code{\link{repSparseConstVarChol}},
+  \code{\link{repSparseCorMatChol}},
   \code{\link{repSparseDiag}},
   \code{\link{repSparseIdent}},
   \code{\link{repSparseOneOffDiag}},

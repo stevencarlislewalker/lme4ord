@@ -10,13 +10,13 @@ simAddArgs(object, ...)
 
 simAddArgsList(object, ...)
 
-\method{simAddArgs}{default}(objects, ...)
+\method{simAddArgs}{default}(object, ...)
 
 \method{simAddArgs}{edge}(object, rtreeArgs = list(),
   compute.brlenArgs = list(), ...)
 }
 \arguments{
-\item{object}{a \code{\link{reTrmStruct}} object}
+\item{object}{a \code{reTrmStruct} object}
 
 \item{...}{dots}
 

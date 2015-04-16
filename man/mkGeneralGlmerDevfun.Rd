@@ -44,6 +44,9 @@ squares}
 
 \item{pureR}{should the PIRLS algorithm be run in
 \code{lme4pureR}?}
+
+\item{Lind}{optional indices mapping covariance parameters to the
+non-zero elements of the relative covariance factor}
 }
 \value{
 a deviance function with an environment

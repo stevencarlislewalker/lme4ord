@@ -133,8 +133,8 @@ poisson_simfun <- function(wts, nsim, ftd) {
     }
 
 
-##' FIXME: need a gamma.shape.merMod method in order for this to work.
-##'        (see initial shot at gamma.shape.merMod below)
+## FIXME: need a gamma.shape.merMod method in order for this to work.
+##        (see initial shot at gamma.shape.merMod below)
 Gamma_simfun <- function(object, nsim, ftd=fitted(object)) {
     stop("not implemented")
     wts <- weights(object)

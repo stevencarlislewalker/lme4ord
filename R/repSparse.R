@@ -211,6 +211,7 @@ as.data.table.repSparse <- function(x, keep.rownames = FALSE) {
 
 ##' @rdname as.repSparse
 ##' @param sparse return \code{sparseMatrix}?
+##' @method as.matrix repSparse
 ##' @export
 as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
     ans <- with(x, {
@@ -452,6 +453,9 @@ kr <- function(X, Y, trans = "*", saveComponents = FALSE) {
 
     ## modified Matrix::KhatriRao to allow for repeated sparse case
 
+    X <- standardSort(X)
+    Y <- standardSort(Y)
+
     p <- ncol(X)
     xp <- as.integer(ind2point(X$colInds, p))
     yp <- as.integer(ind2point(Y$colInds, ncol(Y)))
@@ -652,6 +656,67 @@ mkGenCholInPlaceTrans <- function(init) {
                 matPars[k] <- sqrt(matPars[k] - sum(matPars[(k-i-1):(k-1)]^2))
             }
             return(matPars)
+        }
+    })
+}
+
+
+##' @rdname mkTrans
+##' @export
+mkConstVarCholTrans <- function(init) {
+    local({
+        init <- init
+        matSize <- nChoose2Inv(length(init) - 1L) # minus one for the
+                                                  # standard deviation
+                                                  # parameter
+        diagIndices <- 1:matSize
+        rowIndices <- rep(diagIndices, diagIndices)
+        colIndices <- sequence(diagIndices)
+        diagIndices <- rowIndices == colIndices
+        vals <- numeric(length(diagIndices))
+        function(matPars) {
+            sdVal <- matPars[1]
+            offDiagVals <- matPars[-1]
+            innProd <- (sdVal^2) -
+                c(0, tapply(offDiagVals^2, rowIndices[!diagIndices], sum))
+            if(any(innProd < 0L)) {
+                stop("resulting matrix not positive definite")
+            }
+            diagVals <- sqrt(innProd)
+            vals[ diagIndices] <- diagVals
+            vals[!diagIndices] <- offDiagVals
+            return(vals)
+        }
+    })
+}
+
+##' @rdname mkTrans
+##' @export
+mkCorMatCholTrans <- function(init) {
+    local({
+        init <- init
+        matSize <- nChoose2Inv(length(init))
+        diagIndices <- 1:matSize
+        rowIndices <- rep(diagIndices, diagIndices)
+        colIndices <- sequence(diagIndices)
+        diagIndices <- rowIndices == colIndices
+        vals <- numeric(length(diagIndices))
+        sdVal <- 1
+        offDiagFun <- function(x) {
+            x <- x^2
+            sqrt(x / (sum(x) + 1))
+        }
+        innProdFun <- function(x) sum(x^2)
+        function(matPars) {
+            splitPars <- split(matPars, rowIndices[!diagIndices])
+            offDiagValsList <- lapply(splitPars, offDiagFun)
+            innProd <- 1 - c(0, sapply(offDiagValsList, innProdFun))
+            if(any(innProd < 0L)) stop("resulting matrix not positive definite") ## shouldn't ever happen
+            diagVals <- sqrt(innProd)
+            ## a little DRY
+            vals[ diagIndices] <- diagVals
+            vals[!diagIndices] <- sign(matPars) * unlist(offDiagValsList)
+            return(vals)
         }
     })
 }
@@ -957,26 +1022,80 @@ setOldClass("repSparseTri")
 setIs("repSparseTri", "repSparse")
 
 
-repSparseConstVarChol <- function(varVal, offDiagVals, low = TRUE) {
-
-    ## FIXME: kind of working, but wrong update function and vals
-    ## elements
+##' Cholesky factor with constant variance
+##'
+##' @param sdVal standard deviation of crossproduct of the result
+##' @param offDiagVals values for the off-diagonal of the Cholesky
+##' factor
+##' @rdname specialRepSparse
+##' @export
+repSparseConstVarChol <- function(sdVal, offDiagVals) {
     matSize <- nChoose2Inv(length(offDiagVals))
     diagIndices <- 1:matSize
     rowIndices <- rep(diagIndices, diagIndices)
     colIndices <- sequence(diagIndices)
     diagIndices <- rowIndices == colIndices
     vals <- numeric(length(diagIndices))
-    innProd <- (varVal^2) - c(0, tapply(offDiagVals^2, rowIndices[!diagIndices], sum))
-    if(any(innProd) < 0L) stop("resulting matrix not positive definite")
+    innProd <- (sdVal^2) - c(0, tapply(offDiagVals^2, rowIndices[!diagIndices], sum))
+    if(any(innProd < 0L)) stop("resulting matrix not positive definite")
     diagVals <- sqrt(innProd)
+    ## a little DRY
     vals[ diagIndices] <- diagVals
     vals[!diagIndices] <- offDiagVals
-    ans <- repSparse(rowIndices, colIndices, seq_along(vals), vals)
-    if(!low) ans <- t(ans)
-    class(ans) <- c("repSparseTri", class(ans))
+    
+    ans <- repSparse(rowIndices, colIndices,
+                     seq_along(vals), vals,
+                     mkConstVarCholTrans(c(sdVal, offDiagVals)))
+    class(ans) <- c("repSparseConstVarChol", class(ans))
     return(ans)
 }
+
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @family repSparseTopics
+##' @exportClass repSparseConstVarChol
+setOldClass("repSparseConstVarChol")
+setIs("repSparseConstVarChol", "repSparse")
+
+##' Cholesky factor of a correlation matrix
+##'
+##' @param offDiagPars parameters determining the off-diagonal of the
+##' Cholesky factor
+##' @rdname specialRepSparse
+##' @export
+repSparseCorMatChol <- function(offDiagPars) {
+    matSize <- nChoose2Inv(length(offDiagPars))
+    diagIndices <- 1:matSize
+    rowIndices <- rep(diagIndices, diagIndices)
+    colIndices <- sequence(diagIndices)
+    diagIndices <- rowIndices == colIndices
+    vals <- numeric(length(diagIndices))
+    splitPars <- split(offDiagPars, rowIndices[!diagIndices])
+    offDiagValsList <- lapply(splitPars, function(xx) {
+        xx <- xx^2
+        sqrt(xx / (sum(xx) + 1))
+    })
+    innProd <- 1 - c(0, sapply(offDiagValsList, function(xx) sum(xx^2)))
+    if(any(innProd < 0L)) stop("resulting matrix not positive definite") ## shouldn't ever happen
+    diagVals <- sqrt(innProd)
+    ## a little DRY
+    vals[ diagIndices] <- diagVals
+    vals[!diagIndices] <- sign(offDiagPars) * unlist(offDiagValsList)
+    
+    ans <- repSparse(rowIndices, colIndices,
+                     seq_along(vals), vals,
+                     mkCorMatCholTrans(offDiagPars))
+    class(ans) <- c("repSparseCorMatChol", class(ans))
+    return(ans)
+}
+
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @family repSparseTopics
+##' @exportClass repSparseCorMatChol
+setOldClass("repSparseCorMatChol")
+setIs("repSparseCorMatChol", "repSparse")
+
 
 ##' Random repeated sparse matrix
 ##'

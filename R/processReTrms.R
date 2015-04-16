@@ -1,7 +1,7 @@
 ##' Set model matrix slice and relative covariance factor block for a
 ##' random effects term
 ##' 
-##' @param object a \code{\link{reTrmStruct}} object
+##' @param object a \code{reTrmStruct} object
 ##' @param addArgs named list of additional arguments
 ##' @rdname setReTrm
 ##' @export
@@ -50,11 +50,23 @@ setReTrm.edge <- function(object, addArgs) {
                      class = class(object)))
 }
 
-
+##' @rdname setReTrm
+##' @export
+setReTrm.cooccur <- function(object, addArgs) {
+    addArgs <- eval(object$addArgs, addArgs)
+    Jt <- as.repSparse(as(object$grpFac, "sparseMatrix"))
+    Zt <- kr(t(as.repSparse(object$modMat)), Jt)
+    nCovPars <- choose(ncol(object$modMat), 2)
+    Tt <- t(repSparseCorMatChol(rep(0, nCovPars)))
+    return(structure(c(object,
+                       list(Zt = resetTransConst(Zt),
+                            Lambdat = rep(Tt, nrow(Jt), type = "diag")),
+                       class = class(object))))
+}
 
 ##' Simulate additional arguments
 ##'
-##' @param object a \code{\link{reTrmStruct}} object
+##' @param object a \code{reTrmStruct} object
 ##' @param ... dots
 ##' @rdname simAddArgs
 ##' @export
@@ -71,7 +83,7 @@ simAddArgsList <- function(object, ...) {
 
 ##' @rdname simAddArgs
 ##' @export
-simAddArgs.default <- function(objects, ...) list()
+simAddArgs.default <- function(object, ...) list()
 
 ##' @param rtreeArgs arguments for \code{\link{rtree}}
 ##' @param compute.brlenArgs arguments for \code{\link{compute.brlen}}
@@ -85,3 +97,5 @@ simAddArgs.edge <- function(object, rtreeArgs = list(),
     phy$tip.label <- unique(as.character(object$grpFac))
     return(setNames(list(phy), namePhy))
 }
+
+

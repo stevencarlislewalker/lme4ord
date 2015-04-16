@@ -25,8 +25,6 @@ simGeneralParsedForm(parsedForm, family = binomial, weights, ...)
 \item{family}{family object}
 
 \item{weights}{optional weights}
-
-\item{...}{not used}
 }
 \description{
 Parse a mixed model formula

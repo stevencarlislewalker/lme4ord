@@ -2,6 +2,8 @@
 \name{repSparseCompSymm}
 \alias{rRepSparse}
 \alias{repSparseCompSymm}
+\alias{repSparseConstVarChol}
+\alias{repSparseCorMatChol}
 \alias{repSparseDiag}
 \alias{repSparseIdent}
 \alias{repSparseOneOffDiag}
@@ -17,6 +19,10 @@ repSparseDiag(vals, valInds)
 repSparseIdent(matSize)
 
 repSparseTri(diagVals, offDiagVals, low = TRUE)
+
+repSparseConstVarChol(sdVal, offDiagVals)
+
+repSparseCorMatChol(offDiagPars)
 
 rRepSparse(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...)
 }
@@ -39,6 +45,14 @@ rRepSparse(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...)
 
 \item{low}{lower triangular?}
 
+\item{sdVal}{standard deviation of crossproduct of the result}
+
+\item{offDiagVals}{values for the off-diagonal of the Cholesky
+factor}
+
+\item{offDiagPars}{parameters determining the off-diagonal of the
+Cholesky factor}
+
 \item{nrows,ncols}{numbers of rows and columns}
 
 \item{nvals}{number of values}
@@ -57,6 +71,10 @@ Diagonal repeated sparse matrix
 Identity repeated sparse matrix
 
 Triangular repeated sparse matrix
+
+Cholesky factor with constant variance
+
+Cholesky factor of a correlation matrix
 
 Random repeated sparse matrix
 }
@@ -89,6 +107,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
   \code{\link{sort.repSparse}}, \code{\link{standardSort}},
   \code{\link{t.repSparse}},
   \code{\link{update.repSparse}}; \code{\link{getInit}},
@@ -102,6 +122,8 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{kr0}}, \code{\link{kron}},
   \code{\link{mmult}}, \code{\link{rowWiseCombination}};
   \code{\link{mkCholOneOffDiagTrans}},
+  \code{\link{mkConstVarCholTrans}},
+  \code{\link{mkCorMatCholTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
   \code{\link{mkOuterTrans}}; \code{\link{repSparse}}
