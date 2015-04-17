@@ -8,7 +8,7 @@
 \alias{repSparseIdent}
 \alias{repSparseOneOffDiag}
 \alias{repSparseTri}
-\title{Repeated sparse matrix with compound symmetry}
+\title{Special repeated sparse matrices}
 \usage{
 repSparseCompSymm(diagVal, offDiagVal, matSize)
 
@@ -64,25 +64,11 @@ Cholesky factor}
 \item{...}{dots}
 }
 \description{
-Repeated sparse matrix with compound symmetry
-
-Diagonal repeated sparse matrix
-
-Identity repeated sparse matrix
-
-Triangular repeated sparse matrix
-
-Cholesky factor with constant variance
-
-Cholesky factor of a correlation matrix
-
-Random repeated sparse matrix
+Special repeated sparse matrices
 }
 \seealso{
 Other repSparseTopics: \code{\link{.bind}},
   \code{\link{bind}}, \code{\link{rep.repSparse}};
-  \code{\link{as}}, \code{\link{as}}, \code{\link{as}},
-  \code{\link{as}}, \code{\link{as}},
   \code{\link{as.data.frame.repSparse}},
   \code{\link{as.data.table.repSparse}},
   \code{\link{as.matrix.repSparse}},
@@ -90,7 +76,12 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{as.repSparse.dsparseMatrix}},
   \code{\link{as.repSparse.factor}},
   \code{\link{as.repSparse.matrix}},
-  \code{\link{as.repSparse.repSparse}};
+  \code{\link{as.repSparse.repSparse}},
+  \code{\link{repSparse2CsparseMatrix}},
+  \code{\link{repSparse2TsparseMatrix}},
+  \code{\link{repSparse2dgCMatrix}},
+  \code{\link{repSparse2dgTMatrix}},
+  \code{\link{repSparse2sparseMatrix}};
   \code{\link{chol.repSparse}},
   \code{\link{chol.repSparseCompSymm}},
   \code{\link{chol.repSparseOneOffDiag}};
@@ -119,9 +110,7 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kr0}}, \code{\link{kron}},
-  \code{\link{mmult}}, \code{\link{rowWiseCombination}};
-  \code{\link{mkCholOneOffDiagTrans}},
+  \code{\link{kron}}; \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkConstVarCholTrans}},
   \code{\link{mkCorMatCholTrans}},
   \code{\link{mkGenCholInPlaceTrans}},

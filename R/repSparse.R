@@ -29,7 +29,7 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim,
                       sortFun = standardSort) {
     if(missing(Dim)) Dim <- c(max(rowInds), max(colInds))
     if(!all(1:max(valInds) %in% valInds))  stop("max(valInds) unnecessarily large")
-    if(length(vals) != max(valInds))       stop("mismatch between vals and valInds")
+    if(length(vals)    != max(valInds))    stop("mismatch between vals and valInds")
     if(length(rowInds) != length(colInds)) stop("row and column index mismatch")
     if(length(rowInds) != length(valInds)) stop("row and value index mismatch")
     if(missing(trans)) trans <- mkIdentityTrans(vals)
@@ -60,7 +60,6 @@ setOldClass("repSparse")
 ##' @rdname repSparse-class
 ##' @export
 print.repSparse <- function(x, ...) {
-    attr(x, "components") <- NULL
     str(x, ...)
 }
 
@@ -242,31 +241,31 @@ repSparse2Tsparse <- function(from) {
 }
 
 ##' as("repSparse", "sparseMatrix")
-##' @name as
+##' @name repSparse2sparseMatrix
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix sparseMatrix
 setAs("repSparse",  "sparseMatrix", def = repSparse2Csparse)
 
 ##' as("repSparse", "CsparseMatrix")
-##' @name as
+##' @name repSparse2CsparseMatrix
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix CsparseMatrix
 setAs("repSparse", "CsparseMatrix", def = repSparse2Csparse)
 
 ##' as("repSparse", "dgCMatrix")
-##' @name as
+##' @name repSparse2dgCMatrix
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix dgCMatrix
 setAs("repSparse",     "dgCMatrix", def = repSparse2Csparse)
 
 ##' as("repSparse", "TsparseMatrix")
-##' @name as
+##' @name repSparse2TsparseMatrix
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix TsparseMatrix
 setAs("repSparse", "TsparseMatrix", def = repSparse2Tsparse)
 
 ##' as("repSparse", "dgTMatrix")
-##' @name as
+##' @name repSparse2dgTMatrix
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix dgTMatrix
 setAs("repSparse",     "dgTMatrix", def = repSparse2Tsparse)
@@ -323,98 +322,20 @@ setInit.function <- function(x, init, ...) assign("init", init, envir = environm
 
 
 ## ----------------------------------------------------------------------
-## Matrix operations -- mmult (standard matrix product), kron
-## (Kronecker product), kr (Khatri-Rao product), madd (standard matrix
-## addition)
+## Matrix operations -- kron (Kronecker product), kr (Khatri-Rao
+## product)
 ## ----------------------------------------------------------------------
-
-##' Row-wise combination of two repeated sparse matrices
-##'
-##' @param X,Y \code{repSparse} objects
-##' @return a row-wise combination of repeated sparse matrices
-##' @rdname matrixOperations
-##' @family repSparseTopics
-##' @export
-rowWiseCombination <- function(X, Y) {
-
-    ## this is slow!  the problem seems to be that i am not exploiting
-    ## the block-diagonal structure of matchBin that arises when X and
-    ## Y are sorted with: sort(sort(., type = "row"), type = "col") in
-    ## particular, each column gets its own block.
-
-    ## update: don't really use this function anymore (see kr and cf
-    ## kr0)
-
-    matchBin <- outer(X$colInds, Y$colInds, "==")
-    matchInd <- which(matchBin, arr.ind = TRUE)
-
-    structure(list(XrowInds  = X$rowInds[matchInd[, 1]],
-                   YrowInds  = Y$rowInds[matchInd[, 2]],
-                   XYcolInds = X$colInds[matchInd[, 1]],
-                   XvalInds  = X$valInds[matchInd[, 1]],
-                   YvalInds  = Y$valInds[matchInd[, 2]],
-                   Xvals = X$vals,
-                   Yvals = Y$vals,
-                   Xtrans = X$trans,
-                   Ytrans = Y$trans),
-              class = "repSparseRowWiseCombination",
-              Dim = c(nrow(X), nrow(Y), ncol(X)))
-}
-
-##' Standard matrix multiplication for repeated sparse matrices
-##'
-##' @rdname matrixOperations
-##' @export
-mmult <- function(X, Y, trans = "*") {
-
-    warning("this is slow and bad and probably even just wrong.  ",
-            "please construct standard matrix products with standard tools.")
-
-    with(rowWiseCombination(X, t(Y)), {
-
-        outerColInds <- XYcolInds
-        outerValInds <- YvalInds + (length(Yvals) * (XvalInds - 1))
-        outerTrans <- mkOuterTrans(Xtrans, Ytrans, trans)
-        outerVals <- as.vector(outer(Xvals, Yvals, trans))
-        outerRowInds <- YrowInds + (dim(Y)[2] * XrowInds)
-
-        sumInds <- lapply(tapply(outerValInds, outerRowInds, I), sort)
-        uniqueSumInds <- unique(sumInds)
-
-        groupNames <- as.numeric(names(sumInds))
-        matchNames <- match(groupNames, outerRowInds)
-
-        XYrowInds <- XrowInds[matchNames]
-        XYcolInds <- YrowInds[matchNames]
-        XYvals <- sapply(uniqueSumInds, function(ii) sum(outerVals[ii]))
-        XYvalInds <- match(sumInds, uniqueSumInds)
-
-        structure(list(rowInds = XYrowInds,
-                       colInds = XYcolInds,
-                       valInds = XYvalInds,
-                       vals = XYvals,
-                       trans = outerTrans),
-                  class = "repSparse",
-                  Dim = c(dim(X)[1], dim(Y)[2]))
-    })
-}
 
 ##' Kronecker and Khatri-Rao products for repeated sparse matrices
 ##'
 ##' @param trans see argument \code{FUN} in \code{\link{outer}}
 ##' @param makedimnames ignored
-##' @param saveComponents should component matrices be saved?
 ##' @param ... ignored
 ##' @rdname matrixOperations
+##' @family repSparseTopics
 ##' @export
 kron <- function(X, Y, trans = "*",
-                 makedimnames = FALSE, saveComponents = FALSE, ...) {
-
-    if(saveComponents) {
-        components <- list(FUN = kron, X = X, Y = Y, trans = trans)
-    } else {
-        components <- NULL
-    }
+                 makedimnames = FALSE,  ...) {
 
     lenX <- length(X$rowInds)
     lenY <- length(Y$rowInds)
@@ -430,26 +351,18 @@ kron <- function(X, Y, trans = "*",
                    vals = XYvals,
                    trans = XYtrans),
               class = c("repSparseKron", "repSparse"),
-              Dim = dim(X) * dim(Y),
-              components = components)
+              Dim = dim(X) * dim(Y))
 }
 
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repSparseTopics
 ##' @exportClass repSparseKron
 setOldClass("repSparseKron")
 setIs("repSparseKron", "repSparse")
 
 ##' @rdname matrixOperations
 ##' @export
-kr <- function(X, Y, trans = "*", saveComponents = FALSE) {
-
-    if(saveComponents) {
-        components <- list(FUN = kr, X = X, Y = Y, trans = trans)
-    } else {
-        components <- NULL
-    }
+kr <- function(X, Y, trans = "*") {
 
     ## modified Matrix::KhatriRao to allow for repeated sparse case
 
@@ -486,47 +399,11 @@ kr <- function(X, Y, trans = "*", saveComponents = FALSE) {
                    vals = newVals,
                    trans = newTrans),
               class = c("repSparseKr", "repSparse"),
-              Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]),
-              components = components)
-}
-
-##' @rdname matrixOperations
-##' @export
-kr0 <- function(X, Y, trans = "*", saveComponents = FALSE) {
-
-    warning("this is the old version of kr.\n",
-            "might delete soon, but keeping for now for testing.")
-
-    if(saveComponents) {
-        components <- list(FUN = kr, X = X, Y = Y, trans = trans)
-    } else {
-        components <- NULL
-    }
-    
-    ## FIXME: stop using rowWiseCombination, and just coerce to CSC
-    ## and use Matrix::KhatriRao.  i suspect this will be much faster.
-
-    with(rowWiseCombination(X, Y), {
-
-        XYvalInds <- YvalInds + (length(Yvals) * (XvalInds - 1))
-        XYtrans <- mkOuterTrans(Ytrans, Xtrans, trans)
-        XYvals <- as.vector(outer(Yvals, Xvals, FUN = trans))
-        XYrowInds <- YrowInds + (dim(Y)[1] * XrowInds)
-
-        structure(list(rowInds = XYrowInds,
-                       colInds = XYcolInds,
-                       valInds = XYvalInds,
-                       vals = XYvals,
-                       trans = XYtrans),
-                  class = c("repSparseKr", "repSparse"),
-                  Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]),
-                  components = components)
-    })
+              Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
 }
 
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repSparseTopics
 ##' @exportClass repSparseKr
 setOldClass("repSparseKr")
 setIs("repSparseKr", "repSparse")
@@ -754,20 +631,12 @@ resetTransConst <- function(object) {
 ##' @param ... list of \code{repSparse} objects (but not used for
 ##' \code{rep.repSparse})
 ##' @param type type of binding
-##' @param saveComponents should component matrices be saved?
 ##' @rdname bind
 ##' @family repSparseTopics
 ##' @export
 bind <- function(...,
-                 type = c("row", "col", "diag"),
-                 saveComponents = FALSE) {
+                 type = c("row", "col", "diag")) {
     mats <- list(...)
-
-    if(saveComponents) {
-        components <- list(FUN = .bind, mats = mats, type = type)
-    } else {
-        components <- NULL
-    }
 
     nmat <- length(mats)
     type <- type[[1]]
@@ -796,14 +665,12 @@ bind <- function(...,
                          trans = mkListTrans(trans),
                          Dim = c(sum(nrows), sum(ncols)))
         class(ans) <- c("repSparseBind", class(ans))
-        ans$components <- components
         return(ans)
     })
 }
 
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repSparseTopics
 ##' @exportClass repSparseBind
 setOldClass("repSparseBind")
 setIs("repSparseBind", "repSparse")
@@ -846,13 +713,11 @@ rep.repSparse <- function(x, times,
                      trans = x$trans,
                      Dim = c(rowMult, colMult) * dim(x))
     class(ans) <- c("repSparseRep", class(ans))
-    ans$components <- list(FUN = rep, x = x, times = times, type = type)
     return(ans)
 }
 
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repSparseTopics
 ##' @exportClass repSparseRep
 setOldClass("repSparseRep")
 setIs("repSparseRep", "repSparse")
@@ -900,7 +765,7 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 ## repSparseIdent, rRepSparse
 ## ----------------------------------------------------------------------
 
-##' Repeated sparse matrix with compound symmetry
+##' Special repeated sparse matrices
 ##'
 ##' @param diagVal value for the diagonal
 ##' @param offDiagVal value for the off-diagonal
@@ -909,6 +774,7 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 ##' @family repSparseTopics
 ##' @export
 repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
+    ## Repeated sparse matrix with compound symmetry
     if((!(diagVal > offDiagVal)) || (!(offDiagVal > (-diagVal)/(matSize-1))))
         warning("resulting matrix not positive definite")
     iii <- rep.int(1:(matSize-1), 1:(matSize-1)) + 1L
@@ -925,7 +791,6 @@ repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
 
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repSparseTopics
 ##' @exportClass repSparseCompSymm
 setOldClass("repSparseCompSymm")
 setIs("repSparseCompSymm", "repSparse")
@@ -949,18 +814,17 @@ repSparseOneOffDiag <- function(diagVal, offDiagVal, offDiagInds, matSize) {
 
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repSparseTopics
 ##' @exportClass repSparseOneOffDiag
 setOldClass("repSparseOneOffDiag")
 setIs("repSparseOneOffDiag", "repSparse")
 
-##' Diagonal repeated sparse matrix
-##'
+
 ##' @param vals vector of values
 ##' @param valInds vector of value indices
 ##' @rdname specialRepSparse
 ##' @export
 repSparseDiag <- function(vals, valInds) {
+    ## Diagonal repeated sparse matrix
     if(missing(valInds)) valInds <- seq_along(vals)
     matSize <- length(valInds)
     ans <- repSparse(1:matSize, 1:matSize, valInds, vals)
@@ -970,16 +834,14 @@ repSparseDiag <- function(vals, valInds) {
 
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repSparseTopics
 ##' @exportClass repSparseDiag
 setOldClass("repSparseDiag")
 setIs("repSparseDiag", "repSparse")
 
-##' Identity repeated sparse matrix
-##'
 ##' @rdname specialRepSparse
 ##' @export
 repSparseIdent <- function(matSize) {
+    ## Identity repeated sparse matrix
     ans <- repSparseDiag(1, rep(1, matSize))
     class(ans) <- c("repSparseIdent", class(ans))
     return(ans)
@@ -987,19 +849,18 @@ repSparseIdent <- function(matSize) {
 
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repSparseTopics
 ##' @exportClass repSparseIdent
 setOldClass("repSparseIdent")
 setIs("repSparseIdent", "repSparse")
 
-##' Triangular repeated sparse matrix
-##'
+
 ##' @param diagVals values for the diagonal
 ##' @param offDiagVals values for the off-diagonal
 ##' @param low lower triangular?
 ##' @rdname specialRepSparse
 ##' @export
 repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
+    ## Triangular repeated sparse matrix
     matSize <- length(diagVals)
     diagIndices <- 1:matSize
     rowIndices <- rep(diagIndices, diagIndices)
@@ -1016,20 +877,18 @@ repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
 
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repSparseTopics
 ##' @exportClass repSparseTri
 setOldClass("repSparseTri")
 setIs("repSparseTri", "repSparse")
 
 
-##' Cholesky factor with constant variance
-##'
 ##' @param sdVal standard deviation of crossproduct of the result
 ##' @param offDiagVals values for the off-diagonal of the Cholesky
 ##' factor
 ##' @rdname specialRepSparse
 ##' @export
 repSparseConstVarChol <- function(sdVal, offDiagVals) {
+    ## Cholesky factor with constant variance
     matSize <- nChoose2Inv(length(offDiagVals))
     diagIndices <- 1:matSize
     rowIndices <- rep(diagIndices, diagIndices)
@@ -1052,18 +911,17 @@ repSparseConstVarChol <- function(sdVal, offDiagVals) {
 
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repSparseTopics
 ##' @exportClass repSparseConstVarChol
 setOldClass("repSparseConstVarChol")
 setIs("repSparseConstVarChol", "repSparse")
 
-##' Cholesky factor of a correlation matrix
-##'
+
 ##' @param offDiagPars parameters determining the off-diagonal of the
 ##' Cholesky factor
 ##' @rdname specialRepSparse
 ##' @export
 repSparseCorMatChol <- function(offDiagPars) {
+    ## Cholesky factor of a correlation matrix
     matSize <- nChoose2Inv(length(offDiagPars))
     diagIndices <- 1:matSize
     rowIndices <- rep(diagIndices, diagIndices)
@@ -1091,14 +949,11 @@ repSparseCorMatChol <- function(offDiagPars) {
 
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repSparseTopics
 ##' @exportClass repSparseCorMatChol
 setOldClass("repSparseCorMatChol")
 setIs("repSparseCorMatChol", "repSparse")
 
 
-##' Random repeated sparse matrix
-##'
 ##' @param nrows,ncols numbers of rows and columns
 ##' @param nvals number of values
 ##' @param nnonzeros number of nonzero elements
@@ -1107,6 +962,7 @@ setIs("repSparseCorMatChol", "repSparse")
 ##' @rdname specialRepSparse
 ##' @export
 rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
+    ## Random repeated sparse matrix
     if(nnonzeros < nvals)
         stop("number of nonzeros must be at least the number of values")
     if(nnonzeros > (nrows * ncols))
