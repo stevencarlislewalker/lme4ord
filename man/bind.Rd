@@ -31,7 +31,7 @@ matrices
 Repeat repeated sparse matrix
 }
 \seealso{
-Other repSparseTopics: \code{\link{as.data.frame.repSparse}},
+Other repeated.sparse.matrix.topics: \code{\link{as.data.frame.repSparse}},
   \code{\link{as.data.table.repSparse}},
   \code{\link{as.matrix.repSparse}},
   \code{\link{as.repSparse}},
@@ -61,9 +61,7 @@ Other repSparseTopics: \code{\link{as.data.frame.repSparse}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
-  \code{\link{repSparse-class}},
-  \code{\link{sort.repSparse}}, \code{\link{standardSort}},
-  \code{\link{t.repSparse}},
+  \code{\link{repSparse-class}}, \code{\link{t.repSparse}},
   \code{\link{update.repSparse}}; \code{\link{getInit}},
   \code{\link{getInit.default}},
   \code{\link{getInit.function}},

@@ -1,4 +1,33 @@
-##' Sparse matrix with repeated values
+##' Repeated sparse matrices
+##'
+##' A sparse matrix class for matrices whose elements come from a set
+##' of a relatively small number of values or computable from a
+##' relatively small parameter vector.
+##'
+##' These parameterized matrix objects are useful for updating
+##' matrices at each iteration of a general nonlinear optimizer.  This
+##' \code{\link{repSparse-class}} is designed to work well with the
+##' \code{\link{Matrix}} package, in that they can be quickly coerced
+##' to \code{\link{sparseMatrix}} objects.  The
+##' \code{\link{mkSparseTrans}} function can be used to automatically
+##' generate a function for updating the values of the
+##' \code{sparseMatrix} object from a relatively small number of
+##' parameters or repeated values.
+##'
+##' Such matrices are best constructed by \code{\link{bind}}ing,
+##' \code{\link{kron}}ing, and \code{\link{kr}}ing together a series
+##' of simpler \code{repSparse} matrices, which can be constructed
+##' with the \code{repSparse} function or a function for constructing
+##' special \code{repSparse} objects
+##' (e.g. \code{\link{repSparseDiag}}).
+##'
+##' Note that the ordering of the indices supplied to \code{rowInds},
+##' \code{colInds}, and \code{valInds} may not appear in the same
+##' order in the output.  This is because \code{sortFun} is used to
+##' process the order, which by default is \code{\link{standardSort}}.
+##' To suppress this behaviour a different \code{sortFun} may be
+##' supplied, but this is generally not recommended because certain
+##' functions assume certain orderings (e.g. \code{\link{kr}}).
 ##'
 ##' @param rowInds 1-based row indices (converted to 0-based in
 ##' output)
@@ -17,14 +46,14 @@
 ##' @param sortFun a function with which to sort the indices of the
 ##' resulting matrix.  please note that by default the
 ##' \code{standardSort} function is used, which provides a convenient
-##' ordering for computing Khatri-Rao products (and maybe standard
-##' matrix products).
-##' @return object of class \code{repSparse} with list elements
-##' \code{rowInds}, \code{colInds}, \code{valInds}, \code{vals}, and
-##' \code{trans}, and a \code{Dim} attibute
+##' ordering for computing Khatri-Rao products (with
+##' \code{\link{kr}}).  see details.
+##' @return A member of the \code{\link{repSparse-class}}.
 ##' @rdname repSparse
-##' @family repSparseTopics
+##' @family repeated sparse matrix topics
 ##' @export
+##' @examples
+##' repSparse(1:4, 4:1, rep(1:2, 2), c(-pi, pi))
 repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim,
                       sortFun = standardSort) {
     if(missing(Dim)) Dim <- c(max(rowInds), max(colInds))
@@ -47,20 +76,80 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim,
 ## repSparse-class
 ## ----------------------------------------------------------------------
 
-##' \code{repSparse} class
+##' A repeated sparse matrix class
+##'
+##' An \code{S3} class for repeated sparse matrices, which are lists
+##' with a \code{Dim} attribute and with the following elements:
+##' \describe{
+##'   \item{\code{rowInds}}{0-based row indices}
+##'   \item{\code{colInds}}{0-based column indices}
+##'   \item{\code{valInds}}{1-based indices for associating each \code{rowInds} and
+##'                         \code{colInds} pair with the elements in \code{vals}}
+##'   \item{\code{trans}}{A function for transforming a parameter vector
+##'                       into \code{vals}.  This function is used by
+##'                       \code{\link{update.repSparse}}}
+##' }
+##' Objects in this class can be constructed with
+##' \code{\link{repSparse}} (and, for example,
+##' \code{\link{repSparseDiag}}), and has several methods including
+##' the following.
 ##'
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repSparseTopics
+##' @family repeated sparse matrix topics
 ##' @exportClass repSparse
+##' @examples
+##' (X <- repSparse(rowInds = 1:6,
+##'                 colInds = rep(1:2, 3),
+##'                 valInds = rep(1:2, each = 3),
+##'                 vals    = c(-pi, pi)))
+##' (Y <- update(X, c(0.2, 0.8)))
+##' as.matrix(X, sparse = TRUE)
+##' as.matrix(Y, sparse = TRUE)
+##' image(kron(t(X), Y))
+##' image(bind(X, Y, type = "diag"))
 setOldClass("repSparse")
 
 ##' @param x \code{repSparse} object
+##' @param n how many indices and repeated values to print?
 ##' @param ... passed to subsequent functions
 ##' @rdname repSparse-class
 ##' @export
-print.repSparse <- function(x, ...) {
-    str(x, ...)
+print.repSparse <- function(x, n = 6L, ...) {
+
+    init <- getInit(x)
+    parsEqualRepVals <- identical(x$vals, init)
+    headVals <- head(x$vals, n = n)
+    inds <- as.data.frame(x)[c("rowInds", "colInds", "valInds")]
+    headInds <- head(inds, n = n)
+    reportTruncVals <- length(x$vals) > n
+    reportTruncInds <- nrow(inds) > n
+    
+    cat("Repeated sparse matrix\n")
+    cat("----------------------\n")
+    cat("dimensions:\n")
+    cat("", nrow(x), "rows and", ncol(x), "columns\n",
+        nrow(inds), "nonzero values\n",
+        length(x$vals), "repeated values\n")
+    if(!parsEqualRepVals) {
+        cat("", length(init), "parameters\n")
+    }
+    cat("\n")
+    if(reportTruncVals) cat("first", n, "")
+    cat("repeated values:\n")
+    print(headVals)
+    if(!parsEqualRepVals) {
+        cat("\ninitial parameters:\n")
+        print(getInit(x))
+    }
+    cat("\n")
+    if(reportTruncInds) cat("first", n, "")
+    cat ("row, column, and value indices:\n")
+    print(headInds)
+    if(length(class(x)) > 1L) {
+        cat("\nspecial repeated sparse matrix, inheriting from:\n")
+        print(class(x))
+    }
 }
 
 ##' @param object \code{repSparse} object
@@ -87,9 +176,16 @@ t.repSparse <- function(x) {
     return(tx)
 }
 
+##' @rdname repSparse-class
+##' @export
+dim.repSparse <- function(x) attr(x, "Dim")
+
+
+##' Sort the indices of a repeated sparse matrix
+##'
 ##' @param decreasing see \code{\link{sort}}
 ##' @param type sort by column, row, or value indices?
-##' @rdname repSparse-class
+##' @rdname sort.repSparse
 ##' @export
 sort.repSparse <- function(x, decreasing = FALSE,
                            type = c("col", "row", "val"), ...) {
@@ -104,15 +200,11 @@ sort.repSparse <- function(x, decreasing = FALSE,
     return(x)
 }
 
-##' @rdname repSparse-class
+##' @rdname sort.repSparse
 ##' @export
 standardSort <- function(x) {
     sort(sort(x, type = "row"), type = "col")
 }
-
-##' @rdname repSparse-class
-##' @export
-dim.repSparse <- function(x) attr(x, "Dim")
 
 
 ## ----------------------------------------------------------------------
@@ -124,7 +216,7 @@ dim.repSparse <- function(x) attr(x, "Dim")
 ##' @param x an object
 ##' @param ... dots
 ##' @rdname as.repSparse
-##' @family repSparseTopics
+##' @family repeated sparse matrix topics
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -271,6 +363,26 @@ setAs("repSparse", "TsparseMatrix", def = repSparse2Tsparse)
 setAs("repSparse",     "dgTMatrix", def = repSparse2Tsparse)
 
 
+##' Make transformation function for column-compressed sparse matrix
+##'
+##' @param object repeated sparse matrix object
+##' @export
+##' @examples
+##' set.seed(1)
+##' X <- rRepSparse(3, 7, 2, 12)
+##' (Xsparse <- as.matrix(X, sparse = TRUE))
+##' Xtrans <- mkSparseTrans(X)
+##' slot(Xsparse, "x") <- Xtrans(rnorm(2))
+##' print(Xsparse)
+mkSparseTrans <- function(object) {
+    local({
+        trans <- object$trans
+        inds <- object$valInds
+        function(matPars) trans(matPars)[inds]
+    })
+}
+
+
 ## ----------------------------------------------------------------------
 ## Initial values -- get and set init parameter vectors for repeated
 ## sparse matrices
@@ -281,7 +393,7 @@ setAs("repSparse",     "dgTMatrix", def = repSparse2Tsparse)
 ##' @param x object
 ##' @param ... not yet used
 ##' @rdname getInit
-##' @family repSparseTopics
+##' @family repeated sparse matrix topics
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -332,7 +444,7 @@ setInit.function <- function(x, init, ...) assign("init", init, envir = environm
 ##' @param makedimnames ignored
 ##' @param ... ignored
 ##' @rdname matrixOperations
-##' @family repSparseTopics
+##' @family repeated sparse matrix topics
 ##' @export
 kron <- function(X, Y, trans = "*",
                  makedimnames = FALSE,  ...) {
@@ -423,7 +535,7 @@ setIs("repSparseKr", "repSparse")
 ##' the prototype) of \code{matPars}.
 ##'
 ##' @rdname mkTrans
-##' @family repSparseTopics
+##' @family repeated sparse matrix topics
 ##' @export
 mkIdentityTrans <- function(init) {
     local({
@@ -632,7 +744,7 @@ resetTransConst <- function(object) {
 ##' \code{rep.repSparse})
 ##' @param type type of binding
 ##' @rdname bind
-##' @family repSparseTopics
+##' @family repeated sparse matrix topics
 ##' @export
 bind <- function(...,
                  type = c("row", "col", "diag")) {
@@ -731,7 +843,7 @@ setIs("repSparseRep", "repSparse")
 ##'
 ##' @param point vector of column pointers
 ##' @rdname changeSparseFormat
-##' @family repSparseTopics
+##' @family repeated sparse matrix topics
 ##' @export
 point2ind <- function(point) {
                                         # ?Matrix::sparseMatrix
@@ -771,7 +883,7 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 ##' @param offDiagVal value for the off-diagonal
 ##' @param matSize size of the resulting matrix
 ##' @rdname specialRepSparse
-##' @family repSparseTopics
+##' @family repeated sparse matrix topics
 ##' @export
 repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
     ## Repeated sparse matrix with compound symmetry
@@ -991,7 +1103,7 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
 ##' \code{\link{repSparse}}
 ##' @param ... passed to subsequent functions
 ##' @rdname chol
-##' @family repSparseTopics
+##' @family repeated sparse matrix topics
 ##' @export
 chol.repSparse <- function(x, ...) {
     as.repSparse(chol(as.matrix(x, sparse = TRUE)))

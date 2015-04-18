@@ -68,7 +68,7 @@ as(m2, "dgCMatrix")
 as(m2, "sparseMatrix")
 }
 \seealso{
-Other repSparseTopics: \code{\link{.bind}},
+Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{bind}}, \code{\link{rep.repSparse}};
   \code{\link{chol.repSparse}},
   \code{\link{chol.repSparseCompSymm}},
@@ -87,9 +87,7 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
-  \code{\link{repSparse-class}},
-  \code{\link{sort.repSparse}}, \code{\link{standardSort}},
-  \code{\link{t.repSparse}},
+  \code{\link{repSparse-class}}, \code{\link{t.repSparse}},
   \code{\link{update.repSparse}}; \code{\link{getInit}},
   \code{\link{getInit.default}},
   \code{\link{getInit.function}},

@@ -44,7 +44,7 @@ getInit(m1)
 getInit(m2)
 }
 \seealso{
-Other repSparseTopics: \code{\link{.bind}},
+Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{bind}}, \code{\link{rep.repSparse}};
   \code{\link{as.data.frame.repSparse}},
   \code{\link{as.data.table.repSparse}},
@@ -76,9 +76,7 @@ Other repSparseTopics: \code{\link{.bind}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
-  \code{\link{repSparse-class}},
-  \code{\link{sort.repSparse}}, \code{\link{standardSort}},
-  \code{\link{t.repSparse}},
+  \code{\link{repSparse-class}}, \code{\link{t.repSparse}},
   \code{\link{update.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
   \code{\link{kron}}; \code{\link{mkCholOneOffDiagTrans}},

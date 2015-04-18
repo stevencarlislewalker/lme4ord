@@ -148,18 +148,6 @@ mkGeneralReTrms <- function(reStructList, parsedForm, ...) {
                 LambdatTrans = mkSparseTrans(LambdatBind)))
 }
 
-##' Make transformation function for column-compressed sparse matrix
-##'
-##' @param object repeated sparse matrix object
-##' @rdname mkReTrms
-##' @export
-mkSparseTrans <- function(object) {
-    local({
-        trans <- object$trans
-        inds <- object$valInds
-        function(matPars) trans(matPars)[inds]
-    })
-}
 
 ##' Find classes with a \code{setReTrm} method
 ##'

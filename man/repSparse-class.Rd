@@ -4,13 +4,11 @@
 \alias{image.repSparse}
 \alias{print.repSparse}
 \alias{repSparse-class}
-\alias{sort.repSparse}
-\alias{standardSort}
 \alias{t.repSparse}
 \alias{update.repSparse}
-\title{\code{repSparse} class}
+\title{A repeated sparse matrix class}
 \usage{
-print.repSparse(x, ...)
+print.repSparse(x, n = 6L, ...)
 
 update.repSparse(object, newPars, ...)
 
@@ -18,31 +16,49 @@ image.repSparse(x, ...)
 
 t.repSparse(x)
 
-\method{sort}{repSparse}(x, decreasing = FALSE, type = c("col", "row",
-  "val"), ...)
-
-standardSort(x)
-
 \method{dim}{repSparse}(x)
 }
 \arguments{
 \item{x}{\code{repSparse} object}
+
+\item{n}{how many indices and repeated values to print?}
 
 \item{...}{passed to subsequent functions}
 
 \item{object}{\code{repSparse} object}
 
 \item{newPars}{new parameter values}
-
-\item{decreasing}{see \code{\link{sort}}}
-
-\item{type}{sort by column, row, or value indices?}
 }
 \description{
-\code{repSparse} class
+An \code{S3} class for repeated sparse matrices, which are lists
+with a \code{Dim} attribute and with the following elements:
+\describe{
+  \item{\code{rowInds}}{0-based row indices}
+  \item{\code{colInds}}{0-based column indices}
+  \item{\code{valInds}}{1-based indices for associating each \code{rowInds} and
+                        \code{colInds} pair with the elements in \code{vals}}
+  \item{\code{trans}}{A function for transforming a parameter vector
+                      into \code{vals}.  This function is used by
+                      \code{\link{update.repSparse}}}
+}
+Objects in this class can be constructed with
+\code{\link{repSparse}} (and, for example,
+\code{\link{repSparseDiag}}), and has several methods including
+the following.
+}
+\examples{
+(X <- repSparse(rowInds = 1:6,
+                colInds = rep(1:2, 3),
+                valInds = rep(1:2, each = 3),
+                vals    = c(-pi, pi)))
+(Y <- update(X, c(0.2, 0.8)))
+as.matrix(X, sparse = TRUE)
+as.matrix(Y, sparse = TRUE)
+image(kron(t(X), Y))
+image(bind(X, Y, type = "diag"))
 }
 \seealso{
-Other repSparseTopics: \code{\link{.bind}},
+Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{bind}}, \code{\link{rep.repSparse}};
   \code{\link{as.data.frame.repSparse}},
   \code{\link{as.data.table.repSparse}},
