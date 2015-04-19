@@ -120,7 +120,7 @@ print.repSparse <- function(x, n = 6L, ...) {
     init <- getInit(x)
     parsEqualRepVals <- identical(x$vals, init)
     headVals <- head(x$vals, n = n)
-    inds <- as.data.frame(x)[c("rowInds", "colInds", "valInds")]
+    inds <- as.data.frame(x) ## [c("rowInds", "colInds", "valInds")]
     headInds <- head(inds, n = n)
     reportTruncVals <- length(x$vals) > n
     reportTruncInds <- nrow(inds) > n
@@ -144,7 +144,7 @@ print.repSparse <- function(x, n = 6L, ...) {
     }
     cat("\n")
     if(reportTruncInds) cat("first", n, "")
-    cat ("row, column, and value indices:\n")
+    cat ("row, column, and value indices (with associated values):\n")
     print(headInds)
     if(length(class(x)) > 1L) {
         cat("\nspecial repeated sparse matrix, inheriting from:\n")
@@ -173,7 +173,7 @@ t.repSparse <- function(x) {
     tx$rowInds <- x$colInds
     tx$colInds <- x$rowInds
     attr(tx, "Dim") <- rev(dim(x))
-    return(tx)
+    return(standardSort(tx))
 }
 
 ##' @rdname repSparse-class
@@ -182,6 +182,13 @@ dim.repSparse <- function(x) attr(x, "Dim")
 
 
 ##' Sort the indices of a repeated sparse matrix
+##'
+##' The ordering of the indices is arbitrary, but some orders are more
+##' computationally efficient than others in certain circumstances.
+##' \code{standardSort} is defined as \code{sort(sort(., type =
+##' "row"), type = "col")}, which is often the 'best' order.  It is
+##' used throughout, and in particular is required for using the
+##' \code{\link{kr}} function.
 ##'
 ##' @param decreasing see \code{\link{sort}}
 ##' @param type sort by column, row, or value indices?

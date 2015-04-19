@@ -15,6 +15,11 @@ standardSort(x)
 \item{type}{sort by column, row, or value indices?}
 }
 \description{
-Sort the indices of a repeated sparse matrix
+The ordering of the indices is arbitrary, but some orders are more
+computationally efficient than others in certain circumstances.
+\code{standardSort} is defined as \code{sort(sort(., type =
+"row"), type = "col")}, which is often the 'best' order.  It is
+used throughout, and in particular is required for using the
+\code{\link{kr}} function.
 }
 
