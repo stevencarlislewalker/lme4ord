@@ -12,10 +12,6 @@ non-zero values of a repeated sparse matrix}
 \usage{
 mkIdentityTrans(init)
 
-mkOuterTrans(Atrans, Btrans, ABtrans)
-
-mkListTrans(transList)
-
 mkCholOneOffDiagTrans(init)
 
 mkGenCholInPlaceTrans(init)
@@ -23,20 +19,26 @@ mkGenCholInPlaceTrans(init)
 mkConstVarCholTrans(init)
 
 mkCorMatCholTrans(init)
+
+mkOuterTrans(Atrans, Btrans, ABtrans)
+
+mkListTrans(transList)
 }
 \arguments{
-\item{Atrans,Btrans}{functions for transforming \code{A} and
-\code{B}}
+\item{init}{initial parameter values}
+
+\item{Atrans,Btrans}{functions for transforming two repeated
+sparse matrices, \code{A} and \code{B} say}
 
 \item{ABtrans}{function to pass as \code{FUN} in
 \code{\link{outer}}}
 
-\item{transList}{list of transform functions}
-
-\item{init}{initial parameter values}
+\item{transList}{list of transformation functions}
 }
 \description{
-Each \code{trans} function must take one vector argument called
+These functions return a 'trans function', for transforming a
+parameter vector to the non-zero values of a repeated sparse
+matrix.  Each trans function takes one vector argument called
 \code{matPars}, which are the parameters of the matrix.  The
 environment of these transformation functions must contain a
 vector called \code{init}, which contains the initial values (aka,

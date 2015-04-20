@@ -187,3 +187,38 @@ simfunList <- list(gaussian = gaussian_simfun,
 		   poisson  = poisson_simfun,
 		   Gamma    = Gamma_simfun,
 		   negative.binomial = negative.binomial_simfun)
+
+
+##' Count unique values
+##'
+##' @param x numeric (for \code{countUnique}) or integer (for
+##' \code{countInRange}) vector
+##' @return data frame with \code{uniqueVals} and \code{counts}
+##' columns
+##' @rdname count
+##' @export
+countUnique <- function(x) {
+    sx <- sort(x)
+    counts <- diff(c(which(!duplicated(sx)), length(x) + 1))
+    data.frame(uniqueVals = unique(sx),
+               counts = counts)
+}
+
+##' @rdname count
+##' @export
+countInRange <- function(x) {
+    x <- as.integer(x)
+    vals <- min(x):max(x)
+    counts <- sapply(vals, function(xx) sum(xx == x))
+    data.frame(vals = vals, counts = counts)
+}
+
+##' Flatten an integer vector
+##'
+##' @param x vector coercible to nonnegative integers
+##' @export
+flattenIntVec <- function(x) {
+    x <- abs(as.integer(x))
+    match(x, sort(unique(x)))
+}
+

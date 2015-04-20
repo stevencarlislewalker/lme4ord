@@ -56,6 +56,7 @@
 ##' repSparse(1:4, 4:1, rep(1:2, 2), c(-pi, pi))
 repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim,
                       sortFun = standardSort) {
+    if(length(valInds) == 0L) stop("length(valInds) can't be zero")
     if(missing(Dim)) Dim <- c(max(rowInds), max(colInds))
     if(!all(1:max(valInds) %in% valInds))  stop("max(valInds) unnecessarily large")
     if(length(vals)    != max(valInds))    stop("mismatch between vals and valInds")
@@ -158,6 +159,9 @@ print.repSparse <- function(x, n = 6L, ...) {
 ##' @export
 update.repSparse <- function(object, newPars, ...) {
     if(missing(newPars)) newPars <- getInit(object)
+    if(length(newPars) != (np <- length(getInit(object))))
+        stop("newPars must have the same length as getInit(object), ",
+             "which in this case is ", np)
     object$vals <- object$trans(newPars)
     return(object)
 }
@@ -535,7 +539,9 @@ setIs("repSparseKr", "repSparse")
 ##' Construct functions for transforming a parameter vector to the
 ##' non-zero values of a repeated sparse matrix
 ##'
-##' Each \code{trans} function must take one vector argument called
+##' These functions return a 'trans function', for transforming a
+##' parameter vector to the non-zero values of a repeated sparse
+##' matrix.  Each trans function takes one vector argument called
 ##' \code{matPars}, which are the parameters of the matrix.  The
 ##' environment of these transformation functions must contain a
 ##' vector called \code{init}, which contains the initial values (aka,
@@ -548,65 +554,6 @@ mkIdentityTrans <- function(init) {
     local({
         init <- init
         function(matPars) matPars
-    })
-}
-
-##' @param Atrans,Btrans functions for transforming \code{A} and
-##' \code{B}
-##' @param ABtrans function to pass as \code{FUN} in
-##' \code{\link{outer}}
-##' @rdname mkTrans
-##' @export
-mkOuterTrans <- function(Atrans, Btrans, ABtrans) {
-    A <- Atrans(getInit(Atrans))
-    B <- Btrans(getInit(Btrans))
-
-                                        # check to see if one of the
-                                        # parameter sets is a single
-                                        # 1L, in which case just
-                                        # return an identity
-                                        # transformation (because an
-                                        # outer product involving a
-                                        # scalar of 1L is boring)
-    checkForBordom <- function(xx) (length(xx) == 1L) & (xx[1] == 1L)
-    ## if(checkForBordom(A) && !checkForBordom(B)) return(mkIdentityTrans(getInit(Btrans)))
-    ## if(!checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(getInit(Atrans)))
-    ## if(checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(1)) ## FIXME: too
-                                                                             ## presumptuous?
-
-                                        # construct the environment of
-                                        # the transformation function
-    local({
-        Atrans <- Atrans
-        Btrans <- Btrans
-        ABtrans <- ABtrans
-        Ainit <- getInit(Atrans)
-        Binit <- getInit(Btrans)
-        Aind <- seq_along(Ainit)
-        Bind <- seq_along(Binit) + length(Ainit)
-        init <- c(Ainit, Binit)
-        function(matPars) as.vector(outer(Atrans(matPars[Aind]),
-                                          Btrans(matPars[Bind]),
-                                          FUN = ABtrans))
-    })
-}
-
-##' @param transList list of transform functions
-##' @rdname mkTrans
-##' @export
-mkListTrans <- function(transList) {
-    local({
-        transList <- transList
-        parList <- lapply(transList, getInit)
-        indList <- lapply(parList, seq_along)
-        for(ii in 2:length(indList)) {
-            indList[[ii]] <- indList[[ii]] + max(0L, indList[[ii-1]])
-        }
-        init <- unlist(parList)
-        function(matPars) {
-            unlist(lapply(seq_along(indList),
-                          function(ii) transList[[ii]](matPars[indList[[ii]]])))
-        }
     })
 }
 
@@ -716,6 +663,67 @@ mkCorMatCholTrans <- function(init) {
         }
     })
 }
+
+
+##' @param Atrans,Btrans functions for transforming two repeated
+##' sparse matrices, \code{A} and \code{B} say
+##' @param ABtrans function to pass as \code{FUN} in
+##' \code{\link{outer}}
+##' @rdname mkTrans
+##' @export
+mkOuterTrans <- function(Atrans, Btrans, ABtrans) {
+    A <- Atrans(getInit(Atrans))
+    B <- Btrans(getInit(Btrans))
+
+                                        # check to see if one of the
+                                        # parameter sets is a single
+                                        # 1L, in which case just
+                                        # return an identity
+                                        # transformation (because an
+                                        # outer product involving a
+                                        # scalar of 1L is boring)
+    checkForBordom <- function(xx) (length(xx) == 1L) & (xx[1] == 1L)
+    ## if(checkForBordom(A) && !checkForBordom(B)) return(mkIdentityTrans(getInit(Btrans)))
+    ## if(!checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(getInit(Atrans)))
+    ## if(checkForBordom(A) && checkForBordom(B)) return(mkIdentityTrans(1)) ## FIXME: too
+                                                                             ## presumptuous?
+
+                                        # construct the environment of
+                                        # the transformation function
+    local({
+        Atrans <- Atrans
+        Btrans <- Btrans
+        ABtrans <- ABtrans
+        Ainit <- getInit(Atrans)
+        Binit <- getInit(Btrans)
+        Aind <- seq_along(Ainit)
+        Bind <- seq_along(Binit) + length(Ainit)
+        init <- c(Ainit, Binit)
+        function(matPars) as.vector(outer(Atrans(matPars[Aind]),
+                                          Btrans(matPars[Bind]),
+                                          FUN = ABtrans))
+    })
+}
+
+##' @param transList list of transformation functions
+##' @rdname mkTrans
+##' @export
+mkListTrans <- function(transList) {
+    local({
+        transList <- transList
+        parList <- lapply(transList, getInit)
+        indList <- lapply(parList, seq_along)
+        for(ii in 2:length(indList)) {
+            indList[[ii]] <- indList[[ii]] + max(0L, indList[[ii-1]])
+        }
+        init <- unlist(parList)
+        function(matPars) {
+            unlist(lapply(seq_along(indList),
+                          function(ii) transList[[ii]](matPars[indList[[ii]]])))
+        }
+    })
+}
+
 
 
 ## ----------------------------------------------------------------------
@@ -843,10 +851,65 @@ setIs("repSparseRep", "repSparse")
 
 
 ## ----------------------------------------------------------------------
+## Subsetting
+## ----------------------------------------------------------------------
+
+##' Subsetting repeated sparse matices
+##'
+##' @param x a \code{\link{repSparse-class}} object
+##' @param rowInds,colInds 1-based integer indices for rows and
+##' columns
+##' @param ... unused
+##' @rdname subset
+##' @export
+subset.repSparse <- function(x, rowInds = NULL, colInds = NULL, ...) {
+    if(!is.null(rowInds)) x <-   repSparseRowSubset(  x , rowInds)
+    if(!is.null(colInds)) x <- t(repSparseRowSubset(t(x), colInds))
+    return(x)
+}
+
+##' @rdname subset
+##' @export
+repSparseRowSubset <- function(x, rowInds) {
+
+    ri <- x$rowInds + 1L
+    ci <- x$colInds + 1L
+    vi <- x$valInds
+    va <- x$vals
+
+    coir <- countInRange(ri)
+    rowIndsCounts <- coir$counts[rowInds]
+    tripletsToKeep <- rowInds[rowInds %in% which(coir$counts > 0L)]
+    riFac <- factor(ri, levels = coir$vals)
+
+    riNew <- rep(seq_along(rowIndsCounts), rowIndsCounts)
+    ciNew <- unlist(split(ci, riFac)[tripletsToKeep])
+    viNew <- unlist(split(vi, riFac)[tripletsToKeep])
+
+    valsToKeep <- seq_along(va) %in% viNew
+    vaNew <- va[valsToKeep]
+    viNew <- flattenIntVec(viNew)
+
+    repSparse(riNew, ciNew, viNew, va,
+              Dim = c(length(rowInds), ncol(x)),
+              trans = X$trans)
+
+}
+
+
+
+## ----------------------------------------------------------------------
 ## Changing sparse formats
 ## ----------------------------------------------------------------------
 
 ##' Changing sparse format
+##'
+##' \code{point2ind} takes a vector of column pointers, as used in
+##' sparse matrices of class \code{\link{dgCMatrix}}, and returns a
+##' vector of column indices, as used in sparse matrices of class
+##' \code{\link{dgTMatrix}}.  \code{ind2point} is the approximate
+##' inverse of \code{point2ind}.  See \code{\link{sparseMatrix}} for
+##' more information about these conversions.
 ##'
 ##' @param point vector of column pointers
 ##' @rdname changeSparseFormat
