@@ -1,3 +1,5 @@
+## TOC:  grep -A 1 "## \-\-\-" * | grep "\-##" | grep repSparse
+
 ##' Repeated sparse matrices
 ##'
 ##' A sparse matrix class for matrices whose elements come from a set
@@ -56,16 +58,16 @@
 ##' repSparse(1:4, 4:1, rep(1:2, 2), c(-pi, pi))
 repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim,
                       sortFun = standardSort) {
-    if(length(valInds) == 0L) stop("length(valInds) can't be zero")
+    maxValInds <- ifelse(length(valInds), max(valInds), 0L)
     if(missing(Dim)) Dim <- c(max(rowInds), max(colInds))
-    if(!all(1:max(valInds) %in% valInds))  stop("max(valInds) unnecessarily large")
-    if(length(vals)    != max(valInds))    stop("mismatch between vals and valInds")
-    if(length(rowInds) != length(colInds)) stop("row and column index mismatch")
-    if(length(rowInds) != length(valInds)) stop("row and value index mismatch")
+    if(!all(seq_len(maxValInds) %in% valInds)) stop("max(valInds) unnecessarily large")
+    if(length(vals)    != maxValInds)          stop("mismatch between vals and valInds")
+    if(length(rowInds) != length(colInds))     stop("row and column index mismatch")
+    if(length(rowInds) != length(valInds))     stop("row and value index mismatch")
     if(missing(trans)) trans <- mkIdentityTrans(vals)
     sortFun(structure(list(rowInds = as.integer(rowInds - 1),
                            colInds = as.integer(colInds - 1),
-                           valInds = valInds,
+                           valInds = as.integer(valInds),
                            vals = vals,
                            trans = trans),
                       class = "repSparse",
@@ -868,31 +870,41 @@ subset.repSparse <- function(x, rowInds = NULL, colInds = NULL, ...) {
     return(x)
 }
 
+
 ##' @rdname subset
 ##' @export
 repSparseRowSubset <- function(x, rowInds) {
 
+                                        # save the original indices
     ri <- x$rowInds + 1L
     ci <- x$colInds + 1L
     vi <- x$valInds
-    va <- x$vals
 
+                                        # find out about the indices
     coir <- countInRange(ri)
     rowIndsCounts <- coir$counts[rowInds]
     tripletsToKeep <- rowInds[rowInds %in% which(coir$counts > 0L)]
     riFac <- factor(ri, levels = coir$vals)
 
-    riNew <- rep(seq_along(rowIndsCounts), rowIndsCounts)
-    ciNew <- unlist(split(ci, riFac)[tripletsToKeep])
-    viNew <- unlist(split(vi, riFac)[tripletsToKeep])
+                                        # modify the indices
+    x$rowInds <- as.integer(rep(seq_along(rowIndsCounts), rowIndsCounts) - 1L)
+    x$colInds <- as.integer(unlist(split(ci, riFac)[tripletsToKeep]) - 1L)
+    x$valInds <- as.integer(unlist(split(vi, riFac)[tripletsToKeep]))
+    attr(x, "Dim")[1] <- as.integer(length(rowInds))
 
-    valsToKeep <- seq_along(va) %in% viNew
-    vaNew <- va[valsToKeep]
-    viNew <- flattenIntVec(viNew)
+    return(x)
 
-    repSparse(riNew, ciNew, viNew, va,
-              Dim = c(length(rowInds), ncol(x)),
-              trans = X$trans)
+    ## FIXME: decided not to use this code to remove any possible
+    ## unused repeated values, mostly because it hurts my head to
+    ## think about how to deal with special parameterized matrics
+    
+    ## valsToKeep <- seq_along(va) %in% viNew
+    ## vaNew <- va[valsToKeep]
+    ## viNew <- flattenIntVec(viNew)
+
+    ## repSparse(riNew, ciNew, viNew, vaNew,
+    ##           Dim = c(length(rowInds), ncol(x)),
+    ##           trans = x$trans)
 
 }
 
