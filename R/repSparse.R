@@ -863,6 +863,32 @@ mkVarFixedTrans <- function(init, covariate, grpFac) {
 }
 
 
+##' @param matSize number of rows (or columns) of the matrix
+##' @rdname mkTrans
+##' @export
+mkCholCompSymmTrans <- function(init, matSize) {
+    local({
+        init <- init
+        matSize <- matSize
+        function(matPars) {
+            md0 <- matPars[1]
+            od0 <- matPars[2]
+            md <- numeric(matSize) # main diagonal
+            od <- numeric(matSize-1) # off diagonal
+            md[1] <- md0
+            od[1] <- od0/sqrt(md0)
+            for(i in 2:matSize) {
+                md[i] <- md[i-1] - od[i-1]^2
+                if(i == matSize) break
+                od[i] <- (od0 - md0 + md[i])/sqrt(md[i])
+            }
+            return(c(sqrt(md), od))
+        }
+    })
+}
+
+
+
 
 
 ## ----------------------------------------------------------------------
@@ -1460,22 +1486,15 @@ chol.repSparseOneOffDiag <- function(x, ...) {
 ##' t(chol(as.matrix(x)))
 chol.repSparseCompSymm <- function(x, ...) {
     n <- nrow(x)
-    md0 <- x$vals[1]
-    od0 <- x$vals[2]
-    md <- numeric(n) # main diagonal
-    od <- numeric(n-1) # off diagonal
-    md[1] <- md0
-    od[1] <- od0/sqrt(md0)
-    for(i in 2:n) {
-        md[i] <- md[i-1] - od[i-1]^2
-        if(i == n) break
-        od[i] <- (od0 - md0 + md[i])/sqrt(md[i])
-    }
-    sa <- seq_along(md)
+    trans <- mkCholCompSymmTrans(x$vals, n)
+    sa <- seq_len(n)
     ii <- rep.int(1:(n-1), (n-1):1)
     ri <- c(sa, unlist(lapply(2:n, ":", n)))
     ci <- c(sa, ii)
     vi <- c(sa, ii + n)
-    va <- c(sqrt(md), od)
-    repSparse(ri, ci, vi, va, Dim = dim(x))
+    repSparse(ri, ci, vi,
+              trans(x$vals), trans = trans,
+              Dim = dim(x))
+    ## FIXME:  set special class?
 }
+

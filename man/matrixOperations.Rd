@@ -64,6 +64,7 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}};
+  \code{\link{mkCholCompSymmTrans}},
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkConstVarCholTrans}},
   \code{\link{mkCorMatCholTrans}},
