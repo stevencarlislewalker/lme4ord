@@ -8,6 +8,9 @@
 \alias{mkListTrans}
 \alias{mkOuterTrans}
 \alias{mkVarExpTrans}
+\alias{mkVarFixedTrans}
+\alias{mkVarIdentTrans}
+\alias{mkVarPowerTrans}
 \title{Construct functions for transforming a parameter vector to the
 non-zero values of a repeated sparse matrix}
 \usage{
@@ -26,6 +29,12 @@ mkOuterTrans(Atrans, Btrans, ABtrans)
 mkListTrans(transList)
 
 mkVarExpTrans(init, covariate, grpFac)
+
+mkVarPowerTrans(init, covariate, grpFac)
+
+mkVarIdentTrans(init, covariate, grpFac)
+
+mkVarFixedTrans(init, covariate, grpFac)
 }
 \arguments{
 \item{init}{initial parameter values}
@@ -108,6 +117,7 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{repSparseIdent}},
   \code{\link{repSparseOneOffDiag}},
   \code{\link{repSparseSymm}}, \code{\link{repSparseTri}},
-  \code{\link{repSparseVarExp}}; \code{\link{repSparse}}
+  \code{\link{repSparseVarWithCovariate}};
+  \code{\link{repSparse}}
 }
 

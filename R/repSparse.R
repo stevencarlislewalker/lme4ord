@@ -822,6 +822,48 @@ mkVarExpTrans <- function(init, covariate, grpFac) {
     })
 }
 
+##' @rdname mkTrans
+##' @export
+mkVarPowerTrans <- function(init, covariate, grpFac) {
+    local({
+        init <- init
+        covariate <- covariate
+        grpFac <- grpFac
+        function(matPars) {
+            parsExpand <- matPars[as.numeric(grpFac)]
+            return(abs(covariate)^(2 * parsExpand))
+        }
+    })
+}
+
+
+##' @rdname mkTrans
+##' @export
+mkVarIdentTrans <- function(init, covariate, grpFac) {
+    local({
+        init <- init
+        grpFac <- grpFac
+        function(matPars) {
+            return(matPars[as.numeric(grpFac)])
+        }
+    })
+}
+
+
+##' @rdname mkTrans
+##' @export
+mkVarFixedTrans <- function(init, covariate, grpFac) {
+    local({
+        init <- init
+        covariate <- covariate
+        function(matPars) {
+            return(abs(covariate))
+        }
+    })
+}
+
+
+
 
 ## ----------------------------------------------------------------------
 ## Reset trans functions
@@ -1322,23 +1364,30 @@ setIs("repSparseCorMatChol", "repSparse")
 ##' @param grpFac a grouping factor (or anything coercible to
 ##' \code{numeric} really) with the number of levels equal to the
 ##' length of \code{varPars}
+##' @param mkTransFunc a function taking arguments \code{varPars},
+##' \code{covariate}, and \code{grpFac} for constructing a
+##' \code{trans} function (see \code{\link{mkVarExpTrans}} for an
+##' example).
 ##' @rdname specialRepSparse
 ##' @export
-repSparseVarExp <- function(varPars, covariate, grpFac) {
-    trans <- mkVarExpTrans(varPars, covariate, grpFac)
+repSparseVarWithCovariate <- function(varPars, covariate, grpFac,
+                                      mkTransFunc = mkVarExpTrans) {
+    trans <- mkTransFunc(varPars, covariate, grpFac)
     matSize <- length(covariate)
     vals <- trans(varPars)
     ans <- repSparse(1:matSize, 1:matSize, 1:matSize, vals,
                      trans = trans, Dim = c(matSize, matSize))
-    class(ans) <- c("repSparseVarExp", class(ans))
+    class(ans) <- c("repSparseVarWithCovariate", class(ans))
     return(ans)
 }
 
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @exportClass repSparseVarExp
-setOldClass("repSparseVarExp")
-setIs("repSparseVarExp", "repSparse")
+##' @exportClass repSparseVarWithCovariate
+setOldClass("repSparseVarWithCovariate")
+setIs("repSparseVarWithCovariate", "repSparse")
+
+
 
 
 ##' @param nrows,ncols numbers of rows and columns

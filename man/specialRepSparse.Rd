@@ -10,7 +10,7 @@
 \alias{repSparseOneOffDiag}
 \alias{repSparseSymm}
 \alias{repSparseTri}
-\alias{repSparseVarExp}
+\alias{repSparseVarWithCovariate}
 \title{Special sparse repeated matrices}
 \usage{
 repSparseBlank(nrow, ncol)
@@ -31,7 +31,8 @@ repSparseConstVarChol(sdVal, offDiagVals)
 
 repSparseCorMatChol(offDiagPars)
 
-repSparseVarExp(varPars, covariate, grpFac)
+repSparseVarWithCovariate(varPars, covariate, grpFac,
+  mkTransFunc = mkVarExpTrans)
 
 rRepSparse(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...)
 }
@@ -72,6 +73,11 @@ Cholesky factor}
 \item{grpFac}{a grouping factor (or anything coercible to
 \code{numeric} really) with the number of levels equal to the
 length of \code{varPars}}
+
+\item{mkTransFunc}{a function taking arguments \code{varPars},
+\code{covariate}, and \code{grpFac} for constructing a
+\code{trans} function (see \code{\link{mkVarExpTrans}} for an
+example).}
 
 \item{nrows,ncols}{numbers of rows and columns}
 
@@ -137,7 +143,9 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{mkCorMatCholTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
-  \code{\link{mkOuterTrans}}, \code{\link{mkVarExpTrans}};
-  \code{\link{repSparse}}
+  \code{\link{mkOuterTrans}}, \code{\link{mkVarExpTrans}},
+  \code{\link{mkVarFixedTrans}},
+  \code{\link{mkVarIdentTrans}},
+  \code{\link{mkVarPowerTrans}}; \code{\link{repSparse}}
 }
 

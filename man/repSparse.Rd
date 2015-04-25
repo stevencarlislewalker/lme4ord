@@ -120,8 +120,11 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{mkCorMatCholTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
-  \code{\link{mkOuterTrans}}, \code{\link{mkVarExpTrans}};
-  \code{\link{rRepSparse}}, \code{\link{repSparseBlank}},
+  \code{\link{mkOuterTrans}}, \code{\link{mkVarExpTrans}},
+  \code{\link{mkVarFixedTrans}},
+  \code{\link{mkVarIdentTrans}},
+  \code{\link{mkVarPowerTrans}}; \code{\link{rRepSparse}},
+  \code{\link{repSparseBlank}},
   \code{\link{repSparseCompSymm}},
   \code{\link{repSparseConstVarChol}},
   \code{\link{repSparseCorMatChol}},
@@ -129,6 +132,6 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{repSparseIdent}},
   \code{\link{repSparseOneOffDiag}},
   \code{\link{repSparseSymm}}, \code{\link{repSparseTri}},
-  \code{\link{repSparseVarExp}}
+  \code{\link{repSparseVarWithCovariate}}
 }
 
