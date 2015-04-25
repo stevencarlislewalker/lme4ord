@@ -42,15 +42,6 @@ update(XkronY, c(rnorm(5), rnorm(3)))
 
 X <- repSparseVarWithCovariate(rnorm(5), rnorm(20), gl(5, 4),
                                mkVarPowerTrans)
-image(X)
-
-pr <- rnorm(5)
-upX <- update(X, pr)
-image(upX)
-with(environment(upX$trans), {
-    cbind(covariate,
-          pr[as.numeric(grpFac)])
-})
 
 
                                         # compound symmetry
@@ -68,7 +59,11 @@ stopifnot(all.equal(as(chol(as.matrix(update(X, c(1.2, -0.2)), TRUE)), "dgCMatri
                                         # itself
 stopifnot(all.equal(as(chol(as.matrix(update(X, c(1.2, -0.2)), TRUE)), "dgCMatrix"),
                     as.matrix(update(t(chol(X)), c(1.2, -0.2)), TRUE)))
-
+                                        # check if chol updating works
+                                        # with kron
+Y <- repSparseTri(c(1, 2), -0.1)
+stopifnot(all.equal(update(kron(Y, chol(X)), c(2, -0.1, 4, 1, 3)),
+                    kron(update(Y, c(4, 1, 3)), update(chol(X), c(2, -0.1)))))
 
 
 
