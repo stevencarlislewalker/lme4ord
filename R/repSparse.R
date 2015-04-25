@@ -97,6 +97,16 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim,
 ##' \code{\link{repSparseDiag}}), and has several methods including
 ##' the following.
 ##'
+##' The \code{...} arguments for the \code{update.repSparse} method
+##' can be used to specify special parameter arguments, if
+##' \code{object$mkNewPars} exits (which is often the case for special
+##' matrices such as \code{\link{repSparseTri}}.  This is a more
+##' explicit approach and can therefore be more convenient than having
+##' to figure out what order the parameters should appear in
+##' \code{newPars}.  For example, \code{update(., diagVals = c(1, 1),
+##' offDiagVals = -0.2)} is more explicit than \code{update(. c(1,
+##' -0.2, 1))}.
+##'
 ##' @name repSparse-class
 ##' @rdname repSparse-class
 ##' @family repeated sparse matrix topics
@@ -160,6 +170,14 @@ print.repSparse <- function(x, n = 6L, ...) {
 ##' @rdname repSparse-class
 ##' @export
 update.repSparse <- function(object, newPars, ...) {
+    l... <- list(...)
+    if(length(l...) > 0L) {
+        mkNewPars <- object$mkNewPars
+        if(is.null(mkNewPars)) stop("special arguments given, ",
+                                    "but no function available for ",
+                                    "constructing a parameter vector")
+        newPars <- do.call(mkNewPars, l...)
+    }
     if(missing(newPars)) newPars <- getInit(object)
     if(length(newPars) != (np <- length(getInit(object))))
         stop("newPars must have the same length as getInit(object), ",
@@ -168,9 +186,57 @@ update.repSparse <- function(object, newPars, ...) {
     return(object)
 }
 
+.removeLatticeWhitespace <- function() {
+    lh <- lattice:::trellis.par.get("layout.heights")
+    lw <- lattice:::trellis.par.get("layout.widths")
+    lh[grep("padding", names(lh))] <- lw[grep("padding", names(lw))] <- 0
+    ac <- lattice:::trellis.par.get("axis.components")
+    for(i in 1:4) ac[[i]][c("pad1", "pad2")] <- 0
+    lattice:::trellis.par.set(layout.heights = lh, layout.widths = lw,
+                              axis.components = ac)
+}
+
+.xscaleComponents <- function(...) {
+    ans <- lattice:::xscale.components.default(...)
+    ans$bottom$labels$labels <- rep("", length(ans$bottom$labels$labels))
+    ans$bottom$ticks$tck <- 0
+    #ans$bottom$ticks$at <- c()
+    #ans$bottom$labels$check.overlap <- FALSE
+    #ans$top <- FALSE
+    ans
+}
+
+.yscaleComponents <- function(...) {
+    ans <- lattice:::yscale.components.default(...)
+    ans$left$labels$labels <- rep("", length(ans$left$labels$labels))
+    ans$left$ticks$tck <- 0
+    #ans$left$ticks$at <- c()
+    #ans$left$labels$check.overlap <- FALSE
+    #ans$right <- FALSE
+    ans
+}
+
+##' @param plain should a completely plain plot be used? (try and see)
 ##' @rdname repSparse-class
 ##' @export
-image.repSparse <- function(x, ...) image(as.matrix(x, sparse = TRUE))
+image.repSparse <- function(x, plain = FALSE, ...) {
+    ## not sure why i can't pass ... directly, but apparently this
+    ## doesn't work
+    x <- as.matrix(x, sparse = TRUE)
+    if(plain) {
+        .removeLatticeWhitespace()
+        image(x, sub = "", xlab = "", ylab = "", colorkey = FALSE,
+              xscale.components = .xscaleComponents,
+              yscale.components = .yscaleComponents)
+    } else {
+        do.call(image, c(list(x), list(...)))
+    }
+}
+
+##' @param y not used
+##' @rdname repSparse-class
+##' @export
+plot.repSparse <- function(x, y, plain = FALSE...) image(x, plain = plain, ...)
 
 ##' @rdname repSparse-class
 ##' @export
@@ -376,6 +442,16 @@ setAs("repSparse", "TsparseMatrix", def = repSparse2Tsparse)
 setAs("repSparse",     "dgTMatrix", def = repSparse2Tsparse)
 
 
+##' Get repetition pattern of a repeated sparse matrix
+##'
+##' @param object a \code{\link{repSparse}} object
+##' @export
+getRepPattern <- function(object) {
+    object$vals <- seq_along(object$vals)
+    return(as.matrix(object, sparse = TRUE))
+}
+
+
 ##' Make transformation function for column-compressed sparse matrix
 ##'
 ##' @param object repeated sparse matrix object
@@ -444,6 +520,7 @@ setInit.repSparse <- function(x, init, ...) assign("init", init, envir = environ
 ##' @rdname getInit
 ##' @export
 setInit.function <- function(x, init, ...) assign("init", init, envir = environment(x))
+
 
 
 ## ----------------------------------------------------------------------
@@ -542,10 +619,10 @@ setIs("repSparseKr", "repSparse")
 ##' non-zero values of a repeated sparse matrix
 ##'
 ##' These functions return a 'trans function', for transforming a
-##' parameter vector to the non-zero values of a repeated sparse
-##' matrix.  Each trans function takes one vector argument called
-##' \code{matPars}, which are the parameters of the matrix.  The
-##' environment of these transformation functions must contain a
+##' parameter vector to the repeated non-zero values of a repeated
+##' sparse matrix.  Each trans function takes one vector argument
+##' called \code{matPars}, which are the parameters of the matrix.
+##' The environment of these transformation functions must contain a
 ##' vector called \code{init}, which contains the initial values (aka,
 ##' the prototype) of \code{matPars}.
 ##'
@@ -726,6 +803,24 @@ mkListTrans <- function(transList) {
     })
 }
 
+
+##' @param covariate covariate
+##' @param grpFac a grouping factor (or anything coercible to
+##' \code{numeric} really) with the number of levels equal to the
+##' length of \code{init}
+##' @rdname mkTrans
+##' @export
+mkVarExpTrans <- function(init, covariate, grpFac) {
+    local({
+        init <- init
+        covariate <- covariate
+        grpFac <- grpFac
+        function(matPars) {
+            parsExpand <- matPars[as.numeric(grpFac)]
+            return(exp(2 * parsExpand * covariate))
+        }
+    })
+}
 
 
 ## ----------------------------------------------------------------------
@@ -970,8 +1065,130 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 ## repSparseIdent, rRepSparse
 ## ----------------------------------------------------------------------
 
-##' Special repeated sparse matrices
+
+
+##' Special sparse repeated matrices
 ##'
+##' @param nrow,ncol number of rows and columns
+##' @rdname specialRepSparse
+##' @export
+repSparseBlank <- function(nrow, ncol) {
+    repSparse(integer(0), integer(0), integer(0), numeric(0), Dim = c(nrow, ncol))    
+}
+
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @exportClass repSparseBlank
+setOldClass("repSparseBlank")
+setIs("repSparseBlank", "repSparse")
+
+
+##' @rdname specialRepSparse
+##' @export
+repSparseIdent <- function(matSize) {
+    ## Identity repeated sparse matrix
+    ans <- repSparseDiag(1, rep(1, matSize))
+    class(ans) <- c("repSparseIdent", class(ans))
+    return(ans)
+}
+
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @exportClass repSparseIdent
+setOldClass("repSparseIdent")
+setIs("repSparseIdent", "repSparse")
+
+
+
+##' @param vals vector of values
+##' @param valInds vector of value indices
+##' @rdname specialRepSparse
+##' @export
+repSparseDiag <- function(vals, valInds) {
+    ## Diagonal repeated sparse matrix
+    if(missing(valInds)) valInds <- seq_along(vals)
+    matSize <- length(valInds)
+    ans <- repSparse(1:matSize, 1:matSize, valInds, vals)
+    class(ans) <- c("repSparseDiag", class(ans))
+    return(ans)
+}
+
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @exportClass repSparseDiag
+setOldClass("repSparseDiag")
+setIs("repSparseDiag", "repSparse")
+
+
+
+##' @param diagVals values for the diagonal
+##' @param offDiagVals values for the off-diagonal
+##' @param low lower triangular?
+##' @rdname specialRepSparse
+##' @export
+repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
+    ## Triangular repeated sparse matrix
+    matSize <- length(diagVals)
+    diagIndices <- 1:matSize
+    rowIndices <- rep(diagIndices, diagIndices)
+    colIndices <- sequence(diagIndices)
+    diagIndices <- rowIndices == colIndices
+    vals <- numeric(length(diagIndices))
+    vals[ diagIndices] <- diagVals
+    vals[!diagIndices] <- offDiagVals
+    ans <- repSparse(rowIndices, colIndices, seq_along(vals), vals)
+    if(!low) ans <- t(ans)
+    class(ans) <- c("repSparseTri", class(ans))
+    ans$mkNewPars <- local({
+        diagIndices
+        function(diagVals, offDiagVals) {
+            vals <- numeric(length(diagIndices))
+            vals[ diagIndices] <- diagVals
+            vals[!diagIndices] <- offDiagVals
+            return(vals)
+        }
+    })  
+    return(ans)
+}
+
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @exportClass repSparseTri
+setOldClass("repSparseTri")
+setIs("repSparseTri", "repSparse")
+
+##' @rdname specialRepSparse
+##' @export
+repSparseSymm <- function(diagVals, offDiagVals) {
+    matSize <- length(diagVals)
+    diagIndices <- 1:matSize
+    repIndices <- rep(diagIndices, diagIndices)
+    seqIndices <- sequence(diagIndices)
+    diagIndices <- repIndices == seqIndices
+    rowIndices <- c(repIndices[ diagIndices],
+                    repIndices[!diagIndices],
+                    seqIndices[!diagIndices])
+    colIndices <- c(seqIndices[ diagIndices],
+                    seqIndices[!diagIndices],
+                    repIndices[!diagIndices])
+    vals <- numeric(length(rowIndices))
+    vals <- c(diagVals, offDiagVals)
+    valIndices <- c(1:matSize,
+                    matSize + (1:sum(!diagIndices)),
+                    matSize + (1:sum(!diagIndices)))
+    ans <- repSparse(rowIndices, colIndices, valIndices, vals)
+    class(ans) <- c("repSparseSymm", class(ans))
+    return(ans)
+}
+
+
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @exportClass repSparseSymm
+setOldClass("repSparseSymm")
+setIs("repSparseSymm", "repSparse")
+
+
 ##' @param diagVal value for the diagonal
 ##' @param offDiagVal value for the off-diagonal
 ##' @param matSize size of the resulting matrix
@@ -1000,6 +1217,7 @@ repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
 setOldClass("repSparseCompSymm")
 setIs("repSparseCompSymm", "repSparse")
 
+
 ##' @param offDiagInds indices for the two correlated objects
 ##' @rdname specialRepSparse
 ##' @export
@@ -1024,67 +1242,6 @@ setOldClass("repSparseOneOffDiag")
 setIs("repSparseOneOffDiag", "repSparse")
 
 
-##' @param vals vector of values
-##' @param valInds vector of value indices
-##' @rdname specialRepSparse
-##' @export
-repSparseDiag <- function(vals, valInds) {
-    ## Diagonal repeated sparse matrix
-    if(missing(valInds)) valInds <- seq_along(vals)
-    matSize <- length(valInds)
-    ans <- repSparse(1:matSize, 1:matSize, valInds, vals)
-    class(ans) <- c("repSparseDiag", class(ans))
-    return(ans)
-}
-
-##' @name repSparse-class
-##' @rdname repSparse-class
-##' @exportClass repSparseDiag
-setOldClass("repSparseDiag")
-setIs("repSparseDiag", "repSparse")
-
-##' @rdname specialRepSparse
-##' @export
-repSparseIdent <- function(matSize) {
-    ## Identity repeated sparse matrix
-    ans <- repSparseDiag(1, rep(1, matSize))
-    class(ans) <- c("repSparseIdent", class(ans))
-    return(ans)
-}
-
-##' @name repSparse-class
-##' @rdname repSparse-class
-##' @exportClass repSparseIdent
-setOldClass("repSparseIdent")
-setIs("repSparseIdent", "repSparse")
-
-
-##' @param diagVals values for the diagonal
-##' @param offDiagVals values for the off-diagonal
-##' @param low lower triangular?
-##' @rdname specialRepSparse
-##' @export
-repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
-    ## Triangular repeated sparse matrix
-    matSize <- length(diagVals)
-    diagIndices <- 1:matSize
-    rowIndices <- rep(diagIndices, diagIndices)
-    colIndices <- sequence(diagIndices)
-    diagIndices <- rowIndices == colIndices
-    vals <- numeric(length(diagIndices))
-    vals[ diagIndices] <- diagVals
-    vals[!diagIndices] <- offDiagVals
-    ans <- repSparse(rowIndices, colIndices, seq_along(vals), vals)
-    if(!low) ans <- t(ans)
-    class(ans) <- c("repSparseTri", class(ans))
-    return(ans)
-}
-
-##' @name repSparse-class
-##' @rdname repSparse-class
-##' @exportClass repSparseTri
-setOldClass("repSparseTri")
-setIs("repSparseTri", "repSparse")
 
 
 ##' @param sdVal standard deviation of crossproduct of the result
@@ -1157,6 +1314,31 @@ repSparseCorMatChol <- function(offDiagPars) {
 ##' @exportClass repSparseCorMatChol
 setOldClass("repSparseCorMatChol")
 setIs("repSparseCorMatChol", "repSparse")
+
+
+##' @param varPars vector of variance parameters (one per level of
+##' \code{grpFac})
+##' @param covariate covariate
+##' @param grpFac a grouping factor (or anything coercible to
+##' \code{numeric} really) with the number of levels equal to the
+##' length of \code{varPars}
+##' @rdname specialRepSparse
+##' @export
+repSparseVarExp <- function(varPars, covariate, grpFac) {
+    trans <- mkVarExpTrans(varPars, covariate, grpFac)
+    matSize <- length(covariate)
+    vals <- trans(varPars)
+    ans <- repSparse(1:matSize, 1:matSize, 1:matSize, vals,
+                     trans = trans, Dim = c(matSize, matSize))
+    class(ans) <- c("repSparseVarExp", class(ans))
+    return(ans)
+}
+
+##' @name repSparse-class
+##' @rdname repSparse-class
+##' @exportClass repSparseVarExp
+setOldClass("repSparseVarExp")
+setIs("repSparseVarExp", "repSparse")
 
 
 ##' @param nrows,ncols numbers of rows and columns

@@ -90,7 +90,11 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{chol.repSparseOneOffDiag}};
   \code{\link{dim.repSparse}},
   \code{\link{image.repSparse}},
+  \code{\link{plot.repSparse}},
   \code{\link{print.repSparse}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
@@ -116,13 +120,15 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{mkCorMatCholTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
-  \code{\link{mkOuterTrans}}; \code{\link{rRepSparse}},
+  \code{\link{mkOuterTrans}}, \code{\link{mkVarExpTrans}};
+  \code{\link{rRepSparse}}, \code{\link{repSparseBlank}},
   \code{\link{repSparseCompSymm}},
   \code{\link{repSparseConstVarChol}},
   \code{\link{repSparseCorMatChol}},
   \code{\link{repSparseDiag}},
   \code{\link{repSparseIdent}},
   \code{\link{repSparseOneOffDiag}},
-  \code{\link{repSparseTri}}
+  \code{\link{repSparseSymm}}, \code{\link{repSparseTri}},
+  \code{\link{repSparseVarExp}}
 }
 

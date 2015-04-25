@@ -7,6 +7,7 @@
 \alias{mkIdentityTrans}
 \alias{mkListTrans}
 \alias{mkOuterTrans}
+\alias{mkVarExpTrans}
 \title{Construct functions for transforming a parameter vector to the
 non-zero values of a repeated sparse matrix}
 \usage{
@@ -23,6 +24,8 @@ mkCorMatCholTrans(init)
 mkOuterTrans(Atrans, Btrans, ABtrans)
 
 mkListTrans(transList)
+
+mkVarExpTrans(init, covariate, grpFac)
 }
 \arguments{
 \item{init}{initial parameter values}
@@ -34,13 +37,19 @@ sparse matrices, \code{A} and \code{B} say}
 \code{\link{outer}}}
 
 \item{transList}{list of transformation functions}
+
+\item{covariate}{covariate}
+
+\item{grpFac}{a grouping factor (or anything coercible to
+\code{numeric} really) with the number of levels equal to the
+length of \code{init}}
 }
 \description{
 These functions return a 'trans function', for transforming a
-parameter vector to the non-zero values of a repeated sparse
-matrix.  Each trans function takes one vector argument called
-\code{matPars}, which are the parameters of the matrix.  The
-environment of these transformation functions must contain a
+parameter vector to the repeated non-zero values of a repeated
+sparse matrix.  Each trans function takes one vector argument
+called \code{matPars}, which are the parameters of the matrix.
+The environment of these transformation functions must contain a
 vector called \code{init}, which contains the initial values (aka,
 the prototype) of \code{matPars}.
 }
@@ -65,7 +74,11 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{chol.repSparseOneOffDiag}};
   \code{\link{dim.repSparse}},
   \code{\link{image.repSparse}},
+  \code{\link{plot.repSparse}},
   \code{\link{print.repSparse}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
@@ -87,12 +100,14 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
   \code{\link{kron}}; \code{\link{rRepSparse}},
+  \code{\link{repSparseBlank}},
   \code{\link{repSparseCompSymm}},
   \code{\link{repSparseConstVarChol}},
   \code{\link{repSparseCorMatChol}},
   \code{\link{repSparseDiag}},
   \code{\link{repSparseIdent}},
   \code{\link{repSparseOneOffDiag}},
-  \code{\link{repSparseTri}}; \code{\link{repSparse}}
+  \code{\link{repSparseSymm}}, \code{\link{repSparseTri}},
+  \code{\link{repSparseVarExp}}; \code{\link{repSparse}}
 }
 

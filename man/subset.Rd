@@ -19,4 +19,16 @@ columns}
 \description{
 Subsetting repeated sparse matices
 }
+\examples{
+set.seed(1)
+n <- 8; m <- 5
+X <- repSparse(1:m,
+               rep(1:2, c(2, m - 2)),
+               1:m, rep(1, m))
+fac <- factor(letters[rep(sample(m), n)])
+levels(fac) <- levels(fac)[sample(m)]
+Z <- subset(X, as.numeric(fac))
+image(update(Z, rnorm(m)))
+image(update(Z, rnorm(m)))
+}
 

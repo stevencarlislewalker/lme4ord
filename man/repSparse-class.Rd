@@ -2,6 +2,7 @@
 \name{repSparse-class}
 \alias{dim.repSparse}
 \alias{image.repSparse}
+\alias{plot.repSparse}
 \alias{print.repSparse}
 \alias{repSparse-class}
 \alias{t.repSparse}
@@ -12,7 +13,9 @@ print.repSparse(x, n = 6L, ...)
 
 update.repSparse(object, newPars, ...)
 
-image.repSparse(x, ...)
+image.repSparse(x, plain = FALSE, ...)
+
+\method{plot}{repSparse}(x, y, plain = FALSE...)
 
 t.repSparse(x)
 
@@ -28,6 +31,10 @@ t.repSparse(x)
 \item{object}{\code{repSparse} object}
 
 \item{newPars}{new parameter values}
+
+\item{plain}{should a completely plain plot be used? (try and see)}
+
+\item{y}{not used}
 }
 \description{
 An \code{S3} class for repeated sparse matrices, which are lists
@@ -45,6 +52,17 @@ Objects in this class can be constructed with
 \code{\link{repSparse}} (and, for example,
 \code{\link{repSparseDiag}}), and has several methods including
 the following.
+}
+\details{
+The \code{...} arguments for the \code{update.repSparse} method
+can be used to specify special parameter arguments, if
+\code{object$mkNewPars} exits (which is often the case for special
+matrices such as \code{\link{repSparseTri}}.  This is a more
+explicit approach and can therefore be more convenient than having
+to figure out what order the parameters should appear in
+\code{newPars}.  For example, \code{update(., diagVals = c(1, 1),
+offDiagVals = -0.2)} is more explicit than \code{update(. c(1,
+-0.2, 1))}.
 }
 \examples{
 (X <- repSparse(rowInds = 1:6,
@@ -88,13 +106,15 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{mkCorMatCholTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
-  \code{\link{mkOuterTrans}}; \code{\link{rRepSparse}},
+  \code{\link{mkOuterTrans}}, \code{\link{mkVarExpTrans}};
+  \code{\link{rRepSparse}}, \code{\link{repSparseBlank}},
   \code{\link{repSparseCompSymm}},
   \code{\link{repSparseConstVarChol}},
   \code{\link{repSparseCorMatChol}},
   \code{\link{repSparseDiag}},
   \code{\link{repSparseIdent}},
   \code{\link{repSparseOneOffDiag}},
-  \code{\link{repSparseTri}}; \code{\link{repSparse}}
+  \code{\link{repSparseSymm}}, \code{\link{repSparseTri}},
+  \code{\link{repSparseVarExp}}; \code{\link{repSparse}}
 }
 
