@@ -1005,6 +1005,7 @@ rep.repSparse <- function(x, times,
                      trans = x$trans,
                      Dim = c(rowMult, colMult) * dim(x))
     class(ans) <- c("repSparseRep", class(ans))
+    ans$mkNewPars <- x$mkNewPars
     return(ans)
 }
 
@@ -1141,7 +1142,7 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 ##' @rdname specialRepSparse
 ##' @export
 repSparseBlank <- function(nrow, ncol) {
-    repSparse(integer(0), integer(0), integer(0), numeric(0), Dim = c(nrow, ncol))    
+    repSparse(integer(0), integer(0), integer(0), numeric(0), Dim = c(nrow, ncol))
 }
 
 ##' @name repSparse-class
