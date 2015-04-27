@@ -4,6 +4,7 @@
 \alias{as.data.table.repSparse}
 \alias{as.matrix.repSparse}
 \alias{as.repSparse}
+\alias{as.repSparse.dist}
 \alias{as.repSparse.dsparseMatrix}
 \alias{as.repSparse.factor}
 \alias{as.repSparse.matrix}
@@ -24,6 +25,8 @@ as.repSparse(x, ...)
 \method{as.repSparse}{matrix}(x, ...)
 
 \method{as.repSparse}{factor}(x, ...)
+
+\method{as.repSparse}{dist}(x, ...)
 
 \method{as.data.frame}{repSparse}(x, ...)
 
