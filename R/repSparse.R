@@ -153,9 +153,10 @@ print.repSparse <- function(x, n = 6L, ...) {
     cat("repeated values:\n")
     print(headVals)
     if(!parsEqualRepVals) {
+        cat("\n")
         if(reportTruncPars) cat("first", n, "")
         cat("initial parameters:\n")
-        print(getInit(x))
+        print(head(getInit(x), n))
     }
     cat("\n")
     if(reportTruncInds) cat("first", n, "")
@@ -165,6 +166,7 @@ print.repSparse <- function(x, n = 6L, ...) {
         cat("\nspecial repeated sparse matrix, inheriting from:\n")
         print(class(x))
     }
+    cat("\n")
 }
 
 ##' @param object \code{repSparse} object
@@ -1348,7 +1350,9 @@ setIs("repSparseCol", "repSparse")
 ##' (xInd <- repSparseInd(rep(1:3, c(2, 2, 1))))
 repSparseInd <- function(fac) {
     ## MATNAME: Indicator
-    as.repSparse(as.factor(fac))
+    ans <- as.repSparse(as.factor(fac))
+    class(ans) <- c("repSparseInd", class(ans))
+    return(ans)
 }
 
 ##' @name repSparse-class
