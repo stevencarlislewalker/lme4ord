@@ -30,9 +30,10 @@
 ##' @importFrom lme4 GHrule
 ##' @export
 mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
-                                 offset, etastart,
+                                 weights, offset, etastart,
                                  initPars, parInds,
                                  mapToCovFact, mapToModMat, mapToWeights,
+                                 devfunEnv,
                                  family = binomial(),
                                  tolPwrss = 1e-6,
                                  verbose = 0L, pureR = FALSE,
@@ -49,42 +50,70 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
         theta <- initPars[parInds$covar]
     }
 
-    devfun <- local({
-        Lind <- Lind
-        initWeights <- mapToWeights(initPars[parInds$weigh])
-        pp <- lme4:::merPredD$new(X = X, Zt = Zt, Lambdat = Lambdat, Lind = Lind,
-                           theta = as.double(theta), n = nrow(X))
-        resp <- lme4:::glmResp$new(y = y, family = family,
-                                   weights = initWeights)
-        resp$updateMu(etastart)
+    if(missing(devfunEnv)) devfunEnv <- new.env()
+
+    devfunList <- list(Lind = Lind,
+                       pp = lme4:::merPredD$new(
+                           X = X, Zt = Zt,
+                           Lambdat = Lambdat,
+                           Lind = Lind,
+                           theta = as.double(theta),
+                           n = nrow(X)),
+                       resp = lme4:::glmResp$new(
+                           y = y, family = family,
+                           weights = weights),
+                       lp0 = etastart, # pp$linPred(1)
+                       baseOffset = offset,
+                       tolPwrss = tolPwrss,
+                       GQmat = GHrule(1), ## always Laplace approx
+                       compDev = TRUE,
+                       fac = NULL,
+                       verbose = verbose,
+                       setCovar = !is.null(parInds$covar),
+                       setLoads = !is.null(parInds$loads),
+                       setWeigh = !is.null(parInds$weigh),
+                       setFixef = !is.null(parInds$fixef))
+
+    ## resp$updateMu(etastart)
+    ## resp$updateWts()
+    
+    ## devfun <- local({
+        ## Lind <- Lind
+        ## ## initWeights <- mapToWeights(initPars[parInds$weigh])
+        ## pp <- lme4:::merPredD$new(X = X, Zt = Zt, Lambdat = Lambdat, Lind = Lind,
+        ##                           theta = as.double(theta), n = nrow(X))
+        ## resp <- lme4:::glmResp$new(y = y, family = family,
+        ##                            weights = weights)
+        ## resp$updateMu(etastart)
+        ## resp$updateWts()
+        ## lp0 <- etastart # pp$linPred(1)
+        ## baseOffset <- offset
+        ## tolPwrss <- tolPwrss
+        ## GQmat <- GHrule(1) ## always Laplace approx
+        ## compDev <- TRUE
+        ## fac <- NULL
+        ## verbose <- verbose
+        ## setCovar <- !is.null(parInds$covar)
+        ## setLoads <- !is.null(parInds$loads)
+        ## setWeigh <- !is.null(parInds$weigh)
+        ## setFixef <- !is.null(parInds$fixef)
+    devfun <- function(pars) {
+        resp$setOffset(baseOffset)
+        resp$updateMu(lp0)
+        if(setCovar) pp$setTheta(as.double(mapToCovFact(pars[parInds$covar])))
+        if(setLoads) pp$setZt(as.double(mapToModMat(pars[parInds$loads])))
+        if(setWeigh) resp$setWeights(as.double(mapToWeights(pars[parInds$weigh])))
+        spars <- as.numeric(pars[parInds$fixef])
+        offset <- if (length(spars)==0) baseOffset else baseOffset + pp$X %*% spars
+        resp$setOffset(offset)
+        p <- lme4:::glmerPwrssUpdate(pp, resp, tolPwrss, GQmat,
+                                     compDev, fac, verbose)
         resp$updateWts()
-        lp0 <- etastart # pp$linPred(1)
-        baseOffset <- offset
-        tolPwrss <- tolPwrss
-        GQmat <- GHrule(1) ## always Laplace approx
-        compDev <- TRUE
-        fac <- NULL
-        verbose <- verbose
-        setCovar <- !is.null(parInds$covar)
-        setLoads <- !is.null(parInds$loads)
-        setWeigh <- !is.null(parInds$weigh)
-        setFixef <- !is.null(parInds$fixef)
-        function(pars) {
-            resp$setOffset(baseOffset)
-            resp$updateMu(lp0)
-            if(setCovar) pp$setTheta(as.double(mapToCovFact(pars[parInds$covar])))
-            if(setLoads) pp$setZt(as.double(mapToModMat(pars[parInds$loads])))
-            if(setWeigh) resp$setWeights(as.double(mapToWeights(pars[parInds$weigh])))
-            spars <- as.numeric(pars[parInds$fixef])
-            offset <- if (length(spars)==0) baseOffset else baseOffset + pp$X %*% spars
-            resp$setOffset(offset)
-            p <- lme4:::glmerPwrssUpdate(pp, resp, tolPwrss, GQmat,
-                                         compDev, fac, verbose)
-            resp$updateWts()
-            p
-        }
-    })
-    rho <- environment(devfun)
+        p
+    }
+    environment(devfun) <- list2env(devfunList, envir = devfunEnv)
+    ## })
+    ## rho <- environment(devfun)
     ## if(rho$setCovar) {
     ##     envCovFact <- new.env(parent = rho)
     ##     nms <- ls(environment(mapToCovFact))
@@ -92,9 +121,14 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     ##     environment(mapToCovFact) <- envCovFact
     ##     rho$mapToCovFact <- mapToCovFact
     ## }
-    rho$mapToCovFact <- mapToCovFact
-    rho$mapToModMat <- mapToModMat
-    rho$parInds <- parInds
+    devfunEnv$mapToCovFact <- mapToCovFact
+    devfunEnv$mapToModMat <- mapToModMat
+    devfunEnv$parInds <- parInds
+
+    devfunEnv$resp$updateMu(etastart)
+    devfunEnv$resp$updateWts()
+
+    devfun(initPars)
 
     return(devfun)
 }
