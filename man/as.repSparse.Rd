@@ -4,6 +4,7 @@
 \alias{as.data.table.repSparse}
 \alias{as.matrix.repSparse}
 \alias{as.repSparse}
+\alias{as.repSparse.dCHMsimpl}
 \alias{as.repSparse.dist}
 \alias{as.repSparse.dsparseMatrix}
 \alias{as.repSparse.factor}
@@ -27,6 +28,8 @@ as.repSparse(x, ...)
 \method{as.repSparse}{factor}(x, ...)
 
 \method{as.repSparse}{dist}(x, ...)
+
+\method{as.repSparse}{dCHMsimpl}(x, ...)
 
 \method{as.data.frame}{repSparse}(x, ...)
 
@@ -76,10 +79,15 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{chol.repSparse}},
   \code{\link{chol.repSparseCompSymm}},
   \code{\link{chol.repSparseOneOffDiag}};
+  \code{\link{diag.repSparse}},
   \code{\link{dim.repSparse}},
   \code{\link{image.repSparse}},
   \code{\link{plot.repSparse}},
   \code{\link{print.repSparse}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
@@ -109,17 +117,22 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{mkCorMatCholTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
-  \code{\link{mkOuterTrans}}, \code{\link{mkVarExpTrans}},
+  \code{\link{mkOuterTrans}}, \code{\link{mkTrans}},
+  \code{\link{mkTransExpChol}},
+  \code{\link{mkVarExpTrans}},
   \code{\link{mkVarFixedTrans}},
   \code{\link{mkVarIdentTrans}},
-  \code{\link{mkVarPowerTrans}}; \code{\link{rRepSparse}},
-  \code{\link{repSparseBlank}},
+  \code{\link{mkVarPowerTrans}};
+  \code{\link{repSparseBlank}}, \code{\link{repSparseCol}},
   \code{\link{repSparseCompSymm}},
   \code{\link{repSparseConstVarChol}},
   \code{\link{repSparseCorMatChol}},
   \code{\link{repSparseDiag}},
-  \code{\link{repSparseIdent}},
+  \code{\link{repSparseExpChol}},
+  \code{\link{repSparseIdent}}, \code{\link{repSparseInd}},
   \code{\link{repSparseOneOffDiag}},
+  \code{\link{repSparseOnes}},
+  \code{\link{repSparseSpecial}},
   \code{\link{repSparseSymm}}, \code{\link{repSparseTri}},
   \code{\link{repSparseVarWithCovariate}};
   \code{\link{repSparse}}

@@ -10,7 +10,8 @@ bind(..., type = c("row", "col", "diag"))
 
 .bind(mats, type = c("row", "col", "diag"))
 
-\method{rep}{repSparse}(x, times, type = c("row", "col", "diag"), ...)
+\method{rep}{repSparse}(x, times, type = c("row", "col", "diag"),
+  repVals = FALSE, ...)
 }
 \arguments{
 \item{...}{list of \code{repSparse} objects (but not used for
@@ -23,6 +24,12 @@ bind(..., type = c("row", "col", "diag"))
 \item{x}{\code{repSparse} object}
 
 \item{times}{like \code{rep}}
+
+\item{repVals}{should the unique values (\code{x$vals}) be
+repeated too?  in other words, do you want to have each replicate
+to have guaranteed identical values (\code{FALSE}, the default),
+or do you want each replicate to be settable to it's own values
+(\code{TRUE})?}
 }
 \description{
 Row, column, and block-diagonal binding for repeated sparse
@@ -30,11 +37,28 @@ matrices
 
 Repeat repeated sparse matrix
 }
+\examples{
+set.seed(1)
+X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
+Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
+(bindDiag <- bind(X, Y, Z, type = "diag"))
+(bindRow  <- bind(X, Y, Z, type = "row"))
+(bindCol  <- bind(X, Y, Z, type = "col"))
+set.seed(1)
+X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
+Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
+(repDiag <- rep(X, 3, type = "diag"))
+(repRow  <- rep(X, 3, type = "row"))
+(repCol  <- rep(X, 3, type = "col"))
+}
 \seealso{
 Other repeated.sparse.matrix.topics: \code{\link{as.data.frame.repSparse}},
   \code{\link{as.data.table.repSparse}},
   \code{\link{as.matrix.repSparse}},
   \code{\link{as.repSparse}},
+  \code{\link{as.repSparse.dCHMsimpl}},
   \code{\link{as.repSparse.dist}},
   \code{\link{as.repSparse.dsparseMatrix}},
   \code{\link{as.repSparse.factor}},
@@ -48,10 +72,15 @@ Other repeated.sparse.matrix.topics: \code{\link{as.data.frame.repSparse}},
   \code{\link{chol.repSparse}},
   \code{\link{chol.repSparseCompSymm}},
   \code{\link{chol.repSparseOneOffDiag}};
+  \code{\link{diag.repSparse}},
   \code{\link{dim.repSparse}},
   \code{\link{image.repSparse}},
   \code{\link{plot.repSparse}},
   \code{\link{print.repSparse}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
@@ -81,17 +110,22 @@ Other repeated.sparse.matrix.topics: \code{\link{as.data.frame.repSparse}},
   \code{\link{mkCorMatCholTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
-  \code{\link{mkOuterTrans}}, \code{\link{mkVarExpTrans}},
+  \code{\link{mkOuterTrans}}, \code{\link{mkTrans}},
+  \code{\link{mkTransExpChol}},
+  \code{\link{mkVarExpTrans}},
   \code{\link{mkVarFixedTrans}},
   \code{\link{mkVarIdentTrans}},
-  \code{\link{mkVarPowerTrans}}; \code{\link{rRepSparse}},
-  \code{\link{repSparseBlank}},
+  \code{\link{mkVarPowerTrans}};
+  \code{\link{repSparseBlank}}, \code{\link{repSparseCol}},
   \code{\link{repSparseCompSymm}},
   \code{\link{repSparseConstVarChol}},
   \code{\link{repSparseCorMatChol}},
   \code{\link{repSparseDiag}},
-  \code{\link{repSparseIdent}},
+  \code{\link{repSparseExpChol}},
+  \code{\link{repSparseIdent}}, \code{\link{repSparseInd}},
   \code{\link{repSparseOneOffDiag}},
+  \code{\link{repSparseOnes}},
+  \code{\link{repSparseSpecial}},
   \code{\link{repSparseSymm}}, \code{\link{repSparseTri}},
   \code{\link{repSparseVarWithCovariate}};
   \code{\link{repSparse}}

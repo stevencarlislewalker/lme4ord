@@ -33,42 +33,54 @@ findPathFromNode <- function(node, edge) {
     if(is.na(newNode)) return(node)
     findPathFromNode(c(node, newNode), edge)
 }
+
 ##' @rdname edgeTipIndicator
 ##' @param scale scaling factor for edges (i.e., vector of branch lengths)
 ##' @export
-findEdgesFromPath <- function(path, edge, scale=1) {
+findEdgesFromPath <- function(path, edge, scale = 1) {
     col1 <- edge[, 1] %in% path[-1           ]
     col2 <- edge[, 2] %in% path[-length(path)]
     (col1 & col2)*scale
 }
+
 ##' @param ... not used
 ##' @rdname edgeTipIndicator
 ##' @export
 edgeTipIndicator <- function(object, ...) {
     UseMethod("edgeTipIndicator")
 }
+
 ##' @rdname edgeTipIndicator
 ##' @export
 edgeTipIndicator.default <- function(object, ...) {
     edgeTipIndicator(as.matrix(object))
 }
+
 ##' @param ntip number of tips
 ##' @rdname edgeTipIndicator
 ##' @export
-edgeTipIndicator.matrix <- function(object, ntip, scale = 1, ...) {
+edgeTipIndicator.matrix <- function(object, ntip, scale = NULL, ...) {
     if(ncol(object) != 2L) stop("not an edge matrix")
-    sapply(lapply(1:ntip, findPathFromNode, object),
-           findEdgesFromPath, object)
+    ans <- sapply(lapply(1:ntip, findPathFromNode, object),
+                  findEdgesFromPath, object)
+    attr(ans, "scale") <- scale
+    return(ans)
 }
+
 ##' @rdname edgeTipIndicator
 ##' @export
 edgeTipIndicator.phylo <- function(object, ...) {
-    scl <- ifelse(is.null(object$edge.length), 1, object$edge.length)
+    scl <- if(is.null(object$edge.length)) NULL else object$edge.length
     ans <- edgeTipIndicator(object$edge, Ntip(object), scl)
     colnames(ans) <- object$tip.label
     return(ans)
 }
 
+##' @rdname edgeTipIndicator
+##' @export
+edgeTipIndicator.hclust <- function(object, ...) {
+    edgeTipIndicator(as.phylo(object))
+}
 
 ##' @rdname edgeTipIndicator
 ##' @seealso \code{\link{reorder.phylo}}

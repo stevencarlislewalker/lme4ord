@@ -15,4 +15,5 @@ Depends:
     ape,
     reshape2
 Imports:
-    Matrix
+    Matrix,
+    grid

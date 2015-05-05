@@ -18,9 +18,10 @@ generalGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
                                  X = pForm$fixed,
                                  Zt = as(pForm$Zt, "dgCMatrix"),
                                  Lambdat = as(pForm$Lambdat, "dgCMatrix"),
-                                 ## FIXME: allow user-specified weights and offsets
+                                 ## FIXME: allow user-specified weights, offsets, and etastart
                                  weights = rep(1, length(pForm$response)),
                                  offset = rep(0, length(pForm$response)),
+                                 etastart = rep(0, length(pForm$response)),
                                  initPars = pForm$initPars,
                                  parInds = pForm$parInds,
                                  mapToCovFact = mkSparseTrans(pForm$Lambdat),

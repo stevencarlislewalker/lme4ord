@@ -3,9 +3,9 @@
 \alias{mkGeneralGlmerDevfun}
 \title{Make a general (Laplace) glmer deviance function}
 \usage{
-mkGeneralGlmerDevfun(y, X, Zt, Lambdat, weights, offset, initPars, parInds,
-  mapToCovFact, mapToModMat, family = binomial(), tolPwrss = 1e-06,
-  verbose = 0L, pureR = FALSE, Lind = NULL)
+mkGeneralGlmerDevfun(y, X, Zt, Lambdat, offset, etastart, initPars, parInds,
+  mapToCovFact, mapToModMat, mapToWeights, family = binomial(),
+  tolPwrss = 1e-06, verbose = 0L, pureR = FALSE, Lind = NULL)
 }
 \arguments{
 \item{y}{response vector}

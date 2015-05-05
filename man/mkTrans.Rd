@@ -8,6 +8,8 @@
 \alias{mkIdentityTrans}
 \alias{mkListTrans}
 \alias{mkOuterTrans}
+\alias{mkTrans}
+\alias{mkTransExpChol}
 \alias{mkVarExpTrans}
 \alias{mkVarFixedTrans}
 \alias{mkVarIdentTrans}
@@ -24,6 +26,8 @@ mkGenCholInPlaceTrans(init)
 mkConstVarCholTrans(init)
 
 mkCorMatCholTrans(init)
+
+mkTransExpChol(init, cholObj, symmObj, vecDist)
 
 mkOuterTrans(Atrans, Btrans, ABtrans)
 
@@ -74,6 +78,7 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{as.data.table.repSparse}},
   \code{\link{as.matrix.repSparse}},
   \code{\link{as.repSparse}},
+  \code{\link{as.repSparse.dCHMsimpl}},
   \code{\link{as.repSparse.dist}},
   \code{\link{as.repSparse.dsparseMatrix}},
   \code{\link{as.repSparse.factor}},
@@ -87,10 +92,15 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{chol.repSparse}},
   \code{\link{chol.repSparseCompSymm}},
   \code{\link{chol.repSparseOneOffDiag}};
+  \code{\link{diag.repSparse}},
   \code{\link{dim.repSparse}},
   \code{\link{image.repSparse}},
   \code{\link{plot.repSparse}},
   \code{\link{print.repSparse}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
+  \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
   \code{\link{repSparse-class}},
@@ -114,14 +124,17 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}; \code{\link{rRepSparse}},
-  \code{\link{repSparseBlank}},
+  \code{\link{kron}}; \code{\link{repSparseBlank}},
+  \code{\link{repSparseCol}},
   \code{\link{repSparseCompSymm}},
   \code{\link{repSparseConstVarChol}},
   \code{\link{repSparseCorMatChol}},
   \code{\link{repSparseDiag}},
-  \code{\link{repSparseIdent}},
+  \code{\link{repSparseExpChol}},
+  \code{\link{repSparseIdent}}, \code{\link{repSparseInd}},
   \code{\link{repSparseOneOffDiag}},
+  \code{\link{repSparseOnes}},
+  \code{\link{repSparseSpecial}},
   \code{\link{repSparseSymm}}, \code{\link{repSparseTri}},
   \code{\link{repSparseVarWithCovariate}};
   \code{\link{repSparse}}
