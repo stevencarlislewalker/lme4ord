@@ -31,14 +31,18 @@
 ##' @export
 mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                                  weights, offset, etastart,
-                                 initPars, parInds,
-                                 mapToCovFact, mapToModMat, mapToWeights,
                                  devfunEnv,
+                                 initPars, parInds,
+                                 mapToCovFact = NULL,
+                                 mapToModMat = NULL,
+                                 mapToWeights = NULL,
                                  family = binomial(),
                                  tolPwrss = 1e-6,
                                  verbose = 0L, pureR = FALSE,
                                  Lind = NULL) {
+    
     if(pureR) {
+        stop("pure R implementation not currently working")
         return(pirls(X, y, Zt, Lambdat, mapToCovFact,
                      initPars, weights, offset,
                      family = family, tol = tolPwrss))
@@ -49,6 +53,23 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     } else {
         theta <- initPars[parInds$covar]
     }
+
+                                        # handle potential missing
+                                        # arguments
+    if(missing(parInds)) {
+        if(is.recursive(initPars)) {
+            parInds <- mkParInds(initPars)
+        } else if(is.relistable(initPars)) {
+            parInds <- mkParInds(relist(initPars))
+        } else {
+            stop("can't make parInds, please supply it")
+        }
+    }
+    initPars <- unlist(initPars)
+
+    if(missing(weights)) weights <- rep(1, length(y))
+
+    if(missing(offset)) offset <- rep(0, length(y))
 
     if(missing(devfunEnv)) devfunEnv <- new.env()
 
@@ -72,31 +93,12 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                        setCovar = !is.null(parInds$covar),
                        setLoads = !is.null(parInds$loads),
                        setWeigh = !is.null(parInds$weigh),
-                       setFixef = !is.null(parInds$fixef))
+                       setFixef = !is.null(parInds$fixef),
+                       mapToCovFact = mapToCovFact,
+                       mapToModMat  = mapToModMat,
+                       mapToModMat  = mapToWeights,
+                       parInds = parInds)
 
-    ## resp$updateMu(etastart)
-    ## resp$updateWts()
-    
-    ## devfun <- local({
-        ## Lind <- Lind
-        ## ## initWeights <- mapToWeights(initPars[parInds$weigh])
-        ## pp <- lme4:::merPredD$new(X = X, Zt = Zt, Lambdat = Lambdat, Lind = Lind,
-        ##                           theta = as.double(theta), n = nrow(X))
-        ## resp <- lme4:::glmResp$new(y = y, family = family,
-        ##                            weights = weights)
-        ## resp$updateMu(etastart)
-        ## resp$updateWts()
-        ## lp0 <- etastart # pp$linPred(1)
-        ## baseOffset <- offset
-        ## tolPwrss <- tolPwrss
-        ## GQmat <- GHrule(1) ## always Laplace approx
-        ## compDev <- TRUE
-        ## fac <- NULL
-        ## verbose <- verbose
-        ## setCovar <- !is.null(parInds$covar)
-        ## setLoads <- !is.null(parInds$loads)
-        ## setWeigh <- !is.null(parInds$weigh)
-        ## setFixef <- !is.null(parInds$fixef)
     devfun <- function(pars) {
         resp$setOffset(baseOffset)
         resp$updateMu(lp0)
@@ -111,23 +113,12 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
         resp$updateWts()
         p
     }
+    
     environment(devfun) <- list2env(devfunList, envir = devfunEnv)
-    ## })
-    ## rho <- environment(devfun)
-    ## if(rho$setCovar) {
-    ##     envCovFact <- new.env(parent = rho)
-    ##     nms <- ls(environment(mapToCovFact))
-    ##     for(i in nms) envCovFact[[i]] <- environment(mapToCovFact)[[i]]
-    ##     environment(mapToCovFact) <- envCovFact
-    ##     rho$mapToCovFact <- mapToCovFact
-    ## }
-    devfunEnv$mapToCovFact <- mapToCovFact
-    devfunEnv$mapToModMat <- mapToModMat
-    devfunEnv$parInds <- parInds
 
+                                        # initialize weights etc ...
     devfunEnv$resp$updateMu(etastart)
     devfunEnv$resp$updateWts()
-
     devfun(initPars)
 
     return(devfun)
@@ -152,3 +143,17 @@ pars <- function(object, ...) UseMethod("pars")
 .fixef <- function(pars, ind) pars[ind$fixef]
 .loads <- function(pars, ind) pars[ind$loads]
 
+##' @param parList named list of parameters with possible names:
+##' (\code{covar}, \code{fixef}, \code{weigh}, \code{loads})
+##' @rdname pars
+##' @export
+mkParInds <- function(parList) {
+    if(!is.recursive(parList)) stop("parList must be a list")
+    if(length(parList) == 1L) return(lapply(parList, seq_along))
+    parInds <- mapply(`+`,
+                      lapply(parList, seq_along),
+                      c(0, cumsum(lapply(parList, length))[-length(parList)]))
+    names(parInds) <- names(parList) ## too paranoid?
+    keepers <- sapply(parInds, length) > 0
+    parInds[keepers]
+}

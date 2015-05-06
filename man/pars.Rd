@@ -6,6 +6,7 @@
 \alias{fixef.glmerc}
 \alias{loads}
 \alias{loads.glmerc}
+\alias{mkParInds}
 \alias{pars}
 \alias{pars.glmerc}
 \title{Get parameters}
@@ -25,11 +26,16 @@ covar(object, ...)
 loads(object, ...)
 
 pars(object, ...)
+
+mkParInds(parList)
 }
 \arguments{
 \item{...}{not used}
 
 \item{object}{\code{lme4ord} fitted model object}
+
+\item{parList}{named list of parameters with possible names:
+(\code{covar}, \code{fixef}, \code{weigh}, \code{loads})}
 }
 \description{
 Get parameters

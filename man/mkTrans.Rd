@@ -4,12 +4,13 @@
 \alias{mkCholOneOffDiagTrans}
 \alias{mkConstVarCholTrans}
 \alias{mkCorMatCholTrans}
+\alias{mkExpCholTrans}
+\alias{mkFlexObsLevelTrans}
 \alias{mkGenCholInPlaceTrans}
 \alias{mkIdentityTrans}
 \alias{mkListTrans}
 \alias{mkOuterTrans}
 \alias{mkTrans}
-\alias{mkTransExpChol}
 \alias{mkVarExpTrans}
 \alias{mkVarFixedTrans}
 \alias{mkVarIdentTrans}
@@ -27,7 +28,9 @@ mkConstVarCholTrans(init)
 
 mkCorMatCholTrans(init)
 
-mkTransExpChol(init, cholObj, symmObj, vecDist)
+mkExpCholTrans(init, cholObj, symmObj, vecDist)
+
+mkFlexObsLevelTrans(init, defaultOutput, indsObsLevel, devfunEnv)
 
 mkOuterTrans(Atrans, Btrans, ABtrans)
 
@@ -45,6 +48,14 @@ mkCholCompSymmTrans(init, matSize)
 }
 \arguments{
 \item{init}{initial parameter values}
+
+\item{defaultOutput}{default vector for observation-level standard
+deviations}
+
+\item{indsObsLevel}{indices pointing to the observation level
+random effects}
+
+\item{devfunEnv}{environment of the deviance function}
 
 \item{Atrans,Btrans}{functions for transforming two repeated
 sparse matrices, \code{A} and \code{B} say}

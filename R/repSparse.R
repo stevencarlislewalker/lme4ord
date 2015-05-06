@@ -829,7 +829,7 @@ mkCorMatCholTrans <- function(init) {
 
 ##' @rdname mkTrans
 ##' @export
-mkTransExpChol <- function(init, cholObj, symmObj, vecDist) {
+mkExpCholTrans <- function(init, cholObj, symmObj, vecDist) {
     local({
         init <- init
         cholObj <- cholObj
@@ -843,6 +843,35 @@ mkTransExpChol <- function(init, cholObj, symmObj, vecDist) {
     })
 }
 
+
+##' @rdname mkTrans
+##' @export
+##' @param defaultOutput default vector for observation-level standard
+##' deviations
+##' @param indsObsLevel indices pointing to the observation level
+##' random effects
+##' @param devfunEnv environment of the deviance function
+mkFlexObsLevelTrans <- function(init, defaultOutput,
+                                indsObsLevel, devfunEnv) {
+    local({
+        init <- init
+        nBasis <- length(init)
+        defaultOutput <- defaultOutput
+        indsObsLevel <- indsObsLevel
+        devfunEnv <- devfunEnv
+        Xspline <- NULL
+        function(matPars) {
+            lp <- try(evalq(pp$linPred(1), devfunEnv), silent = TRUE)
+            b1 <- try(evalq(pp$b(1),       devfunEnv), silent = TRUE)
+            if(inherits(lp, "try-error")) return(defaultOutput)
+            lp <- lp - b1[indsObsLevel]
+            Xspline <- try(ns(lp, nBasis), silent = TRUE)
+            assign("Xspline", Xspline, envir = parent.env(environment()))
+            if(inherits(Xspline, "try-error")) return(defaultOutput)
+            return(as.numeric(exp(Xspline %*% matPars)))
+        }
+    })
+}
 
 
 ##' @param Atrans,Btrans functions for transforming two repeated
@@ -1660,7 +1689,7 @@ repSparseExpChol <- function(distObj, cutOffDist = Inf) {
                      colInds = point2ind(cholMat@p),
                      valInds = seq_along(vecDist),
                      vals = cholMat@x,
-                     trans = mkTransExpChol(1, cholObj, symmObj, vecDist))
+                     trans = mkExpCholTrans(1, cholObj, symmObj, vecDist))
     class(ans) <- c("repSparseExpChol", class(ans))
     return(ans)
 }
