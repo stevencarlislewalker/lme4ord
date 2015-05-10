@@ -25,6 +25,21 @@ Y <- rRepSparse(2, 7, 5, 9)
 XkronY <- kron(X, Y)
 
 # ------------------------------------------------------------
+# subset
+# ------------------------------------------------------------
+
+set.seed(1)
+n <- 8; m <- 5
+X1 <- repSparse(1:m,
+               rep(1:2, c(2, m - 2)),
+               1:m, rep(1, m))
+fac <- factor(letters[rep(sample(m), n)])
+levels(fac) <- levels(fac)[sample(m)]
+Z <- subset(X1, as.numeric(fac))
+image(update(Z, rnorm(m)))
+image(update(Z, rnorm(m)))
+
+# ------------------------------------------------------------
 # updates
 # ------------------------------------------------------------
 
@@ -32,7 +47,6 @@ as.matrix(update(X, c(1, 1, -0.2)), TRUE)
 as.matrix(update(X, diagVals = c(1.2, 1.5), offDiagVals = 10), TRUE)
 as.matrix(update(Xrep, diagVals = c(1.2, 1.5), offDiagVals = 10), TRUE)
 
-XkronY
 update(XkronY, c(rnorm(5), rnorm(3)))
 
 

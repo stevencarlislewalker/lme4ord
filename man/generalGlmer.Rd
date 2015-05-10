@@ -3,7 +3,8 @@
 \alias{generalGlmer}
 \title{General glmer}
 \usage{
-generalGlmer(formula, data, addArgs = list(), optVerb = 0L, ...)
+generalGlmer(formula, data, addArgs = list(), optVerb = 0L, weights, offset,
+  etastart, ...)
 }
 \arguments{
 \item{formula}{extended mixed model formula}

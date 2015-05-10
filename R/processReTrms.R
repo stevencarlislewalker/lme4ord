@@ -3,15 +3,16 @@
 ##' 
 ##' @param object a \code{reTrmStruct} object
 ##' @param addArgs named list of additional arguments
+##' @param devfunEnv optional environment of the deviance function
 ##' @rdname setReTrm
 ##' @export
-setReTrm <- function(object, addArgs) {
+setReTrm <- function(object, addArgs, devfunEnv = NULL) {
     UseMethod("setReTrm")
 }
 
 ##' @rdname setReTrm
 ##' @export
-setReTrm.default <- function(object, addArgs) {
+setReTrm.default <- function(object, addArgs, devfunEnv = NULL) {
     Zt <- kr(t(as.repSparse(object$modMat)), as.repSparse(object$grpFac))
     nc <- ncol(object$modMat)
     nl <- nlevels(object$grpFac)
@@ -24,7 +25,7 @@ setReTrm.default <- function(object, addArgs) {
 
 ##' @rdname setReTrm
 ##' @export
-setReTrm.identity <- function(object, addArgs) {
+setReTrm.identity <- function(object, addArgs, devfunEnv = NULL) {
     Zt <- kr(t(as.repSparse(object$modMat)), as.repSparse(object$grpFac))
     nl <- nlevels(object$grpFac)
     nc <- ncol(object$modMat)
@@ -36,7 +37,19 @@ setReTrm.identity <- function(object, addArgs) {
 
 ##' @rdname setReTrm
 ##' @export
-setReTrm.edge <- function(object, addArgs) {
+setReTrm.flexvar <- function(object, addArgs, devfunEnv = NULL) {
+    n <- nrow(object$modMat)
+    return(structure(c(object,
+                       list(Zt = repSparseIdent(n),
+                            Lambdat = repSparseIdent(n))),
+                     class = class(object)))
+##    addArgs <- eval(object$addArgs, addArgs)
+##    Zt <- kr(t(as.repSparse(object$modMat)), as.repSparse(object$grpFac))  
+}
+
+##' @rdname setReTrm
+##' @export
+setReTrm.edge <- function(object, addArgs, devfunEnv = NULL) {
     addArgs <- eval(object$addArgs, addArgs)
     Jedge <- as(edgeTipIndicator(addArgs$phy), "sparseMatrix")
     Jspp <- as(object$grpFac, "sparseMatrix")
@@ -52,7 +65,7 @@ setReTrm.edge <- function(object, addArgs) {
 
 ##' @rdname setReTrm
 ##' @export
-setReTrm.cooccur <- function(object, addArgs) {
+setReTrm.cooccur <- function(object, addArgs, devfunEnv = NULL) {
     addArgs <- eval(object$addArgs, addArgs)
     Jt <- as.repSparse(as(object$grpFac, "sparseMatrix"))
     Zt <- kr(t(as.repSparse(object$modMat)), Jt)

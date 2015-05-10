@@ -856,19 +856,26 @@ mkFlexObsLevelTrans <- function(init, defaultOutput,
     local({
         init <- init
         nBasis <- length(init)
+        if(nBasis == 0L) stop("initial parameter vector must have length greater than zero")
         defaultOutput <- defaultOutput
         indsObsLevel <- indsObsLevel
         devfunEnv <- devfunEnv
         Xspline <- NULL
-        function(matPars) {
-            lp <- try(evalq(pp$linPred(1), devfunEnv), silent = TRUE)
-            b1 <- try(evalq(pp$b(1),       devfunEnv), silent = TRUE)
-            if(inherits(lp, "try-error")) return(defaultOutput)
-            lp <- lp - b1[indsObsLevel]
-            Xspline <- try(ns(lp, nBasis), silent = TRUE)
-            assign("Xspline", Xspline, envir = parent.env(environment()))
-            if(inherits(Xspline, "try-error")) return(defaultOutput)
-            return(as.numeric(exp(Xspline %*% matPars)))
+        if(nBasis == 1) {
+            function(matPars) {
+                return(as.numeric(rep(exp(matPars), length(defaultOutput))))
+            }
+        } else {
+            function(matPars) {
+                lp <- try(evalq(pp$linPred(1), devfunEnv), silent = TRUE)
+                b1 <- try(evalq(pp$b(1),       devfunEnv), silent = TRUE)
+                if(inherits(lp, "try-error")) return(defaultOutput)
+                lp <- lp - b1[indsObsLevel]
+                Xspline <- try(ns(lp, nBasis), silent = TRUE)
+                assign("Xspline", Xspline, envir = parent.env(environment()))
+                if(inherits(Xspline, "try-error")) return(defaultOutput)
+                return(as.numeric(exp(Xspline %*% matPars)))
+            }
         }
     })
 }

@@ -4,24 +4,29 @@
 \alias{setReTrm.cooccur}
 \alias{setReTrm.default}
 \alias{setReTrm.edge}
+\alias{setReTrm.flexvar}
 \alias{setReTrm.identity}
 \title{Set model matrix slice and relative covariance factor block for a
 random effects term}
 \usage{
-setReTrm(object, addArgs)
+setReTrm(object, addArgs, devfunEnv = NULL)
 
-\method{setReTrm}{default}(object, addArgs)
+\method{setReTrm}{default}(object, addArgs, devfunEnv = NULL)
 
-\method{setReTrm}{identity}(object, addArgs)
+\method{setReTrm}{identity}(object, addArgs, devfunEnv = NULL)
 
-\method{setReTrm}{edge}(object, addArgs)
+\method{setReTrm}{flexvar}(object, addArgs, devfunEnv = NULL)
 
-\method{setReTrm}{cooccur}(object, addArgs)
+\method{setReTrm}{edge}(object, addArgs, devfunEnv = NULL)
+
+\method{setReTrm}{cooccur}(object, addArgs, devfunEnv = NULL)
 }
 \arguments{
 \item{object}{a \code{reTrmStruct} object}
 
 \item{addArgs}{named list of additional arguments}
+
+\item{devfunEnv}{optional environment of the deviance function}
 }
 \description{
 Set model matrix slice and relative covariance factor block for a

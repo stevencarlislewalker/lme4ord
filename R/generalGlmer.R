@@ -8,7 +8,10 @@
 ##' @param ... further arguments to \code{\link{mkGeneralGlmerDevfun}}
 ##' @export
 generalGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
+                         weights, offset, etastart,
                          ...) {
+
+    devfunEnv <- new.env()
 
     cat("\nConstructing vectors and matrices...\n")
     pForm <- generalParseFormula(formula, data, addArgs, ...)
@@ -18,10 +21,9 @@ generalGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
                                  X = pForm$fixed,
                                  Zt = as(pForm$Zt, "dgCMatrix"),
                                  Lambdat = as(pForm$Lambdat, "dgCMatrix"),
-                                 ## FIXME: allow user-specified weights, offsets, and etastart
-                                 weights = rep(1, length(pForm$response)),
-                                 offset = rep(0, length(pForm$response)),
-                                 etastart = rep(0, length(pForm$response)),
+                                 weights = weights,
+                                 offset = offset,
+                                 etastart = etastart,
                                  initPars = pForm$initPars,
                                  parInds = pForm$parInds,
                                  mapToCovFact = mkSparseTrans(pForm$Lambdat),
@@ -33,7 +35,10 @@ generalGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
 
     cat("\nOptimizing deviance function...\n")
     opt <- minqa:::bobyqa(pForm$initPars, dfun, lower = pForm$lower,
-                          control = list(iprint = optVerb))
+                          control =
+                          list(iprint = optVerb,
+                               rhobeg = 0.0002,
+                               rhoend = 2e-7))
                   ## control = optControl)
     if(FALSE) {for(i in 1:5) {
         opt <- minqa:::bobyqa(opt$par, dfun, lower = pForm$lower)
@@ -51,7 +56,8 @@ generalGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
 ##' @param data data
 ##' @export
 mkReStructs <- function(splitFormula, data) {
-    reTrmsList <- lapply(splitFormula$reTrmFormulas, getModMatAndGrpFac, fr = data)
+    reTrmsList <- lapply(splitFormula$reTrmFormulas,
+                         getModMatAndGrpFac, fr = data)
     names(reTrmsList) <- paste(sapply(reTrmsList, "[[", "grpName"),
                                splitFormula$reTrmClasses, sep = ".")
     nUnStr <- sum(splitFormula$reTrmClasses == "unstruc")
@@ -75,30 +81,28 @@ mkReStructs <- function(splitFormula, data) {
 ##' @rdname generalParseFormula
 ##' @export
 generalParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL, ...) {
-    sf <- splitForm(formula)
+    sf   <- splitForm(formula)
     data <- as.data.frame(data, ...)
 
     if(is.null(reTrmsList)) reTrmsList <- mkReStructs(sf, data)
     
-    response <- model.response(model.frame(nobarsWithSpecials(formula), data))
-    fixed <- model.matrix(sf$fixedFormula, data)
-    random <- lapply(reTrmsList, setReTrm, addArgs = addArgs)
+    response <- model.response(model.frame(nobars(formula), data))
+    fixed    <- model.matrix(sf$fixedFormula, data)
+    random   <- lapply(reTrmsList, setReTrm, addArgs = addArgs)
 
-    ZtBind      <- .bind(lapply(random, "[[", "Zt"),      "row")
-    LambdatBind <- .bind(lapply(random, "[[", "Lambdat"), "diag")
+    ZtList      <- lapply(random, "[[",      "Zt")
+    LambdatList <- lapply(random, "[[", "Lambdat")
 
-    Zt      <- sort(sort(ZtBind,      type = "row"), type = "col")
-    Lambdat <- sort(sort(LambdatBind, type = "row"), type = "col")
+    ZtBind      <- .bind(     ZtList, "row")
+    LambdatBind <- .bind(LambdatList, "diag")
+
+    Zt      <- standardSort(     ZtBind)
+    Lambdat <- standardSort(LambdatBind)
 
     init <- list(covar = getInit(Lambdat),
                  fixef = rep(0, ncol(fixed)),
                  loads = getInit(Zt))
-    parInds <- with(init, {
-        list(covar = seq_along(covar),
-             fixef = seq_along(fixef) + length(covar),
-             loads = seq_along(loads) + length(covar) + length(fixef))
-    })
-    parInds[sapply(parInds, length) == 0L] <- NULL
+    parInds <- mkParInds(init)
     initPars <- unlist(init)
 
     lower <- c(ifelse(init$covar, 0, -Inf),
@@ -160,10 +164,12 @@ findReTrmClasses <- function(formula = NULL) {
     if(is.null(formula)) {
         return(as.character(sub("setReTrm.", "", methods("setReTrm"))))
     }
+    ## intersect(all.names(formula), findReTrmClasses())
     classInds <- attr(terms(formula, specials = findReTrmClasses()), "specials")
-    unlist(mapply(rep, names(classInds),
-                  lapply(classInds, length),
-                  SIMPLIFY = FALSE))[unlist(classInds)]
+    names(unlist(classInds))
+    ## unlist(mapply(rep, names(classInds),
+    ##               lapply(classInds, length),
+    ##               SIMPLIFY = FALSE))[unlist(classInds)]
 }
 
 
@@ -178,7 +184,7 @@ splitForm <- function(formula) {
                                         # ignore any specials not in
                                         # formula
     specialsToKeep <- sapply(lapply(specials, grep,
-                                    x = as.character(form[[length(form)]])), length) > 0L
+                                    x = as.character(formula[[length(formula)]])), length) > 0L
     specials <- specials[specialsToKeep]
 
     ## Recursive function: (f)ind (b)ars (a)nd (s)pecials
@@ -203,6 +209,7 @@ splitForm <- function(formula) {
                                         # give "|" for specials
                                         # without a setReTrm method
     formSplitID <- sapply(lapply(formSplits, "[[", 1), as.character)
+    as.character(formSplits[[1]])
                                         # warn about terms without a
                                         # setReTrm method
     badTrms <- formSplitID == "|"
@@ -239,16 +246,16 @@ splitForm <- function(formula) {
 
 
     fixedFormula <- formula(paste(formula[[2]], "~",
-                                  as.character(nobarsWithSpecials(formula))[[3]]))
+                                  as.character(nobars(formula))[[3]]))
     reTrmFormulas <- c(lapply(formSplitStan, "[[", 2),
                        lapply(formSplitSpec, "[[", 2))
     reTrmClasses <- c(rep("unstruc", length(formSplitStan)),
                       sapply(lapply(formSplitSpec, "[[", 1), as.character))
     
-    return(list(fixedFormula = fixedFormula,
+    return(list(fixedFormula  = fixedFormula,
                 reTrmFormulas = reTrmFormulas,
-                reTrmAddArgs = reTrmAddArgs,
-                reTrmClasses = reTrmClasses))
+                reTrmAddArgs  = reTrmAddArgs,
+                reTrmClasses  = reTrmClasses))
 }
 
 reParen <- function(reTrm) paste("(", deparse(reTrm), ")", sep = "", collapse = "")
@@ -262,9 +269,55 @@ reForm <- function(splitFormula) {
     as.formula(do.call(paste, c(characterPieces, list(sep = " + "))))
 }
 
+
 ##' @rdname splitForm
 ##' @export
-removeSpecials <- function(formula) reForm(splitForm(formula))
+noSpecials <- function(term) {
+    nospec <- noSpecials_(term)
+    if (is(term,"formula") && length(term)==3 && is.symbol(nospec)) {
+        ## called with two-sided RE-only formula:
+        ##    construct response~1 formula
+        nospec <- reformulate("1", response = deparse(nospec))
+    }
+    return(nospec)
+}
+noSpecials_ <- function(term)
+{
+    if (!anySpecial(term)) return(term)
+    if (isSpecial(term)) return(NULL)
+    #if (isAnyArgSpecial(term)) return(NULL)
+    #if (length(term) == 2) {
+    #    term[[2]] <- noSpecials(term[[2]])
+    #    return(term)
+    #}
+    nb2 <- noSpecials(term[[2]])
+    nb3 <- noSpecials(term[[3]])
+    if (is.null(nb2)) return(nb3)
+    if (is.null(nb3)) return(nb2)
+    term[[2]] <- nb2
+    term[[3]] <- nb3
+    term
+}
+
+isSpecial <- function(term) {
+    if(is.call(term)) {
+        for(cls in findReTrmClasses()) {
+            if(term[[1]] == cls) return(TRUE)
+        }
+    }
+    FALSE
+}
+
+isAnyArgSpecial <- function(term) {
+    for(i in seq_along(term)) {
+        if(isSpecial(term[[i]])) return(TRUE)
+    }
+    FALSE
+}
+
+anySpecial <- function(term) {
+    any(findReTrmClasses() %in% all.names(term))
+}
 
 
 ##' Version of the recursive nobars function from lme4
@@ -278,12 +331,17 @@ nobarsWithSpecials <- function (term) {
             term <- term[1:2]
         }
     }
-    if (!any(c("|", "||") %in% all.names(term))) 
+    ant <- all.names(term)
+    if ((!any(c("|", "||") %in% ant)) && (!any(ant %in% specials)))
         return(term)
     if (is.call(term) && term[[1]] == as.name("|")) 
         return(NULL)
     if (is.call(term) && term[[1]] == as.name("||")) 
         return(NULL)
+    #if (as.character(term[[1]]) %in% specials) 
+    #    term <- term[[2]]
+    if (length(term) == 1)
+        return(term)
     if (length(term) == 2) {
         nb <- nobarsWithSpecials(term[[2]])
         if (is.null(nb)) 
@@ -309,6 +367,7 @@ nobarsWithSpecials <- function (term) {
 ##' @param data a data frame
 ##' @export
 mkReTrmStruct <- function(formula, class, data) {
+    ## FIXME: not currently used!
     ans <- getModMatAndGrpFac(formula, data)
     names(ans) <- ans[["grpName"]] # FIXME: include struct class name?
     ans$formula <- formula

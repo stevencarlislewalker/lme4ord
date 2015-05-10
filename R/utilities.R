@@ -17,22 +17,30 @@ stanCov <- function(covMat) {
 ##' @export
 getModMatAndGrpFac <- function(bar, fr) {
     ## based on mkBlist
-    
-    fr <- lme4:::factorize(bar, fr)
-    grpLang <- bar[[3]]
-    linFormLang <- bar[[2]]
-    nm <- deparse(grpLang)
-    ## try to evaluate grouping factor within model frame ...
-    if (is.null(ff <- tryCatch(eval(substitute(lme4:::makeFac(fac),
-                                               list(fac = grpLang)), fr),
-                error=function(e) NULL)))
-        stop("couldn't evaluate grouping factor ",
-             nm," within model frame:",
-             " try adding grouping factor to data ",
-             "frame explicitly if possible",call.=FALSE)
-    if (all(is.na(ff)))
-        stop("Invalid grouping factor specification, ",
-             nm, call. = FALSE)
+
+    noGrpFac <- is.null(lme4:::findbars(bar))
+
+    if(!noGrpFac) {
+        linFormLang <- bar[[2]] # language object specifying linear model
+            grpLang <- bar[[3]] # language object specifying grouping factor
+
+        fr <- lme4:::factorize(bar, fr)
+        nm <- deparse(grpLang)
+        ## try to evaluate grouping factor within model frame ...
+        if (is.null(ff <- tryCatch(eval(substitute(lme4:::makeFac(fac),
+                                                   list(fac = grpLang)), fr),
+                                   error = function(e) NULL)))
+            stop("couldn't evaluate grouping factor ",
+                 nm, " within model frame:",
+                 " try adding grouping factor to data ",
+                 "frame explicitly if possible", call. = FALSE)
+        if (all(is.na(ff)))
+            stop("Invalid grouping factor specification, ",
+                 nm, call. = FALSE)
+    } else { # noGrpFac
+        linFormLang <- bar
+        ff <- nm <- NA
+    }
     mm <- model.matrix(eval(substitute( ~ foo, list(foo = linFormLang))), fr)
     return(list(modMat = mm, grpFac = ff, grpName = nm))
 }
