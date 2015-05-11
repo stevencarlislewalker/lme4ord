@@ -39,8 +39,11 @@ setReTrm.identity <- function(object, addArgs, devfunEnv = NULL) {
 ##' @export
 setReTrm.flexvar <- function(object, addArgs, devfunEnv = NULL) {
     n <- nrow(object$modMat)
+    addArgs <- eval(object$addArgs, addArgs)
+    Zt <- repSparseIdent(n)
+    ##mkFlexObsLevelTrans(
     return(structure(c(object,
-                       list(Zt = repSparseIdent(n),
+                       list(Zt = resetTransConst(Zt),
                             Lambdat = repSparseIdent(n))),
                      class = class(object)))
 ##    addArgs <- eval(object$addArgs, addArgs)
@@ -75,6 +78,31 @@ setReTrm.cooccur <- function(object, addArgs, devfunEnv = NULL) {
                        list(Zt = resetTransConst(Zt),
                             Lambdat = rep(Tt, nrow(Jt), type = "diag")),
                        class = class(object))))
+}
+
+##' Print random effects term
+##'
+##' @param object \code{\link{repSparse}} object
+##' @param forSummary print for \code{\link{summary}} instead of
+##' \code{\link{print}}?
+##' @export
+printReTrm <- function(object, forSummary = FALSE, ...) {
+    UseMethod("printReTrm")
+}
+
+.printPars <- function(description = "parameters: ", value) {
+    if((length(value) > 0L) && (!is.na(value)) && (!is.null(value))) {
+        cat(description, value)
+    }
+}
+
+##' @rdname printReTrm
+##' @export
+printReTrm.default <- function(object, forSummary = FALSE, ...) {
+    cat(paste("A", class(object), "random effects structure\n"))
+    .printPars("  covariance parameters: ", getInit(object$Lambdat))
+    .printPars("  loadings parameters:   ", getInit(object$Zt))
+    cat("\n")
 }
 
 ##' Simulate additional arguments

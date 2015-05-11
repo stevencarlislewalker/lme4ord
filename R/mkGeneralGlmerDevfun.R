@@ -67,14 +67,11 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     }
     initPars <- unlist(initPars)
 
-    if(missing(weights)) weights <- rep(1, length(y))
-
-    if(missing(offset)) offset <- rep(0, length(y))
-
-    if(missing(etastart)) stop("must specify etastart.\n",
-                               "see family(...)$initialize for inspiration.")
-
     if(missing(devfunEnv)) devfunEnv <- new.env()
+    if(missing(weights))   weights   <- rep(1, length(y))
+    if(missing(offset))    offset    <- rep(0, length(y))
+    if(missing(etastart))  stop("must specify etastart.\n",
+                                "see family(...)$initialize for inspiration.")
 
     devfunList <- list(Lind = Lind,
                        pp = lme4:::merPredD$new(
@@ -86,7 +83,7 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                        resp = lme4:::glmResp$new(
                            y = y, family = family,
                            weights = weights),
-                       lp0 = etastart, # pp$linPred(1)
+                       lp0 = etastart,
                        baseOffset = offset,
                        tolPwrss = tolPwrss,
                        GQmat = GHrule(1), ## always Laplace approx

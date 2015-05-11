@@ -5,7 +5,7 @@
 \alias{mkConstVarCholTrans}
 \alias{mkCorMatCholTrans}
 \alias{mkExpCholTrans}
-\alias{mkFlexObsLevelTrans}
+\alias{mkFlexDiagTrans}
 \alias{mkGenCholInPlaceTrans}
 \alias{mkIdentityTrans}
 \alias{mkListTrans}
@@ -30,7 +30,7 @@ mkCorMatCholTrans(init)
 
 mkExpCholTrans(init, cholObj, symmObj, vecDist)
 
-mkFlexObsLevelTrans(init, defaultOutput, indsObsLevel, devfunEnv)
+mkFlexDiagTrans(init, defaultOutput, indsObsLevel, devfunEnv)
 
 mkOuterTrans(Atrans, Btrans, ABtrans)
 
@@ -49,8 +49,7 @@ mkCholCompSymmTrans(init, matSize)
 \arguments{
 \item{init}{initial parameter values}
 
-\item{defaultOutput}{default vector for observation-level standard
-deviations}
+\item{defaultOutput}{default vector for diagonal elements}
 
 \item{indsObsLevel}{indices pointing to the observation level
 random effects}
@@ -130,8 +129,8 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{update.repSparse}}; \code{\link{getInit}},
   \code{\link{getInit.default}},
   \code{\link{getInit.function}},
-  \code{\link{getInit.repSparse}}, \code{\link{setInit}},
-  \code{\link{setInit.default}},
+  \code{\link{getInit.repSparse}}, \code{\link{parLength}},
+  \code{\link{setInit}}, \code{\link{setInit.default}},
   \code{\link{setInit.function}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},

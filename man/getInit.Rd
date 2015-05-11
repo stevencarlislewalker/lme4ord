@@ -4,6 +4,7 @@
 \alias{getInit.default}
 \alias{getInit.function}
 \alias{getInit.repSparse}
+\alias{parLength}
 \alias{setInit}
 \alias{setInit.default}
 \alias{setInit.function}
@@ -25,6 +26,8 @@ setInit(x, init, ...)
 \method{setInit}{repSparse}(x, init, ...)
 
 \method{setInit}{function}(x, init, ...)
+
+parLength(ll)
 }
 \arguments{
 \item{x}{object}
@@ -95,7 +98,7 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{mkConstVarCholTrans}},
   \code{\link{mkCorMatCholTrans}},
   \code{\link{mkExpCholTrans}},
-  \code{\link{mkFlexObsLevelTrans}},
+  \code{\link{mkFlexDiagTrans}},
   \code{\link{mkGenCholInPlaceTrans}},
   \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
   \code{\link{mkOuterTrans}}, \code{\link{mkTrans}},

@@ -597,6 +597,13 @@ setInit.repSparse <- function(x, init, ...) assign("init", init, envir = environ
 ##' @export
 setInit.function <- function(x, init, ...) assign("init", init, envir = environment(x))
 
+##' @rdname getInit
+##' @export
+parLength <- function(ll) {
+    initll <- getInit(ll)
+    if(is.null(initll) || all(is.na(initll))) return(0L)
+    return(length(initll))
+}
 
 
 ## ----------------------------------------------------------------------
@@ -846,13 +853,12 @@ mkExpCholTrans <- function(init, cholObj, symmObj, vecDist) {
 
 ##' @rdname mkTrans
 ##' @export
-##' @param defaultOutput default vector for observation-level standard
-##' deviations
+##' @param defaultOutput default vector for diagonal elements
 ##' @param indsObsLevel indices pointing to the observation level
 ##' random effects
 ##' @param devfunEnv environment of the deviance function
-mkFlexObsLevelTrans <- function(init, defaultOutput,
-                                indsObsLevel, devfunEnv) {
+mkFlexDiagTrans <- function(init, defaultOutput,
+                            indsObsLevel, devfunEnv) {
     local({
         init <- init
         nBasis <- length(init)
@@ -868,7 +874,7 @@ mkFlexObsLevelTrans <- function(init, defaultOutput,
         } else {
             function(matPars) {
                 lp <- try(evalq(pp$linPred(1), devfunEnv), silent = TRUE)
-                b1 <- try(evalq(pp$b(1),       devfunEnv), silent = TRUE)
+                b1 <- try(evalq(pp$b      (1), devfunEnv), silent = TRUE)
                 if(inherits(lp, "try-error")) return(defaultOutput)
                 lp <- lp - b1[indsObsLevel]
                 Xspline <- try(ns(lp, nBasis), silent = TRUE)

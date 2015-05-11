@@ -11,15 +11,13 @@ generalGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
                          weights, offset, etastart,
                          ...) {
 
-    devfunEnv <- new.env()
-
     cat("\nConstructing vectors and matrices...\n")
     pForm <- generalParseFormula(formula, data, addArgs, ...)
 
     cat("\nConstructing deviance function...\n")
     dfun <- mkGeneralGlmerDevfun(y = pForm$response,
                                  X = pForm$fixed,
-                                 Zt = as(pForm$Zt, "dgCMatrix"),
+                                      Zt = as(pForm$Zt,      "dgCMatrix"),
                                  Lambdat = as(pForm$Lambdat, "dgCMatrix"),
                                  weights = weights,
                                  offset = offset,
@@ -28,6 +26,7 @@ generalGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
                                  parInds = pForm$parInds,
                                  mapToCovFact = mkSparseTrans(pForm$Lambdat),
                                  mapToModMat = mkSparseTrans(pForm$Zt),
+                                 devfunEnv = pForm$devfunEnv,
                                  ...)
 
     cat("\nInitializing deviance function...\n")
@@ -47,7 +46,50 @@ generalGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
     names(opt$par) <- names(pForm$initPars)
 
     ans <- list(opt = opt, parsedForm = pForm, dfun = dfun)
+    class(ans) <- "generalGlmer"
     return(ans)
+}
+
+##' @rdname generalGlmer
+##' @export
+print.generalGlmer <- function(x, ...) {
+    cat ("Structured generalized linear mixed model\n")
+    cat ("=========================================\n")
+    cat ("\nFixed effects\n")
+    cat (  "-------------\n")
+    print(fixef(x))
+    cat ("\nRandom effects\n")
+    cat (  "--------------\n")
+    lapply(x$parsedForm$random, printReTrm)
+}
+
+##' @param type character string giving the type of parameter
+##' (e.g. \code{"fixef", "covar"})
+##' @rdname generalGlmer
+##' @export
+getGeneralGlmerPar <- function(object, type, ...) {
+    parInds <- environment(object$dfun)$parInds
+    optPar <- object$opt$par
+    optPar[unlist(parInds[type])]
+}
+
+##' @rdname generalGlmer
+##' @export
+fixef.generalGlmer <- function(object, ...) {
+    setNames(getGeneralGlmerPar(object, "fixef"),
+             colnames(object$parsedForm$fixed))
+}
+
+##' @rdname generalGlmer
+##' @export
+covar.generalGlmer <- function(object, ...) {
+    getGeneralGlmerPar(object, "covar")
+}
+
+##' @rdname generalGlmer
+##' @export
+loads.generalGlmer <- function(object, ...) {
+    getGeneralGlmerPar(object, "loads")
 }
 
 ##' Construct random effects structures
@@ -86,7 +128,7 @@ generalParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NU
 
     if(is.null(reTrmsList)) reTrmsList <- mkReStructs(sf, data)
     
-    response <- model.response(model.frame(nobars(formula), data))
+    response <- model.response(model.frame(noSpecials(nobars(formula)), data))
     fixed    <- model.matrix(sf$fixedFormula, data)
     random   <- lapply(reTrmsList, setReTrm, addArgs = addArgs)
 
@@ -105,13 +147,24 @@ generalParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NU
     parInds <- mkParInds(init)
     initPars <- unlist(init)
 
+    ## FIXME: more flexibility for lower, and maybe add an upper?
     lower <- c(ifelse(init$covar, 0, -Inf),
                rep(-Inf, length(initPars) - length(init$covar)))
     names(lower) <- names(initPars)
 
+    devfunEnv <- list2env(list(nRePerTrm = sapply(LambdatList, nrow),
+                               nLambdatParPerTrm = sapply(LambdatList, parLength),
+                               nZtParPerTrm = sapply(ZtList, parLength),
+                               reTrmClasses = sf$reTrmClasses))
+
     return(list(response = response, fixed = fixed, random = random,
                 Zt = Zt, Lambdat = Lambdat,
-                initPars = initPars, parInds = parInds, lower = lower))
+                initPars = initPars, parInds = parInds, lower = lower,
+                devfunEnv = devfunEnv))
+}
+
+updateParsedForm <- function(parsedForm, devfunEnv) {
+    
 }
 
 ##' @param parsedForm result of \code{generalParseFormula}
@@ -133,8 +186,6 @@ simGeneralParsedForm <- function(parsedForm, family = binomial,
 }
 
 
-
-
 ##' Make general random effects terms
 ##'
 ##' @param reStructList list of random effects structure functions
@@ -143,8 +194,10 @@ simGeneralParsedForm <- function(parsedForm, family = binomial,
 ##' @rdname mkReTrms
 ##' @export
 mkGeneralReTrms <- function(reStructList, parsedForm, ...) {
-    trmList <- mapply(do.call, reStructList, parsedForm$random, SIMPLIFY = FALSE)
-    trmList <- listTranspose(trmList)
+    trmList <- listTranspose(mapply(do.call,
+                                    reStructList,
+                                    parsedForm$random,
+                                    SIMPLIFY = FALSE))
          ZtBind <- as.repSparse(sort(.bind(trmList$Zt,      "row" )))
     LambdatBind <- as.repSparse(sort(.bind(trmList$Lambdat, "diag")))
     return(list(Zt = as(ZtBind, "dgCMatrix"),
@@ -246,7 +299,7 @@ splitForm <- function(formula) {
 
 
     fixedFormula <- formula(paste(formula[[2]], "~",
-                                  as.character(nobars(formula))[[3]]))
+                                  as.character(noSpecials(nobars(formula)))[[3]]))
     reTrmFormulas <- c(lapply(formSplitStan, "[[", 2),
                        lapply(formSplitSpec, "[[", 2))
     reTrmClasses <- c(rep("unstruc", length(formSplitStan)),
@@ -281,8 +334,8 @@ noSpecials <- function(term) {
     }
     return(nospec)
 }
-noSpecials_ <- function(term)
-{
+
+noSpecials_ <- function(term) {
     if (!anySpecial(term)) return(term)
     if (isSpecial(term)) return(NULL)
     #if (isAnyArgSpecial(term)) return(NULL)
@@ -373,3 +426,4 @@ mkReTrmStruct <- function(formula, class, data) {
     ans$formula <- formula
     structure(ans, class = class)
 }
+
