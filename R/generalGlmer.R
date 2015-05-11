@@ -43,12 +43,18 @@ strucGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
         opt <- minqa:::bobyqa(opt$par, dfun, lower = pForm$lower)
                       ## control = optControl)
     }}
-    names(opt$par) <- names(pForm$initPars)
 
-    
+
+    cat("\nPreparing output...\n")
+    names(opt$par) <- names(pForm$initPars)
 
     ans <- list(opt = opt, parsedForm = pForm, dfun = dfun)
     class(ans) <- "strucGlmer"
+    
+    try(ans$pForm$random <- mapply(update, pForm$random,
+                                   covarPerTerm(ans),
+                                   loadsPerTerm(ans),
+                                   SIMPLIFY = FALSE), silent = TRUE)
     return(ans)
 }
 
@@ -101,7 +107,7 @@ subRagByLens <- function(x, lens) {
 
 strucGlmerParPerTerm <- function(lens, pars) {
     if(is.null(pars)) pars <- numeric(0)
-    whichThere <- (lens > 0) && (!is.na(lens)) && (!(is.null(lens)))
+    whichThere <- (lens > 0) & (!is.na(lens))
     ans <- vector("list", length(whichThere))
     ans[whichThere] <- subRagByLens(pars, lens[whichThere])
     names(ans) <- names(lens)

@@ -89,9 +89,16 @@ setReTrm.cooccur <- function(object, addArgs, devfunEnv = NULL) {
                        class = class(object))))
 }
 
-update.reTrmStruct <- function(object, newParsLambdat, newParsZt) {
-    setInit(object$Lambdat, newParsLambdat)
-    setInit(object$Zt,      newParsZt)
+##' Update a random effects term structure with new parameters
+##'
+##' @param object a \code{reTrmStruct} object
+##' @param newCovar new covariance parameters
+##' @param newLoads new loadings parameters
+##' @export
+update.reTrmStruct <- function(object, newCovar, newLoads) {
+    setInit(object$Lambdat, newCovar)
+    setInit(object$Zt,      newLoads)
+    return(object)
 }
 
 ##' Print random effects term
