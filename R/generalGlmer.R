@@ -1,4 +1,4 @@
-##' General glmer
+##' Structured glmer
 ##'
 ##' @param formula extended mixed model formula
 ##' @param data data frame
@@ -7,12 +7,12 @@
 ##' \code{\link{setReTrm}} methods
 ##' @param ... further arguments to \code{\link{mkGeneralGlmerDevfun}}
 ##' @export
-generalGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
+strucGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
                          weights, offset, etastart,
                          ...) {
 
     cat("\nConstructing vectors and matrices...\n")
-    pForm <- generalParseFormula(formula, data, addArgs, ...)
+    pForm <- strucParseFormula(formula, data, addArgs, ...)
 
     cat("\nConstructing deviance function...\n")
     dfun <- mkGeneralGlmerDevfun(y = pForm$response,
@@ -46,13 +46,13 @@ generalGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
     names(opt$par) <- names(pForm$initPars)
 
     ans <- list(opt = opt, parsedForm = pForm, dfun = dfun)
-    class(ans) <- "generalGlmer"
+    class(ans) <- "strucGlmer"
     return(ans)
 }
 
-##' @rdname generalGlmer
+##' @rdname strucGlmer
 ##' @export
-print.generalGlmer <- function(x, ...) {
+print.strucGlmer <- function(x, ...) {
     cat ("Structured generalized linear mixed model\n")
     cat ("=========================================\n")
     cat ("\nFixed effects\n")
@@ -65,31 +65,31 @@ print.generalGlmer <- function(x, ...) {
 
 ##' @param type character string giving the type of parameter
 ##' (e.g. \code{"fixef", "covar"})
-##' @rdname generalGlmer
+##' @rdname strucGlmer
 ##' @export
-getGeneralGlmerPar <- function(object, type, ...) {
+getStrucGlmerPar <- function(object, type, ...) {
     parInds <- environment(object$dfun)$parInds
     optPar <- object$opt$par
     optPar[unlist(parInds[type])]
 }
 
-##' @rdname generalGlmer
+##' @rdname strucGlmer
 ##' @export
-fixef.generalGlmer <- function(object, ...) {
-    setNames(getGeneralGlmerPar(object, "fixef"),
+fixef.strucGlmer <- function(object, ...) {
+    setNames(getStrucGlmerPar(object, "fixef"),
              colnames(object$parsedForm$fixed))
 }
 
-##' @rdname generalGlmer
+##' @rdname strucGlmer
 ##' @export
-covar.generalGlmer <- function(object, ...) {
-    getGeneralGlmerPar(object, "covar")
+covar.strucGlmer <- function(object, ...) {
+    getStrucGlmerPar(object, "covar")
 }
 
-##' @rdname generalGlmer
+##' @rdname strucGlmer
 ##' @export
-loads.generalGlmer <- function(object, ...) {
-    getGeneralGlmerPar(object, "loads")
+loads.strucGlmer <- function(object, ...) {
+    getStrucGlmerPar(object, "loads")
 }
 
 ##' Construct random effects structures
@@ -120,9 +120,9 @@ mkReStructs <- function(splitFormula, data) {
 ##' \code{\link{setReTrm}} methods
 ##' @param reTrmsList if \code{NULL} \code{\link{mkReStructs}} is used
 ##' @param ... additional parameters to \code{\link{as.data.frame}}
-##' @rdname generalParseFormula
+##' @rdname strucParseFormula
 ##' @export
-generalParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL, ...) {
+strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL, ...) {
     sf   <- splitForm(formula)
     data <- as.data.frame(data, ...)
 
@@ -163,16 +163,16 @@ generalParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NU
                 devfunEnv = devfunEnv))
 }
 
-updateParsedForm <- function(parsedForm, devfunEnv) {
+## updateParsedForm <- function(parsedForm, devfunEnv) {
     
-}
+## }
 
-##' @param parsedForm result of \code{generalParseFormula}
+##' @param parsedForm result of \code{strucParseFormula}
 ##' @param family family object
 ##' @param weights optional weights
-##' @rdname generalParseFormula
+##' @rdname strucParseFormula
 ##' @export
-simGeneralParsedForm <- function(parsedForm, family = binomial,
+simStrucParsedForm <- function(parsedForm, family = binomial,
                                  weights, ...) {
     if(missing(weights)) weights <- rep(1, length(parsedForm$response))
     with(parsedForm, {
