@@ -5,6 +5,15 @@
 ##' @param addArgs named list of additional arguments
 ##' @param devfunEnv optional environment of the deviance function
 ##' @rdname setReTrm
+##' @seealso \code{\link{mkReTrmStructs}} for construction of these objects
+##' @return \code{object} with the following additional elements:
+##' 
+##' \item{Zt}{A \code{\link{repSparse}} object describing the slice of
+##' the model matrix associated with the random effects term.}
+##'
+##' \item{Lambdat}{A \code{\link{repSparse}} object describing the
+##' block of the relative covariance factor associated with the random
+##' effects term.}
 ##' @export
 setReTrm <- function(object, addArgs, devfunEnv = NULL) {
     UseMethod("setReTrm")
@@ -80,6 +89,11 @@ setReTrm.cooccur <- function(object, addArgs, devfunEnv = NULL) {
                        class = class(object))))
 }
 
+update.reTrmStruct <- function(object, newParsLambdat, newParsZt) {
+    setInit(object$Lambdat, newParsLambdat)
+    setInit(object$Zt,      newParsZt)
+}
+
 ##' Print random effects term
 ##'
 ##' @param object \code{\link{repSparse}} object
@@ -99,11 +113,12 @@ printReTrm <- function(object, forSummary = FALSE, ...) {
 ##' @rdname printReTrm
 ##' @export
 printReTrm.default <- function(object, forSummary = FALSE, ...) {
-    cat(paste("A", class(object), "random effects structure\n"))
+    cat(paste("A", class(object)[1], "random effects structure\n"))
     .printPars("  covariance parameters: ", getInit(object$Lambdat))
     .printPars("  loadings parameters:   ", getInit(object$Zt))
     cat("\n")
 }
+
 
 ##' Simulate additional arguments
 ##'
@@ -140,3 +155,19 @@ simAddArgs.edge <- function(object, rtreeArgs = list(),
 }
 
 
+##' @param formula generalized mixed model formula.  if \code{NULL}
+##' (the default) \code{findReTrmClasses} returns classes available
+##' (on the search path).
+##' @rdname setReTrm
+##' @export
+findReTrmClasses <- function(formula = NULL) {
+    if(is.null(formula)) {
+        return(as.character(sub("setReTrm.", "", methods("setReTrm"))))
+    }
+    ## intersect(all.names(formula), findReTrmClasses())
+    classInds <- attr(terms(formula, specials = findReTrmClasses()), "specials")
+    names(unlist(classInds))
+    ## unlist(mapply(rep, names(classInds),
+    ##               lapply(classInds, length),
+    ##               SIMPLIFY = FALSE))[unlist(classInds)]
+}

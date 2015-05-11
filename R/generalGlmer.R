@@ -45,6 +45,8 @@ strucGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
     }}
     names(opt$par) <- names(pForm$initPars)
 
+    
+
     ans <- list(opt = opt, parsedForm = pForm, dfun = dfun)
     class(ans) <- "strucGlmer"
     return(ans)
@@ -83,7 +85,7 @@ fixef.strucGlmer <- function(object, ...) {
 ##' @rdname strucGlmer
 ##' @export
 covar.strucGlmer <- function(object, ...) {
-    getStrucGlmerPar(object, "covar")
+    unname(getStrucGlmerPar(object, "covar"))
 }
 
 ##' @rdname strucGlmer
@@ -92,12 +94,70 @@ loads.strucGlmer <- function(object, ...) {
     getStrucGlmerPar(object, "loads")
 }
 
+subRagByLens <- function(x, lens) {
+    if(is.null(names(lens))) names(lens) <- seq_along(lens)
+    split(x, rep(names(lens), lens))
+}
+
+strucGlmerParPerTerm <- function(lens, pars) {
+    if(is.null(pars)) pars <- numeric(0)
+    whichThere <- (lens > 0) && (!is.na(lens)) && (!(is.null(lens)))
+    ans <- vector("list", length(whichThere))
+    ans[whichThere] <- subRagByLens(pars, lens[whichThere])
+    names(ans) <- names(lens)
+    return(ans)
+}
+
+##' @rdname strucGlmer
+##' @export
+covarPerTerm <- function(object) {
+    strucGlmerParPerTerm(environment(object$dfun)$nLambdatParPerTrm,
+                         covar(object))
+}
+
+##' @rdname strucGlmer
+##' @export
+loadsPerTerm <- function(object) {
+    strucGlmerParPerTerm(environment(object$dfun)$nZtParPerTrm,
+                         loads(object))
+}
+
+
 ##' Construct random effects structures
 ##'
-##' @param splitFormula results of \code{link{splitForm}}
+##' Construct random effects structures from a formula and data.
+##'
+##' @param splitFormula results of \code{\link{splitForm}} (or a
+##' \code{formula} itself)
 ##' @param data data
+##' @seealso \code{\link{setReTrm}} for initializing the structures as
+##' is required for model fitting, and \code{\link{splitForm}} for
+##' breaking the formula up into terms.
+##' @return A list of random effects structures, each associated with
+##' the terms in a generalized mixed model formula of roughly the
+##' following form: \code{(linForm1 | grpFac1) + (linForm2 | grpFac2)
+##' + ... + specialStruc(linForm3 | grpFac3) + ...}.  Each such
+##' structure may be unstructured with class `unstruc` (indicating
+##' standard `lme4` structures, e.g. the first two terms above) or
+##' class of same name as the function in the formula
+##' (e.g. \code{specialStruc}).  Each structure also contains (at a
+##' minimum) the following elements (although \code{\link{setReTrm}}
+##' adds further structure):
+##' 
+##' \item{modMat}{A raw model matrix for which the structure is
+##' defined.  This matrix is obtained by evaluating
+##' \code{model.matrix(linForm, data)}, where \code{linForm | grpFac}
+##' is the random effects formula defining the term.}
+##'
+##' \item{grpFac}{If present, the grouping factor associated with the
+##' structure, \code{NA} otherwise.}
+##'
+##' \item{grpName}{If present, the name of the grouping factor,
+##' \code{NA} otherwise.}  \item{addArgs}{If present, any additional
+##' arguments passed to the special function in the formula.}
 ##' @export
-mkReStructs <- function(splitFormula, data) {
+mkReTrmStructs <- function(splitFormula, data) {
+    if(inherits(splitFormula, "formula")) splitFormula <- splitForm(splitFormula)
     reTrmsList <- lapply(splitFormula$reTrmFormulas,
                          getModMatAndGrpFac, fr = data)
     names(reTrmsList) <- paste(sapply(reTrmsList, "[[", "grpName"),
@@ -106,7 +166,7 @@ mkReStructs <- function(splitFormula, data) {
     for(i in seq_along(reTrmsList)) {
         clsi <- splitFormula$reTrmClasses[[i]]
         if(clsi != "unstruc") reTrmsList[[i]]$addArgs <- splitFormula$reTrmAddArgs[[i - nUnStr]]
-        class(reTrmsList[[i]]) <- clsi
+        class(reTrmsList[[i]]) <- c(clsi, "reTrmStruct")
     }
     return(reTrmsList)
 }
@@ -126,7 +186,7 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
     sf   <- splitForm(formula)
     data <- as.data.frame(data, ...)
 
-    if(is.null(reTrmsList)) reTrmsList <- mkReStructs(sf, data)
+    if(is.null(reTrmsList)) reTrmsList <- mkReTrmStructs(sf, data)
     
     response <- model.response(model.frame(noSpecials(nobars(formula)), data))
     fixed    <- model.matrix(sf$fixedFormula, data)
@@ -163,9 +223,8 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
                 devfunEnv = devfunEnv))
 }
 
-## updateParsedForm <- function(parsedForm, devfunEnv) {
-    
-## }
+## updateReStruc <- function(parsedForm, devfunEnv) {
+
 
 ##' @param parsedForm result of \code{strucParseFormula}
 ##' @param family family object
@@ -207,23 +266,6 @@ mkGeneralReTrms <- function(reStructList, parsedForm, ...) {
 }
 
 
-##' Find classes with a \code{setReTrm} method
-##'
-##' @param formula generalized mixed model formula.  if \code{NULL}
-##' (the default) \code{findReTrmClasses} returns classes available
-##' (on the search path).
-##' @export
-findReTrmClasses <- function(formula = NULL) {
-    if(is.null(formula)) {
-        return(as.character(sub("setReTrm.", "", methods("setReTrm"))))
-    }
-    ## intersect(all.names(formula), findReTrmClasses())
-    classInds <- attr(terms(formula, specials = findReTrmClasses()), "specials")
-    names(unlist(classInds))
-    ## unlist(mapply(rep, names(classInds),
-    ##               lapply(classInds, length),
-    ##               SIMPLIFY = FALSE))[unlist(classInds)]
-}
 
 
 ##' Split a formula
@@ -413,17 +455,16 @@ nobarsWithSpecials <- function (term) {
     term
 }
 
-##' Make random effects term structure
-##'
-##' @param formula random effects term formula (without special function)
-##' @param class random effects term class
-##' @param data a data frame
-##' @export
-mkReTrmStruct <- function(formula, class, data) {
-    ## FIXME: not currently used!
-    ans <- getModMatAndGrpFac(formula, data)
-    names(ans) <- ans[["grpName"]] # FIXME: include struct class name?
-    ans$formula <- formula
-    structure(ans, class = class)
-}
+
+## ##' Get components from a structured glmer model
+## ##'
+## ##' @param object a \code{\link{strucGlmer}} object
+## ##' @param name a character vector naming the component
+## ##' @export
+## getSG <- function(object,
+##                   name =
+##                   c("y", "X", "Zt", "Lambdat",
+##                     "")) {
+## }
+
 
