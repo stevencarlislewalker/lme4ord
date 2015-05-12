@@ -47,20 +47,17 @@ setReTrm.identity <- function(object, addArgs, devfunEnv = NULL) {
 ##' @rdname setReTrm
 ##' @export
 setReTrm.flexvar <- function(object, addArgs, devfunEnv = NULL) {
-    ## note to self: pass devfunEnv to trans maker, but remember it is
-    ## empty at this point
     n <- nrow(object$modMat)
     addArgs <- eval(object$addArgs, addArgs)
     Zt <- repSparseIdent(n)
-    Lambdat <- repSparseIdent(n)
-    environment(Lambdat$trans)$devfunEnv <- devfunEnv
-    ##mkFlexObsLevelTrans(
+    Lambdat <- repSparse(seq_len(n), seq_len(n), seq_len(n), rep(1, n))
+    Lambdat$trans <- mkFlexDiagTrans(rep(0, addArgs$nBasis),
+                                     rep(1, n),
+                                     devfunEnv)
     return(structure(c(object,
                        list(Zt = resetTransConst(Zt),
                             Lambdat = Lambdat)),
                      class = class(object)))
-##    addArgs <- eval(object$addArgs, addArgs)
-##    Zt <- kr(t(as.repSparse(object$modMat)), as.repSparse(object$grpFac))  
 }
 
 ##' @rdname setReTrm

@@ -19,49 +19,49 @@ strucGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
                          ...) {
 
     cat("\nConstructing vectors and matrices...\n")
-    pForm <- strucParseFormula(formula, data, addArgs, ...)
+    parsedForm <- strucParseFormula(formula, data, addArgs, ...)
 
     cat("\nConstructing deviance function...\n")
-    dfun <- mkGeneralGlmerDevfun(y = pForm$response,
-                                 X = pForm$fixed,
-                                      Zt = as(pForm$Zt,      "dgCMatrix"),
-                                 Lambdat = as(pForm$Lambdat, "dgCMatrix"),
+    dfun <- mkGeneralGlmerDevfun(y = parsedForm$response,
+                                 X = parsedForm$fixed,
+                                      Zt = as(parsedForm$Zt,      "dgCMatrix"),
+                                 Lambdat = as(parsedForm$Lambdat, "dgCMatrix"),
                                  weights = weights,
                                  offset = offset,
                                  etastart = etastart,
-                                 initPars = pForm$initPars,
-                                 parInds = pForm$parInds,
-                                 mapToCovFact = mkSparseTrans(pForm$Lambdat),
-                                 mapToModMat = mkSparseTrans(pForm$Zt),
-                                 devfunEnv = pForm$devfunEnv,
+                                 initPars = parsedForm$initPars,
+                                 parInds = parsedForm$parInds,
+                                 mapToCovFact = mkSparseTrans(parsedForm$Lambdat),
+                                 mapToModMat = mkSparseTrans(parsedForm$Zt),
+                                 devfunEnv = parsedForm$devfunEnv,
                                  ...)
 
     cat("\nInitializing deviance function...\n")
-    dfun(pForm$initPars)
+    dfun(parsedForm$initPars)
 
     cat("\nOptimizing deviance function...\n")
-    opt <- minqa:::bobyqa(pForm$initPars, dfun, lower = pForm$lower,
+    opt <- minqa:::bobyqa(parsedForm$initPars, dfun, lower = parsedForm$lower,
                           control =
                           list(iprint = optVerb,
                                rhobeg = 0.0002,
                                rhoend = 2e-7))
 
     cat("\nPreparing output...\n")
-    names(opt$par) <- names(pForm$initPars)
+    names(opt$par) <- names(parsedForm$initPars)
 
-    ans <- list(opt = opt, parsedForm = pForm, dfun = dfun)
+    ans <- list(opt = opt, parsedForm = parsedForm, dfun = dfun)
     class(ans) <- "strucGlmer"
-    
-    try(ansRand <- mapply(setInit, pForm$random,
-                          covarPerTerm(ans),
-                          loadsPerTerm(ans),
-                          SIMPLIFY = FALSE), silent = TRUE)
+
+    trash <- mapply(setInit, parsedForm$random,
+                    covarPerTerm(ans),
+                    loadsPerTerm(ans))
+    ansRand <- try(lapply(ans$parsedForm$random, update), silent = TRUE)
     if(inherits(ansRand, "try-error")) {
         warning("couldn't reset initial values to estimated values,\n",
                 "so model printout is probably misleading.\n",
                 "perhaps check the object itself.")
     } else {
-        ans$pForm$random <- ansRand
+        ans$parsedForm$random <- ansRand
     }
     return(ans)
 }
@@ -203,7 +203,10 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
                                         # the environment that will
                                         # eventually become the
                                         # environment of the deviance
-                                        # function
+                                        # function (i try to keep a
+                                        # reference to this
+                                        # environment in lots of
+                                        # places)
     sf        <- splitForm(formula)
     data      <- as.data.frame(data, ...)
     devfunEnv <- new.env()

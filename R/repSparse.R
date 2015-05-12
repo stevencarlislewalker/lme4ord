@@ -886,16 +886,12 @@ mkFlexDiagTrans <- function(init, defaultOutput,
             }
         } else {
             function(matPars) {
-                indsObsLevel <- 
-                ## indsObsLevel <- FIXME: get these from
-                ## devfunEnv$nRePerTrm and devfunEnv$reTrmClasses
-                ## FIXME: might be easier to also pass term number to
-                ## setReTrm??
-                lp <- try(evalq(pp$linPred(1), devfunEnv), silent = TRUE)
-                b1 <- try(evalq(pp$b      (1), devfunEnv), silent = TRUE)
+                lp <- try(evalq(pp$linPred(1) + resp$offset, devfunEnv), silent = TRUE)
+                b1 <- try(evalq(pp$b      (1),               devfunEnv), silent = TRUE)
                 if(inherits(lp, "try-error")) return(defaultOutput)
-                lp <- lp - b1[indsObsLevel]
-                Xspline <- try(ns(lp, nBasis), silent = TRUE)
+                lp <- try(lp - b1[indsObsLevel], silent = TRUE)
+                if(inherits(lp, "try-error")) return(defaultOutput)
+                Xspline <- try(ns(lp, nBasis, intercept = TRUE), silent = TRUE)
                 assign("Xspline", Xspline, envir = parent.env(environment()))
                 if(inherits(Xspline, "try-error")) return(defaultOutput)
                 return(as.numeric(exp(Xspline %*% matPars)))
