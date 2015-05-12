@@ -230,3 +230,18 @@ flattenIntVec <- function(x) {
     match(x, sort(unique(x)))
 }
 
+##' Assign to an environment the value of an expression evaluated in
+##' another environment (or list or data frame)
+##'
+##' @param expr expression to evaluate
+##' @param name name of object in \code{assignEnv}
+##' @param data environment (or list or data frame) in which to
+##' evaluate \code{expr}
+##' @param envir environment in which to store the results of
+##' \code{expr} as \code{name}
+##' @export
+assignWith <- function(expr, name, data, envir,
+                       enclos = parent.frame()) {
+    assign(name, eval(substitute(expr), data, enclos = enclos), envir = envir)
+}
+

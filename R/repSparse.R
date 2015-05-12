@@ -580,11 +580,18 @@ getInit.repSparse <- function(x, ...) environment(x$trans)$init
 ##' @export
 getInit.function <- function(x, ...) environment(x)$init
 
-##' @param init initial value for the parameter vector
 ##' @rdname getInit
 ##' @export
-setInit <- function(x, init, ...) UseMethod("setInit")
+getInit.reTrmStruct <- function(x, ...) {
+    list(initCovar = getInit(x$Lambdat),
+         initLoads = getInit(x$Zt))
+}
 
+##' @rdname getInit
+##' @export
+setInit <- function(x, ...) UseMethod("setInit")
+
+##' @param init initial value for the parameter vector
 ##' @rdname getInit
 ##' @export
 setInit.default <- function(x, init, ...) assign("init", init, envir = as.environment(x))
@@ -596,6 +603,15 @@ setInit.repSparse <- function(x, init, ...) assign("init", init, envir = environ
 ##' @rdname getInit
 ##' @export
 setInit.function <- function(x, init, ...) assign("init", init, envir = environment(x))
+
+##' @param initCovar initial value for the covariance parameter vector
+##' @param initLoads initial value for the loadings parameter vector
+##' @rdname getInit
+##' @export
+setInit.reTrmStruct <- function(x, initCovar, initLoads, ...) {
+    setInit(x$Lambdat, initCovar)
+    setInit(x$Zt,      initLoads)
+}
 
 ##' @rdname getInit
 ##' @export
@@ -854,17 +870,14 @@ mkExpCholTrans <- function(init, cholObj, symmObj, vecDist) {
 ##' @rdname mkTrans
 ##' @export
 ##' @param defaultOutput default vector for diagonal elements
-##' @param indsObsLevel indices pointing to the observation level
-##' random effects
 ##' @param devfunEnv environment of the deviance function
 mkFlexDiagTrans <- function(init, defaultOutput,
-                            indsObsLevel, devfunEnv) {
+                            devfunEnv) {
     local({
         init <- init
         nBasis <- length(init)
         if(nBasis == 0L) stop("initial parameter vector must have length greater than zero")
         defaultOutput <- defaultOutput
-        indsObsLevel <- indsObsLevel
         devfunEnv <- devfunEnv
         Xspline <- NULL
         if(nBasis == 1) {
@@ -873,6 +886,11 @@ mkFlexDiagTrans <- function(init, defaultOutput,
             }
         } else {
             function(matPars) {
+                indsObsLevel <- 
+                ## indsObsLevel <- FIXME: get these from
+                ## devfunEnv$nRePerTrm and devfunEnv$reTrmClasses
+                ## FIXME: might be easier to also pass term number to
+                ## setReTrm??
                 lp <- try(evalq(pp$linPred(1), devfunEnv), silent = TRUE)
                 b1 <- try(evalq(pp$b      (1), devfunEnv), silent = TRUE)
                 if(inherits(lp, "try-error")) return(defaultOutput)

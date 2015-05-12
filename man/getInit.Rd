@@ -3,11 +3,13 @@
 \alias{getInit}
 \alias{getInit.default}
 \alias{getInit.function}
+\alias{getInit.reTrmStruct}
 \alias{getInit.repSparse}
 \alias{parLength}
 \alias{setInit}
 \alias{setInit.default}
 \alias{setInit.function}
+\alias{setInit.reTrmStruct}
 \alias{setInit.repSparse}
 \title{Get and set initial parameter values for repeated sparse matrices}
 \usage{
@@ -19,13 +21,17 @@ getInit(x, ...)
 
 \method{getInit}{function}(x, ...)
 
-setInit(x, init, ...)
+\method{getInit}{reTrmStruct}(x, ...)
+
+setInit(x, ...)
 
 \method{setInit}{default}(x, init, ...)
 
 \method{setInit}{repSparse}(x, init, ...)
 
 \method{setInit}{function}(x, init, ...)
+
+\method{setInit}{reTrmStruct}(x, initCovar, initLoads, ...)
 
 parLength(ll)
 }
@@ -35,6 +41,10 @@ parLength(ll)
 \item{...}{not yet used}
 
 \item{init}{initial value for the parameter vector}
+
+\item{initCovar}{initial value for the covariance parameter vector}
+
+\item{initLoads}{initial value for the loadings parameter vector}
 }
 \description{
 Get and set initial parameter values for repeated sparse matrices

@@ -16,7 +16,7 @@ simStrucParsedForm(parsedForm, family = binomial, weights, ...)
 \item{addArgs}{list of additional arguments to
 \code{\link{setReTrm}} methods}
 
-\item{reTrmsList}{if \code{NULL} \code{\link{mkReStructs}} is used}
+\item{reTrmsList}{if \code{NULL} \code{\link{mkReTrmStructs}} is used}
 
 \item{...}{additional parameters to \code{\link{as.data.frame}}}
 

@@ -47,13 +47,17 @@ setReTrm.identity <- function(object, addArgs, devfunEnv = NULL) {
 ##' @rdname setReTrm
 ##' @export
 setReTrm.flexvar <- function(object, addArgs, devfunEnv = NULL) {
+    ## note to self: pass devfunEnv to trans maker, but remember it is
+    ## empty at this point
     n <- nrow(object$modMat)
     addArgs <- eval(object$addArgs, addArgs)
     Zt <- repSparseIdent(n)
+    Lambdat <- repSparseIdent(n)
+    environment(Lambdat$trans)$devfunEnv <- devfunEnv
     ##mkFlexObsLevelTrans(
     return(structure(c(object,
                        list(Zt = resetTransConst(Zt),
-                            Lambdat = repSparseIdent(n))),
+                            Lambdat = Lambdat)),
                      class = class(object)))
 ##    addArgs <- eval(object$addArgs, addArgs)
 ##    Zt <- kr(t(as.repSparse(object$modMat)), as.repSparse(object$grpFac))  
@@ -94,11 +98,40 @@ setReTrm.cooccur <- function(object, addArgs, devfunEnv = NULL) {
 ##' @param object a \code{reTrmStruct} object
 ##' @param newCovar new covariance parameters
 ##' @param newLoads new loadings parameters
+##' @rdname update.reTrmStruct
 ##' @export
-update.reTrmStruct <- function(object, newCovar, newLoads) {
-    setInit(object$Lambdat, newCovar)
-    setInit(object$Zt,      newLoads)
+update.reTrmStruct <- function(object, newCovar, newLoads, ...) {
+    object$Lambdat <- update(object$Lambdat, newCovar)
+    object$Zt      <- update(object$Zt,      newLoads)
     return(object)
+}
+
+##' @rdname update.reTrmStruct
+##' @export
+update.flexvar <- function(object, newCovar, newLoads, ...) {
+
+    ## This special method is to put information in the environment of
+    ## the transformation function that is currently only in the
+    ## environment of the deviance function.  _In general_ such a
+    ## method is required whenever the transformation function depends
+    ## on other random effects terms.  Please see `?assignWith` for a
+    ## useful technique in this regard
+    
+    object <- update.reTrmStruct(object, newCovar, newLoads)
+    transEnv <- environment(object$Lambdat$trans)
+    assignWith(expr  = indsForClass("flexvar", reTrmClasses, nRePerTrm),
+               name  = "indsObsLevel",
+               data  = transEnv$devfunEnv,
+               envir = transEnv)
+    return(object)
+}
+
+indsForClass <- function(reTrmClass, reTrmClasses, nValuesPerTrm) {
+    ## FIXME: not efficient -- computes indices for all classes first
+    whichClass <- which(reTrmClasses == reTrmClass)
+    starts <- c(1L, 1L + cumsum(nValuesPerTrm)[-length(nValuesPerTrm)])
+    ends <- starts + nValuesPerTrm - 1L
+    unlist(mapply(":", starts[whichClass], ends[whichClass], SIMPLIFY = FALSE))
 }
 
 ##' Print random effects term
@@ -125,6 +158,8 @@ printReTrm.default <- function(object, forSummary = FALSE, ...) {
     .printPars("  loadings parameters:   ", getInit(object$Zt))
     cat("\n")
 }
+
+## FIXME: write specific printReTrm methods for different classes
 
 
 ##' Simulate additional arguments
@@ -171,10 +206,7 @@ findReTrmClasses <- function(formula = NULL) {
     if(is.null(formula)) {
         return(as.character(sub("setReTrm.", "", methods("setReTrm"))))
     }
-    ## intersect(all.names(formula), findReTrmClasses())
     classInds <- attr(terms(formula, specials = findReTrmClasses()), "specials")
     names(unlist(classInds))
-    ## unlist(mapply(rep, names(classInds),
-    ##               lapply(classInds, length),
-    ##               SIMPLIFY = FALSE))[unlist(classInds)]
 }
+

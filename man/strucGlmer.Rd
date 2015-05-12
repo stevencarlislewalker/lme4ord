@@ -43,6 +43,11 @@ loadsPerTerm(object)
 (e.g. \code{"fixef", "covar"})}
 }
 \description{
-Structured glmer
+Parses a mixed model formula with special structures (with
+\code{\link{strucParseFormula}}), constructs a generalized linear
+mixed model deviance function (with
+\code{\link{mkGeneralGlmerDevfun}}), optimizes this deviance
+function (with \code{\link{bobyqa}}), and returns the results as a
+\code{strucGlmer} object.
 }
 

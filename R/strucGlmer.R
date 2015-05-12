@@ -1,5 +1,12 @@
 ##' Structured glmer
 ##'
+##' Parses a mixed model formula with special structures (with
+##' \code{\link{strucParseFormula}}), constructs a generalized linear
+##' mixed model deviance function (with
+##' \code{\link{mkGeneralGlmerDevfun}}), optimizes this deviance
+##' function (with \code{\link{bobyqa}}), and returns the results as a
+##' \code{strucGlmer} object.
+##'
 ##' @param formula extended mixed model formula
 ##' @param data data frame
 ##' @param addArgs list of additional arguments to pass to
@@ -38,12 +45,6 @@ strucGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
                           list(iprint = optVerb,
                                rhobeg = 0.0002,
                                rhoend = 2e-7))
-                  ## control = optControl)
-    if(FALSE) {for(i in 1:5) {
-        opt <- minqa:::bobyqa(opt$par, dfun, lower = pForm$lower)
-                      ## control = optControl)
-    }}
-
 
     cat("\nPreparing output...\n")
     names(opt$par) <- names(pForm$initPars)
@@ -51,10 +52,17 @@ strucGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
     ans <- list(opt = opt, parsedForm = pForm, dfun = dfun)
     class(ans) <- "strucGlmer"
     
-    try(ans$pForm$random <- mapply(update, pForm$random,
-                                   covarPerTerm(ans),
-                                   loadsPerTerm(ans),
-                                   SIMPLIFY = FALSE), silent = TRUE)
+    try(ansRand <- mapply(setInit, pForm$random,
+                          covarPerTerm(ans),
+                          loadsPerTerm(ans),
+                          SIMPLIFY = FALSE), silent = TRUE)
+    if(inherits(ansRand, "try-error")) {
+        warning("couldn't reset initial values to estimated values,\n",
+                "so model printout is probably misleading.\n",
+                "perhaps check the object itself.")
+    } else {
+        ans$pForm$random <- ansRand
+    }
     return(ans)
 }
 
@@ -184,29 +192,51 @@ mkReTrmStructs <- function(splitFormula, data) {
 ##' @param data an object coercible to data frame
 ##' @param addArgs list of additional arguments to
 ##' \code{\link{setReTrm}} methods
-##' @param reTrmsList if \code{NULL} \code{\link{mkReStructs}} is used
+##' @param reTrmsList if \code{NULL} \code{\link{mkReTrmStructs}} is used
 ##' @param ... additional parameters to \code{\link{as.data.frame}}
 ##' @rdname strucParseFormula
 ##' @export
 strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL, ...) {
-    sf   <- splitForm(formula)
-    data <- as.data.frame(data, ...)
+                                        # get and construct basic
+                                        # information: (1) list of
+                                        # formulas, (2) data, and (3)
+                                        # the environment that will
+                                        # eventually become the
+                                        # environment of the deviance
+                                        # function
+    sf        <- splitForm(formula)
+    data      <- as.data.frame(data, ...)
+    devfunEnv <- new.env()
 
+                                        # initially set up the random
+                                        # effects term structures
     if(is.null(reTrmsList)) reTrmsList <- mkReTrmStructs(sf, data)
-    
-    response <- model.response(model.frame(noSpecials(nobars(formula)), data))
-    fixed    <- model.matrix(sf$fixedFormula, data)
-    random   <- lapply(reTrmsList, setReTrm, addArgs = addArgs)
 
+                                        # extract the respose, fixed
+                                        # effects model matrix, and
+                                        # list of random effects
+                                        # structures
+    response <- model.response(model.frame(sf$fixedFormula, data))
+    fixed    <- model.matrix(sf$fixedFormula, data)
+    random   <- lapply(reTrmsList, setReTrm, addArgs = addArgs, devfunEnv = devfunEnv)
+
+                                        # lists of repeated sparse
+                                        # matrices
     ZtList      <- lapply(random, "[[",      "Zt")
     LambdatList <- lapply(random, "[[", "Lambdat")
 
+                                        # bind the lists together
     ZtBind      <- .bind(     ZtList, "row")
     LambdatBind <- .bind(LambdatList, "diag")
 
+                                        # ensure that the order is
+                                        # appropriate for coercing to
+                                        # dgCMatrix objects
     Zt      <- standardSort(     ZtBind)
     Lambdat <- standardSort(LambdatBind)
 
+                                        # get initial values for model
+                                        # parameters
     init <- list(covar = getInit(Lambdat),
                  fixef = rep(0, ncol(fixed)),
                  loads = getInit(Zt))
@@ -218,18 +248,30 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
                rep(-Inf, length(initPars) - length(init$covar)))
     names(lower) <- names(initPars)
 
+                                        # fill the environment of the
+                                        # deviance function with those
+                                        # objects that depend on the
+                                        # order of random effects
+                                        # terms
     devfunEnv <- list2env(list(nRePerTrm = sapply(LambdatList, nrow),
                                nLambdatParPerTrm = sapply(LambdatList, parLength),
-                               nZtParPerTrm = sapply(ZtList, parLength),
-                               reTrmClasses = sf$reTrmClasses))
+                                    nZtParPerTrm = sapply(     ZtList, parLength),
+                               reTrmClasses = sf$reTrmClasses),
+                          envir = devfunEnv)
+
+                                        # fill the environments of the
+                                        # transformation functions
+                                        # with objects that depend on
+                                        # the order of random effects
+                                        # terms
+    random <- lapply(random, update)
 
     return(list(response = response, fixed = fixed, random = random,
                 Zt = Zt, Lambdat = Lambdat,
-                initPars = initPars, parInds = parInds, lower = lower,
+                initPars = initPars, parInds = parInds,
+                lower = lower,
                 devfunEnv = devfunEnv))
 }
-
-## updateReStruc <- function(parsedForm, devfunEnv) {
 
 
 ##' @param parsedForm result of \code{strucParseFormula}
