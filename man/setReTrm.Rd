@@ -9,6 +9,8 @@
 \alias{setReTrm.edge}
 \alias{setReTrm.flexvar}
 \alias{setReTrm.identity}
+\alias{setReTrm.varExp}
+\alias{setReTrm.varIdent}
 \title{Set model matrix slice and relative covariance factor block for a
 random effects term}
 \usage{
@@ -23,6 +25,10 @@ setReTrm(object, addArgsList, devfunEnv = NULL)
 \method{setReTrm}{edge}(object, addArgsList, devfunEnv = NULL)
 
 \method{setReTrm}{cooccur}(object, addArgsList, devfunEnv = NULL)
+
+\method{setReTrm}{varIdent}(object, addArgsList, devfunEnv = NULL)
+
+\method{setReTrm}{varExp}(object, addArgsList, devfunEnv = NULL)
 
 packReTrm(object, Zt, Lambdat, lowerLoads, upperLoads, lowerCovar, upperCovar,
   ...)

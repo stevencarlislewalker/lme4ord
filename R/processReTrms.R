@@ -138,6 +138,55 @@ setReTrm.cooccur <- function(object, addArgsList, devfunEnv = NULL) {
     packReTrm(object, Zt, Lambdat)
 }
 
+##' @rdname setReTrm
+##' @export
+setReTrm.varIdent <- function(object, addArgsList, devfunEnv = NULL) {
+                                        # transposed model matrix (or
+                                        # loadings matrix) -- Zt rows
+                                        # associated with this term
+    n <- length(object$grpFac)
+    Zt <- resetTransConst(repSparseIdent(n))
+    
+                                        # covariance factor -- block
+                                        # of Lambdat associated with
+                                        # this term
+
+    nl <- nlevels(object$grpFac)
+    init <- rep(1, nl)
+    Lambdat <- repSparseVarWithCovariate(init, 
+                                         grpFac = object$grpFac,,
+                                         mkTransFunc = mkVarIdentTrans)
+    
+                                        # package up object
+    packReTrm(object, Zt, Lambdat,
+              lowerCovar = rep(0, nl))
+}
+
+##' @rdname setReTrm
+##' @export
+setReTrm.varExp <- function(object, addArgsList, devfunEnv = NULL) {
+                                        # transposed model matrix (or
+                                        # loadings matrix) -- Zt rows
+                                        # associated with this term
+    n <- length(object$grpFac)
+    Zt <- resetTransConst(repSparseIdent(n))
+    
+                                        # covariance factor -- block
+                                        # of Lambdat associated with
+                                        # this term
+
+    nl <- nlevels(object$grpFac)
+    init <- rep(1, nl)
+    Lambdat <- repSparseVarWithCovariate(init, 
+                                         grpFac = object$grpFac,,
+                                         mkTransFunc = mkVarExpTrans)
+    
+                                        # package up object
+    packReTrm(object, Zt, Lambdat,
+              lowerCovar = rep(0, nl))
+}
+
+
 ##' @param Zt transposed model matrix
 ##' @param Lambdat relative covariance factor
 ##' @param lowerLoads,upperLoads,lowerCovar,upperCovar lower and upper
@@ -160,6 +209,7 @@ packReTrm <- function(object, Zt, Lambdat,
                      upperCovar = upperCovar)),
               class = class(object))
 }
+
 
 ##' Update a random effects term structure with new parameters
 ##'

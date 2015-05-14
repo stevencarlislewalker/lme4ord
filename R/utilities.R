@@ -246,3 +246,25 @@ assignWith <- function(expr, name, data, envir, enclos = parent.frame()) {
     assign(name, eval(substitute(expr), data, enclos = enclos), envir = envir)
 }
 
+##' Show skeleton for some type of function
+##'
+##' @param whichSkel length-one character giving the name of the
+##' skeleton
+##' @param package the default is probably what you want
+##' @export
+showSkeleton <- function(whichSkel, package = "lme4ord") {
+   fn <- system.file("skeletons",
+                      paste(whichSkel, "R", sep = "."),
+                      package = package)
+   if(nchar(fn) == 0L) {
+       availableSkels <- list.files(system.file("skeletons", package = "lme4ord"))
+       nc <- nchar(availableSkels)
+       avsk <- sapply(strsplit(availableSkels, "\\."),
+                      function(xx) paste(xx[-length(xx)], collapse = ""))
+       stop("skeleton not found. ",
+            "here are the available skeletons: \n",
+            avsk)
+   }
+   cat(paste(c(readLines(fn), ""), collapse = "\n"))
+}
+

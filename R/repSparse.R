@@ -1668,8 +1668,9 @@ repSparseVarWithCovariate <- function(varPars, covariate, grpFac,
                                       mkTransFunc = mkVarExpTrans) {
     ## MATNAME: Structured covariance matrix
     if(missing(grpFac)) grpFac <- factor(seq_along(covariate))
+    if(missing(covariate)) covariate <- NA
     trans <- mkTransFunc(varPars, covariate, grpFac)
-    matSize <- length(covariate)
+    matSize <- length(grpFac)
     vals <- trans(varPars)
     ans <- repSparse(1:matSize, 1:matSize, 1:matSize, vals,
                      trans = trans, Dim = c(matSize, matSize))
