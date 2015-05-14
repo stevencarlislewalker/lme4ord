@@ -15,7 +15,7 @@
     <link href="assets/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="assets/css/starter-template.css" rel="stylesheet">
+    <link href="jumbotron.css" rel="stylesheet">
 
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
@@ -37,35 +37,81 @@
           </button>
           <a class="navbar-brand" href="#">lme4ord</a>
         </div>
-        <div id="navbar" class="collapse navbar-collapse">
-          <ul class="nav navbar-nav">
-            <li class="active"><a href="#">Home</a></li>
-            <li><a href="#about">About</a></li>
-            <li><a href="#contact">Contact</a></li>
-          </ul>
-        </div><!--/.nav-collapse -->
+        <div id="navbar" class="navbar-collapse collapse">
+          <form class="navbar-form navbar-right">
+            <div class="form-group">
+              <input type="text" placeholder="Email" class="form-control">
+            </div>
+            <div class="form-group">
+              <input type="password" placeholder="Password" class="form-control">
+            </div>
+            <button type="submit" class="btn btn-success">Sign in</button>
+          </form>
+        </div><!--/.navbar-collapse -->
       </div>
     </nav>
 
-    <div class="container">
-
-      <div class="starter-template">
+    <!-- Main jumbotron for a primary marketing message or call to action -->
+    <div class="jumbotron">
+      <div class="container">
         <h1>lme4ord</h1>
         <p class="lead">
-	Generalized linear mixed models with structured covariance
-        structures, <b>with ecologists in mind</b>.<br>
-	The <code>lme4</code> in <code>lme4ord</code> is a reference
-        to <a href="https://github.com/lme4/lme4/">this mixed models
-        package</a>.<br>
-	The <code>ord</code> in <code>lme4ord</code> is a reference to
-        model-based ordination, which is an ecological data analysis
-        tool.<br>
-	Although <code>lme4ord</code> was originally developed for my
-        own ecological applications it can be used much more broadly.
+	Generalized linear mixed models with flexible covariance
+        structures<br>
+	<code>lme4ord</code> runs on top of the well-tested
+	<code>c++</code> machinery from <a
+	href="https://github.com/lme4/lme4/">lme4</a>
 	</p>
+        <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p>
+      </div>
+    </div>
+
+    <div class="container">
+      <!-- Example row of columns -->
+      <div class="row">
+        <div class="col-md-4">
+
+	  <h2>For users</h2>
+
+	  <p><code>lme4ord</code> provides a formula interface for
+	  specifying generalized linear mixed models with flexible
+	  covariance structures, in a manner similar to
+	  <code>varStruct</code> and <code>corStruct</code> classes in
+	  <code>nlme</code>. </p> <p><a class="btn btn-default"
+	  href="#" role="button">View details &raquo;</a></p>
+
+	</div>
+        <div class="col-md-4">
+
+	  <h2>For developers</h2>
+
+	  <p><code>lme4ord</code> provides infrastructure for
+	  specifying new types of covariance structures, including a
+	  sparse matrix class that simplifies the specification of
+	  covariance structures and a flexible formula parsing
+	  paradigm that alleviates the need to fight with <code>R</code>
+	  expressions.  </p> <p><a class="btn btn-default" href="#"
+	  role="button">View details &raquo;</a></p></div> <div
+	  class="col-md-4">
+
+	  <h2>For statisticians</h2>
+
+	  <p><code>lme4ord</code> also provides more direct access to
+	  the underlying <code>lme4</code> machinery, for those
+	  comfortable with specifying their model as a series of
+	  sparse matrices and updating functions. This option is
+	  analogous to using <code>glm.fit</code> instead of
+	  <code>glm</code>.</p> <p><a class="btn btn-default" href="#"
+	  role="button">View details &raquo;</a></p> </div>
+	
       </div>
 
-    </div><!-- /.container -->
+      <hr>
+
+      <footer>
+        <p>&copy; Steve C Walker 2015</p>
+      </footer>
+    </div> <!-- /container -->
 
 
     <!-- Bootstrap core JavaScript
