@@ -1,0 +1,19 @@
+Package: lme4ord
+Type: Package
+Title: What the package does (short line)
+Version: 0.0-0
+Date: 2014-06-27
+Author: Steve Walker
+Maintainer: Steve Walker <steve.walker@utoronto.ca>
+Description: More about what it does (maybe more than one line)
+License: GPL-2
+Roxygen: list(wrap = FALSE)
+Depends:
+    lme4,
+    lme4pureR,
+    multitable,
+    ape,
+    reshape2
+Imports:
+    Matrix,
+    grid

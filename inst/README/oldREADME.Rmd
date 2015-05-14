@@ -1,0 +1,310 @@
+lme4ord (l-m-e-ford)
+====================
+
+```{r, echo = FALSE}
+library(knitr)
+opts_chunk$set(fig.path = "inst/README/figure/")
+```
+
+Mixed-effects models for community ecologists.  See the currently
+evolving [mission statement](https://github.com/stevencarlislewalker/lme4ord/issues/1).
+
+This package is not at all stable.
+
+```{r, message = FALSE}
+library(Matrix)
+library(lme4ord)
+library(plotrix)
+library(minqa)
+library(ape)
+library(lme4)
+library(lme4pureR)
+library(multitable)
+library(pryr)
+library(reo)
+```
+
+#### phylogenetic generalized linear mixed models!
+
+Begin with initial simulations of a sites-by-species binary response
+matrix, `y`, environmental variable, `x`, and trait `z`.
+stronger correlations between `y` and `x` will be added below.
+```{r}
+set.seed(10)
+n <- 10
+m <- 30
+dl <- dims_to_vars(data.list(y = 1 * (rmat(n, m) > 0),
+                             x = rnorm(n), z = rnorm(m),
+                             dimids = c("sites", "species")))
+df <- as.data.frame(dl)
+head(df)
+```
+
+Make up some silly phylogeny.
+```{r}
+phy <- rtree(n = m)
+phy <- compute.brlen(phy, method = "Grafen", power = 0.5)
+```
+and estimate a phylogenetic covariance matrix, standardized to unit determinant.
+```{r}
+Vphy <- stanCov(vcv(phy))
+dimnames(Vphy) <- rep(list(1:m), 2)
+```
+Here's the phylogeny (forget the species names) and the associated covariance matrix
+```{r, fig.width = 4, fig.height = 5}
+plot(phy)
+image(as(Vphy, "sparseMatrix"))
+```
+Put the covariance matrix in a list, for model-input purposes -- the
+idea is that there might be other covariance matrix (e.g. a spatial
+one say).  It is important that the list element gets the name
+`species` because this is the name of the grouping factor used in the
+model formula below.
+```{r}
+covList <- list(species = Vphy)
+```
+
+Here is the cool part ... a formula interface.  This model has a fixed
+interaction between the environment and the trait (with intercept and
+main effects too), a random environmental slope and intercept with
+phylogenetic correlations across species.  However, the phylogenetic
+nature of the covariances is not set in the formula, but rather as an
+argument to the `levelsCovFormula` function below, which will form the
+formula parsing module of a pglmer function.
+```{r}
+form <- y ~ x*z + (x | species)
+parsedForm <- levelsCovFormula(form, df, covList = covList)
+```
+
+Set the covariance parameters to something more interesting (i.e. with
+a covariance between the slope and intercept).
+```{r}
+covarSim <- c(0.5, -0.2, 0.5)
+parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim))
+```
+Update the simulations to reflect the new structure.
+```{r}
+X <- model.matrix(nobars(form), df) # fixed effects design matrix
+Z <- t(parsedForm$Lambdat %*% parsedForm$Zt) # random effects design
+                                             # matrix with
+                                             # phylogenetic
+                                             # covariances
+fixefSim <- rnorm(ncol(X)) # fixed effects
+u <- rnorm(ncol(Z)) # whitened random effects
+p <- plogis(as.numeric(X %*% fixefSim + Z %*% u)) # probability of observation
+dl$y <- rbinom(nrow(df), 1, p) # presence-absence data
+df <- as.data.frame(dl) # reconstruct the data frame with new
+                        # structured response
+```
+Now we look at the new structure.  Here's the Cholesky factor of the species covariance, and the covariance itself.
+```{r, fig.width=3, fig.height=3}
+image(parsedForm$Lambdat)
+image(crossprod(parsedForm$Lambdat))
+```
+The big four blocks represent the 2-by-2 covariance between intercept
+and slope.  The covariances within these blocks represent phylogenetic
+covariance.  the pattern here is more closely related species have
+more similar intercepts and slopes (red blocks on the diagonal) but
+more closely related species also have stronger negative correlations
+between slope and intercept (blue blocks on off diagonal).
+
+Here's the transposed random effects model matrix.  Those are 1's for
+the intercepts in the first 30 rows and the environmental variable in
+the second 30.
+```{r, fig.width=7, fig.height=2}
+image(parsedForm$Zt)
+```
+
+Here's the full covariance matrix (the large scale blocks reflect
+phylogenetic correlations and the patterns within each block are due
+to the environmental variable).
+```{r, fig.width=5, fig.height=5}
+image(fullCov <- t(parsedForm$Zt) %*% crossprod(parsedForm$Lambdat) %*% parsedForm$Zt)
+```
+Here's a closeup of one of the blocks
+```{r, fig.width=3, fig.height=3}
+image(fullCov[1:10, 1:10])
+```
+A potential problem is that this block is singular.
+```{r}
+eigen(fullCov[1:10, 1:10])$values
+```
+In fact the rank of the full 300 by 300 matrix is only 60 = 30 species
+times 2 model matrix columns.
+```{r}
+rankMatrix(fullCov)[1]
+```
+But then again so is the standard non-phylogenetic `glmer` model.
+```{r}
+gm <- glmer(form, df, binomial)
+with(getME(gm, c("Zt", "Lambdat")), {
+    covMatGm <- t(Zt) %*% crossprod(Lambdat) %*% Zt
+    print(rankMatrix(covMatGm)[1])
+    dim(covMatGm)
+})
+```
+The distribution of underlying probabilities of occurrence looks OK.
+```{r, fig.width=3, fig.height=3}
+hist(p)
+```
+Here is the observed occurrence pattern.
+```{r, fig.width=3, fig.height=3}
+color2D.matplot(dl$y, xlab = "species", ylab = "sites", main = "abundance")
+```
+
+Now we set the initial values for the optimization.
+```{r}
+parInds <- list(covar = 1:3, fixef = 4:7, loads = NULL)
+initPars <- c(covar = c(1, 0, 1), fixef = rep(0, 4))
+```
+The `parInds` `list` points to the indices in `initPars` containing
+different pieces of the parameter vector.  The `covar` parameters give
+the parameters influencing phylogenetic covariances between slopes and
+intercepts.  The `fixef` parameters give the coefficients of the fixed
+effects.  The `loads` parameters are absent, because in this model we
+do not fit factor loadings.
+
+We construct the deviance function out of all these pieces.
+```{r}
+dfun <- mkGeneralGlmerDevfun(df$y, parsedForm$X,
+                             parsedForm$Zt, parsedForm$Lambdat,
+                             rep(1, nrow(df)), rep(0, nrow(df)),
+                             initPars, parInds,
+                             parsedForm$mapToCovFact, function(loads) NULL)
+```
+Try out one evaluation of the deviance function.
+```{r}
+dfun(initPars)
+```
+Looks OK so we optimize.
+```{r}
+opt <- bobyqa(initPars, dfun, lower = c(0, -Inf, 0, rep(-Inf, 4)),
+              control = list(iprint = 4L))
+names(opt$par) <- names(initPars)
+```
+and compare with the true parameter values.
+```{r}
+cbind(estimated = opt$par, # estimated parameters
+      true = c(covar = covarSim, fixef = fixefSim)) # true parameters
+```
+Looks great!  At least in this case.
+
+#### mixed effects ordination!
+
+```{r}
+data(fish)
+data(limn)
+Y <- as.matrix(fish)
+## Y <- Y[, colSums(Y) > 1]
+n <- nrow(Y)
+m <- ncol(Y)
+x <- as.vector(scale(limn$pH))
+dl <- data.list(Y = t(Y), x = x,
+                dimids = c("species", "sites"))
+summary(dl)
+
+#mod <- glmerf(Y ~ 1 + (1 | species), . ~ 0 + (0 + latent | sites),
+#              dl, binomial, 1, 1, 2)
+#mod
+
+#ranef(mod)$species
+#ranef(mod)$sites
+#(loadMod <- loadings(mod))
+#latentCov <- Matrix(loadMod %*% t(loadMod)) + diag(VarCorr(mod)$species[1], m, m)
+#image(cov2cor(latentCov))
+
+#fitY <- matrix(getME(mod, "mu"), n, m, byrow = TRUE)
+#boxplot(fitY ~ Y, las = 1, horizontal = TRUE)
+```
+
+#### Short demo
+
+We need these packages (and their dependencies),
+```{r}
+library("lme4")
+library("lme4ord")
+library("Matrix")
+library("reo") ## install.packages("reo", repos="http://R-Forge.R-project.org")
+```
+Prepare some data,
+```{r}
+Y <- Yp <-  as.matrix(fish)
+Y <- Y[order(rowSums(Y)), ]
+Yp <- Yp[order(rowSums(Yp)), ]
+```
+FIXME:  use more standard data set in more standard package.
+
+Construct deviance functions for one and two axis ordination models,
+```{r}
+dfun1 <- logisticPcaDevfun(Yp, 1)
+dfun2 <- logisticPcaDevfun(Yp, 2)
+```
+Get starting values for the optimization of these deviance functions,
+```{r}
+pars1 <- unlist(as.list(environment(dfun1))[c("theta", "phi")])[-1]
+pars2 <- unlist(as.list(environment(dfun2))[c("theta", "phi")])[-1]
+```
+Optimize these deviance functions,
+```{r, cache = TRUE}
+opt1 <- optim(pars1, dfun1, method = "BFGS",
+              control = list(maxit = 500, trace = TRUE))
+opt2 <- optim(pars2, dfun2, method = "BFGS",
+              control = list(maxit = 500, trace = TRUE))
+```
+Both models seem to both converge,
+```{r}
+opt1$convergence
+opt2$convergence
+```
+
+FIXME:  However for the two-axis model, while it gets close quickly, takes hundreds of iterations zeroing in on a solution.  Is this a quasi-convex problem?  That is, is it just skating around on a fairly flat part of the deviance function?  Perhaps we could get a speed up with some kind of penalty?
+
+```{r, echo = FALSE, results='hide'}
+dfun1(opt1$par)
+rho1 <- environment(dfun1)
+dfun2(opt2$par)
+rho2 <- environment(dfun2)
+```
+We make easier to understand objects from the results,
+```{r}
+mod1 <- mkMod(environment(dfun1), opt1)
+mod2 <- mkMod(environment(dfun2), opt2)
+```
+
+Let's plot some results from the two-axis model.  First we plot a series of image plots of observed and fitted site-by-species matrices.  These plots provide a decomposition of the sources of variation in the observed sites by species matrix (FIXME: add residual plot too).
+```{r, fig.width = 10, fig.height = 3}
+plotimage <- function(mat, ...)
+    image(1:nrow(mat), 1:ncol(mat), mat, las = 1,
+          zlim = c(0, 1),
+          col = grey(seq(1, 0, length = 100)),
+          ...)
+par(mfrow = c(1, 6))
+plotimage(Yp, main = "data")
+plotimage(plogis(mod2$fit),
+          main = "fitted values")
+plotimage(plogis(mod2$fitInter),
+          main = "intercept")
+plotimage(plogis(mod2$fitAxes),
+          main = "site-species interactions")
+plotimage(plogis(mod2$fitRow),
+          main = "main site effect")
+plotimage(plogis(mod2$fitCol),
+          main = "main species effect")
+```
+
+Now we make a logit-scale biplot (with only a few species to reduce clutter),
+```{r}
+par(mfrow = c(1, 1))
+rowKeep <- apply(abs(mod2$rowScores) > 0, 1, any)
+colKeep <- apply(abs(mod2$colScores) > 0.3, 1, any)
+biplot(mod2$rowScores[rowKeep,c(1, 2)], mod2$colScores[colKeep,c(1, 2)],
+       xlabs = (1:52)[rowKeep], ylabs = colnames(Yp)[colKeep],
+       xlab = "Axis I", ylab = "Axis II")
+```
+
+Note that the two kinds of bass (smallmouth, SB, and largemouth, LB) are orthogonal, indicating that they are relatively uncorrelated.  On the other hand, northern redbelly dace, NRD, is negatively correlated with largemouth.
+
+We can also plot the covariance matrix among species of the latent variables,
+```{r}
+image(cov2cor(mod2$typeCors))
+```
