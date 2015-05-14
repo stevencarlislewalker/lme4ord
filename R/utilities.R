@@ -239,9 +239,10 @@ flattenIntVec <- function(x) {
 ##' evaluate \code{expr}
 ##' @param envir environment in which to store the results of
 ##' \code{expr} as \code{name}
+##' @param enclos enclosing environemtn to be passed to
+##' \code{\link{assign}}
 ##' @export
-assignWith <- function(expr, name, data, envir,
-                       enclos = parent.frame()) {
+assignWith <- function(expr, name, data, envir, enclos = parent.frame()) {
     assign(name, eval(substitute(expr), data, enclos = enclos), envir = envir)
 }
 

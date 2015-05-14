@@ -16,6 +16,9 @@ evaluate \code{expr}}
 
 \item{envir}{environment in which to store the results of
 \code{expr} as \code{name}}
+
+\item{enclos}{enclosing environemtn to be passed to
+\code{\link{assign}}}
 }
 \description{
 Assign to an environment the value of an expression evaluated in

@@ -40,7 +40,9 @@ strucGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
     dfun(parsedForm$initPars)
 
     cat("\nOptimizing deviance function...\n")
-    opt <- minqa:::bobyqa(parsedForm$initPars, dfun, lower = parsedForm$lower,
+    opt <- minqa:::bobyqa(parsedForm$initPars, dfun,
+                          lower = parsedForm$lower,
+                          upper = parsedForm$upper,
                           control =
                           list(iprint = optVerb,
                                rhobeg = 0.0002,
@@ -74,8 +76,6 @@ print.strucGlmer <- function(x, ...) {
     cat ("\nFixed effects\n")
     cat (  "-------------\n")
     print(fixef(x))
-    cat ("\nRandom effects\n")
-    cat (  "--------------\n")
     lapply(x$parsedForm$random, printReTrm)
 }
 
@@ -109,8 +109,7 @@ loads.strucGlmer <- function(object, ...) {
 }
 
 subRagByLens <- function(x, lens) {
-    if(is.null(names(lens))) names(lens) <- seq_along(lens)
-    split(x, rep(names(lens), lens))
+    split(x, rep(seq_along(lens), lens)) ## split no good ... order of levels !
 }
 
 strucGlmerParPerTerm <- function(lens, pars) {
@@ -246,10 +245,20 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
     parInds <- mkParInds(init)
     initPars <- unlist(init)
 
-    ## FIXME: more flexibility for lower, and maybe add an upper?
-    lower <- c(ifelse(init$covar, 0, -Inf),
-               rep(-Inf, length(initPars) - length(init$covar)))
-    names(lower) <- names(initPars)
+                                        # get lower and upper bounds
+                                        # on parameters for the
+                                        # optimizer
+    lowerLoadsList <- lapply(random, "[[", "lowerLoads")
+    upperLoadsList <- lapply(random, "[[", "upperLoads")
+    lowerCovarList <- lapply(random, "[[", "lowerCovar")
+    upperCovarList <- lapply(random, "[[", "upperCovar")
+    lower <- c(unlist(lowerCovarList),
+               rep(-Inf, ncol(fixed)),
+               unlist(lowerLoadsList))
+    upper <- c(unlist(upperLoadsList),
+               rep( Inf, ncol(fixed)),
+               unlist(upperCovarList))
+    names(lower) <- names(upper) <- names(initPars)
 
                                         # fill the environment of the
                                         # deviance function with those
@@ -272,7 +281,7 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
     return(list(response = response, fixed = fixed, random = random,
                 Zt = Zt, Lambdat = Lambdat,
                 initPars = initPars, parInds = parInds,
-                lower = lower,
+                lower = lower, upper = upper,
                 devfunEnv = devfunEnv))
 }
 
@@ -374,10 +383,8 @@ splitForm <- function(formula) {
         formSplits[badTrms] <- lapply(formSplits[badTrms], fixBadTrm)
     }
 
-                                        # find additional arguments
+                                        # capture additional arguments
     reTrmAddArgs <- lapply(formSplits, "[", -2)[!(formSplitID == "(")]
-                                        # change call name
-    reTrmAddArgs <- lapply(reTrmAddArgs, "[[<-", 1, as.name("c"))
                                         # remove these additional
                                         # arguments
     formSplits <- lapply(formSplits, "[", 1:2)

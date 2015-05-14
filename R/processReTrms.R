@@ -2,7 +2,7 @@
 ##' random effects term
 ##' 
 ##' @param object a \code{reTrmStruct} object
-##' @param addArgs named list of additional arguments
+##' @param addArgsList named list of additional arguments
 ##' @param devfunEnv optional environment of the deviance function
 ##' @rdname setReTrm
 ##' @seealso \code{\link{mkReTrmStructs}} for construction of these objects
@@ -14,80 +14,151 @@
 ##' \item{Lambdat}{A \code{\link{repSparse}} object describing the
 ##' block of the relative covariance factor associated with the random
 ##' effects term.}
+##'
+##' \item{lowerLoads,upperLoads,lowerCovar,upperCovar}{Lower/upper
+##' bounds on loading parameters (possible parameters for \code{Zt})
+##' and/or covariance parameters (possible parameters for \code{Lambdat})}
+##'
 ##' @export
-setReTrm <- function(object, addArgs, devfunEnv = NULL) {
+setReTrm <- function(object, addArgsList,
+                     devfunEnv = NULL) {
     UseMethod("setReTrm")
 }
 
 ##' @rdname setReTrm
 ##' @export
-setReTrm.default <- function(object, addArgs, devfunEnv = NULL) {
-    Zt <- kr(t(as.repSparse(object$modMat)), as.repSparse(object$grpFac))
-    nc <- ncol(object$modMat)
+setReTrm.default <- function(object, addArgsList,
+                             devfunEnv = NULL) {
+    
+                                        # transposed model matrix (or
+                                        # loadings matrix) -- Zt rows
+                                        # associated with this term
+    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)),
+                               as.repSparse(object$grpFac)))
+
+                                        # covariance factor -- block
+                                        # of Lambdat associated with
+                                        # this term
+    nc <-    ncol(object$modMat)
     nl <- nlevels(object$grpFac)
-    template <- repSparseTri(rep(1, nc), rep(0, choose(nc, 2)), FALSE)
-    return(structure(c(object,
-                       list(Zt = resetTransConst(Zt),
-                            Lambdat = rep(template, nl, type = "diag"))),
-                     class = class(object)))
+    templateBlock <- repSparseTri(   diagVals = rep(1,        nc    ),
+                                  offDiagVals = rep(0, choose(nc, 2)),
+                                  low = FALSE)
+    Lambdat <- rep(templateBlock, nl, type = "diag")
+
+                                        # package up object
+                                        # (implicitly sets lower and
+                                        # upper bounds, but these can
+                                        # be explicitly set with
+                                        # packReTrm)
+    packReTrm(object, Zt, Lambdat)
+}
+
+
+
+           
+##' @rdname setReTrm
+##' @export
+setReTrm.identity <- function(object, addArgsList, devfunEnv = NULL) {
+
+                                        # Zt
+    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)),
+                             as.repSparse(object$grpFac)))
+
+                                        # Lambdat
+    nl <- nlevels(object$grpFac)
+    nc <-    ncol(object$modMat)
+    Lambdat <- repSparseIdent(nl * nc)
+
+                                        # pack
+    packReTrm(object, Zt, Lambdat)
 }
 
 ##' @rdname setReTrm
 ##' @export
-setReTrm.identity <- function(object, addArgs, devfunEnv = NULL) {
-    Zt <- kr(t(as.repSparse(object$modMat)), as.repSparse(object$grpFac))
-    nl <- nlevels(object$grpFac)
-    nc <- ncol(object$modMat)
-    return(structure(c(object,
-                       list(Zt = resetTransConst(Zt),
-                            Lambdat = repSparseIdent(nl * nc))),
-                     class = class(object)))
-}
-
-##' @rdname setReTrm
-##' @export
-setReTrm.flexvar <- function(object, addArgs, devfunEnv = NULL) {
+setReTrm.flexvar <- function(object, addArgsList, devfunEnv = NULL) {
+                                        # get additional arguments and
+                                        # sample size
+    addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
     n <- nrow(object$modMat)
-    addArgs <- eval(object$addArgs, addArgs)
-    Zt <- repSparseIdent(n)
-    Lambdat <- repSparse(seq_len(n), seq_len(n), seq_len(n), rep(1, n))
-    Lambdat$trans <- mkFlexDiagTrans(rep(0, addArgs$nBasis),
-                                     rep(1, n),
-                                     devfunEnv)
-    return(structure(c(object,
-                       list(Zt = resetTransConst(Zt),
-                            Lambdat = Lambdat)),
-                     class = class(object)))
+
+                                        # Zt
+    Zt <- resetTransConst(repSparseIdent(n))
+
+                                        # Lambdat
+    inds <- seq_len(n); baselineVars <- rep(1, n)
+    if(is.null(init <- addArgs$init)) init <- rep(0, addArgs$nBasis)
+    Lambdat       <- repSparseDiag  (baselineVars, inds)
+    Lambdat$trans <- mkFlexDiagTrans(init, baselineVars, devfunEnv)
+
+                                        # pack
+    packReTrm(object, Zt, Lambdat,
+              lowerCovar = rep(-Inf, length(init)))
 }
+
 
 ##' @rdname setReTrm
 ##' @export
-setReTrm.edge <- function(object, addArgs, devfunEnv = NULL) {
-    addArgs <- eval(object$addArgs, addArgs)
+setReTrm.edge <- function(object, addArgsList, devfunEnv = NULL) {
+                                        # get additional arguments
+    addArgs <- eval(object$addArgs, addArgsList)
+
+                                        # Zt
     Jedge <- as(edgeTipIndicator(addArgs$phy), "sparseMatrix")
     Jspp <- as(object$grpFac, "sparseMatrix")
-    Jt <- as.repSparse(Jedge %*% Jspp)
+    Jt <- resetTransConst(as.repSparse(Jedge %*% Jspp))
     Zt <- kr(t(as.repSparse(object$modMat)), Jt)
+
+                                        # Lambdat
     nl <- nrow(Jedge)
     nc <- ncol(object$modMat)
-    return(structure(c(object,
-                       list(Zt = resetTransConst(Zt),
-                            Lambdat = repSparseIdent(nl * nc))),
-                     class = class(object)))
+    Lambdat <- repSparseIdent(nl * nc)
+    
+                                        # pack
+    packReTrm(object, Zt, Lambdat)
 }
 
 ##' @rdname setReTrm
 ##' @export
-setReTrm.cooccur <- function(object, addArgs, devfunEnv = NULL) {
-    addArgs <- eval(object$addArgs, addArgs)
+setReTrm.cooccur <- function(object, addArgsList, devfunEnv = NULL) {
+
+                                        # get additional arguments
+    addArgs <- eval(object$addArgs, addArgsList)
+
+                                        # Zt
     Jt <- as.repSparse(as(object$grpFac, "sparseMatrix"))
-    Zt <- kr(t(as.repSparse(object$modMat)), Jt)
+    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)), Jt))
+
+                                        # Lambdat
     nCovPars <- choose(ncol(object$modMat), 2)
     Tt <- t(repSparseCorMatChol(rep(0, nCovPars)))
-    return(structure(c(object,
-                       list(Zt = resetTransConst(Zt),
-                            Lambdat = rep(Tt, nrow(Jt), type = "diag")),
-                       class = class(object))))
+    Lambdat <- rep(Tt, nrow(Jt), type = "diag")
+    
+                                        # pack
+    packReTrm(object, Zt, Lambdat)
+}
+
+##' @param Zt transposed model matrix
+##' @param Lambdat relative covariance factor
+##' @param lowerLoads,upperLoads,lowerCovar,upperCovar lower and upper
+##' bounds on possible loadings parameters (for \code{Zt}) and
+##' possible covariance parameters (for \code{Lambdat})
+##' @rdname setReTrm
+##' @export
+packReTrm <- function(object, Zt, Lambdat,
+                      lowerLoads, upperLoads,
+                      lowerCovar, upperCovar, ...) {
+    if(missing(lowerLoads)) lowerLoads <- setLowerDefault(getInit(Zt))
+    if(missing(upperLoads)) upperLoads <- setUpperDefault(getInit(Zt))
+    if(missing(lowerCovar)) lowerCovar <- setLowerDefault(getInit(Lambdat))
+    if(missing(upperCovar)) upperCovar <- setUpperDefault(getInit(Lambdat))
+    structure(c(object,
+                list(Zt = Zt, Lambdat = Lambdat,
+                     lowerLoads = lowerLoads,
+                     upperLoads = upperLoads,
+                     lowerCovar = lowerCovar,
+                     upperCovar = upperCovar)),
+              class = class(object))
 }
 
 ##' Update a random effects term structure with new parameters
@@ -123,6 +194,30 @@ update.flexvar <- function(object, newCovar, newLoads, ...) {
     return(object)
 }
 
+##' Get defaults choices for lower and/or upper bound of a model
+##' parameter
+##'
+##' @param init initial parameter value
+##' @param lower,upper lower or upper bound
+##' @param ... additional arguments not currently used
+##' @rdname setLowerUpperDefault
+##' @export
+setLowerDefault <- function(init, ...) {
+    if(missing(init)) return(NULL)
+    if(length(init) == 0L) return(NULL)
+    ifelse(as.logical(init), 0, -Inf)
+}
+
+
+##' @rdname setLowerUpperDefault
+##' @export
+setUpperDefault <- function(init, ...) {
+    if(missing(init)) return(NULL)
+    if(length(init) == 0L) return(NULL)
+    rep(Inf, length(init))
+}
+
+
 indsForClass <- function(reTrmClass, reTrmClasses, nValuesPerTrm) {
     ## FIXME: not efficient -- computes indices for all classes first
     whichClass <- which(reTrmClasses == reTrmClass)
@@ -143,14 +238,17 @@ printReTrm <- function(object, forSummary = FALSE, ...) {
 
 .printPars <- function(description = "parameters: ", value) {
     if((length(value) > 0L) && (!is.na(value)) && (!is.null(value))) {
-        cat(description, value)
+        cat(description, value, "\n")
     }
 }
 
 ##' @rdname printReTrm
 ##' @export
 printReTrm.default <- function(object, forSummary = FALSE, ...) {
-    cat(paste("A", class(object)[1], "random effects structure\n"))
+    .title <- paste("Random effects term (class: ", class(object)[1], ")", sep = "")
+    .underline <- paste(rep("-", nchar(.title)), collapse = "")
+    cat ("\n", .title, "\n")
+    cat (.underline, "\n")
     .printPars("  covariance parameters: ", getInit(object$Lambdat))
     .printPars("  loadings parameters:   ", getInit(object$Zt))
     cat("\n")
@@ -205,5 +303,16 @@ findReTrmClasses <- function(formula = NULL) {
     }
     classInds <- attr(terms(formula, specials = findReTrmClasses()), "specials")
     names(unlist(classInds))
+}
+
+##' @param addArgsExpr a list of expressions for evaluating within
+##' \code{addArgsList}
+##' @param addArgsList a list of named quantities within which
+##' \code{addArgsExpr} is evaluated
+##' @rdname setReTrm
+##' @export
+getAddArgs <- function(addArgsExpr, addArgsList) {
+    setNames(lapply(addArgsExpr, eval, envir = addArgsList),
+              names(addArgsExpr))
 }
 
