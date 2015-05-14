@@ -1,7 +1,0 @@
-.gitignore
-inst/README
-inst/misc
-inst/githubIssues
-inst/notes
-inst/references
-inst/testdata
