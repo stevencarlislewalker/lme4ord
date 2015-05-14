@@ -108,6 +108,10 @@ loads.strucGlmer <- function(object, ...) {
     getStrucGlmerPar(object, "loads")
 }
 
+##' @rdname strucGlmer
+##' @export
+pars.strucGlmer <- function(object, ...) object$opt$par
+
 subRagByLens <- function(x, lens) {
     split(x, rep(seq_along(lens), lens)) ## split no good ... order of levels !
 }

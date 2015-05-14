@@ -9,6 +9,7 @@
 \alias{mkGenCholInPlaceTrans}
 \alias{mkIdentityTrans}
 \alias{mkListTrans}
+\alias{mkMultiVarExpTrans}
 \alias{mkOuterTrans}
 \alias{mkTrans}
 \alias{mkVarExpTrans}
@@ -37,6 +38,8 @@ mkOuterTrans(Atrans, Btrans, ABtrans)
 mkListTrans(transList)
 
 mkVarExpTrans(init, covariate, grpFac)
+
+mkMultiVarExpTrans(init, modMat, grpFac)
 
 mkVarPowerTrans(init, covariate, grpFac)
 

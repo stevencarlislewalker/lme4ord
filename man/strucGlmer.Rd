@@ -6,6 +6,7 @@
 \alias{getStrucGlmerPar}
 \alias{loads.strucGlmer}
 \alias{loadsPerTerm}
+\alias{pars.strucGlmer}
 \alias{print.strucGlmer}
 \alias{strucGlmer}
 \title{Structured glmer}
@@ -22,6 +23,8 @@ getStrucGlmerPar(object, type, ...)
 \method{covar}{strucGlmer}(object, ...)
 
 loads.strucGlmer(object, ...)
+
+\method{pars}{strucGlmer}(object, ...)
 
 covarPerTerm(object)
 

@@ -164,26 +164,30 @@ setReTrm.varIdent <- function(object, addArgsList, devfunEnv = NULL) {
 
 ##' @rdname setReTrm
 ##' @export
-setReTrm.varExp <- function(object, addArgsList, devfunEnv = NULL) {
+setReTrm.multiVarExp <- function(object, addArgsList, devfunEnv = NULL) {
                                         # transposed model matrix (or
                                         # loadings matrix) -- Zt rows
                                         # associated with this term
-    n <- length(object$grpFac)
+    n <- nrow(object$modMat)
     Zt <- resetTransConst(repSparseIdent(n))
     
                                         # covariance factor -- block
                                         # of Lambdat associated with
                                         # this term
 
-    nl <- nlevels(object$grpFac)
-    init <- rep(1, nl)
-    Lambdat <- repSparseVarWithCovariate(init, 
-                                         grpFac = object$grpFac,,
-                                         mkTransFunc = mkVarExpTrans)
+    if(is.na(object$grpFac)) {
+        nl <- 1
+    } else {
+        nl <- nlevels(object$grpFac)
+    }
+    nc <- ncol(object$modMat)
+    init <- rep(0, nl * nc)
+    Lambdat <- repSparseDiag(rep(1, n), 1:n)
+    Lambdat$trans <- mkMultiVarExpTrans(init, object$modMat, object$grpFac)
     
                                         # package up object
     packReTrm(object, Zt, Lambdat,
-              lowerCovar = rep(0, nl))
+              lowerCovar = rep(-Inf, length(init)))
 }
 
 

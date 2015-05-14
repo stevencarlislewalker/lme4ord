@@ -981,6 +981,23 @@ mkVarExpTrans <- function(init, covariate, grpFac) {
 
 ##' @rdname mkTrans
 ##' @export
+mkMultiVarExpTrans <- function(init, modMat, grpFac) {
+    local({
+        init <- init
+        if(!is.na(grpFac)) {
+            termMat <- t(KhatriRao(as(grpFac, "sparseMatrix"),
+                                   t(as(modMat, "sparseMatrix"))))
+        } else {
+            termMat <- modMat
+        }
+        function(matPars) {
+            return(exp(2 * as.numeric(termMat %*% matPars)))
+        }
+    })
+}
+
+##' @rdname mkTrans
+##' @export
 mkVarPowerTrans <- function(init, covariate, grpFac) {
     local({
         init <- init
