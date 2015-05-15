@@ -30,13 +30,14 @@
 ##' @importFrom lme4 GHrule
 ##' @export
 mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
-                                 weights, offset, etastart,
+                                 weights = NULL, offset = NULL,
+                                 etastart = NULL, mustart = NULL,
                                  devfunEnv,
                                  initPars, parInds,
                                  mapToCovFact = NULL,
                                  mapToModMat = NULL,
                                  mapToWeights = NULL,
-                                 family = binomial(),
+                                 family,
                                  tolPwrss = 1e-6,
                                  verbose = 0L, pureR = FALSE,
                                  Lind = NULL) {
@@ -54,6 +55,10 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
         theta <- initPars[parInds$covar]
     }
 
+    family <- fixFamily(family)
+
+    initializeEnv <- initializeResp(y, etastart, mustart, offset, weights, family)
+
                                         # handle potential missing
                                         # arguments
     if(missing(parInds)) {
@@ -68,10 +73,9 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     initPars <- unlist(initPars)
 
     if(missing(devfunEnv)) devfunEnv <- new.env()
-    if(missing(weights))   weights   <- rep(1, length(y))
-    if(missing(offset))    offset    <- rep(0, length(y))
-    if(missing(etastart))  stop("must specify etastart.\n",
-                                "see family(...)$initialize for inspiration.")
+    if(is.null(weights))   weights   <- rep(1, length(y))
+    if(is.null(offset))    offset    <- rep(0, length(y))
+    if(is.null(etastart))  etastart <- family$linkfun(initializeEnv$mustart)
 
     devfunList <- list(Lind = Lind,
                        pp = lme4:::merPredD$new(
@@ -158,3 +162,56 @@ mkParInds <- function(parList) {
     keepers <- sapply(parInds, length) > 0
     parInds[keepers]
 }
+
+
+initializeResp <- function(y, etastart = NULL, mustart = NULL,
+                           offset = NULL, weights = NULL,
+                           family){
+    # taken mostly from mkRespMod
+    
+    ## y <- model.response(fr)
+### Why consider there here?  They are handled in plsform.
+    # offset <- model.offset(fr)
+    # weights <- model.weights(fr)
+    n <- length(y)
+    etastart_update <- etastart
+    if(length(dim(y)) == 1) {
+    ## avoid problems with 1D arrays, but keep names
+        nm <- rownames(y)
+        dim(y) <- NULL
+        if(!is.null(nm)) names(y) <- nm
+    }
+### I really wish that the glm families in R were cleaned up.  All of
+### this is such an ugly hack, just to handle one special case for the binomial
+    rho <- new.env()
+    rho$y <- if (is.null(y)) numeric(0) else y
+    rho$etastart <- etastart
+    rho$mustart <- mustart
+    if (!is.null(offset)) {
+        if (length(offset) == 1L) offset <- rep.int(offset, n)
+        stopifnot(length(offset) == n)
+        rho$offset <- unname(offset)
+    } else rho$offset <- rep.int(0, n)
+    if (!is.null(weights)) {
+        stopifnot(length(weights) == n, all(weights >= 0))
+        rho$weights <- unname(weights)
+    } else rho$weights <- rep.int(1, n)
+    stopifnot(inherits(family, "family"))
+    rho$nobs <- n
+    eval(family$initialize, rho)
+    family$initialize <- NULL     # remove clutter from str output
+    rho
+}
+
+fixFamily <- function(family) {
+    if(!inherits(family, "family")) {
+        if(inherits(family,"character")) {
+            family <- get(family, mode = "function", envir = parent.frame())
+        }
+        if(inherits(family, "function")) {
+            family <- family()
+        }
+    }
+    return(family)
+}
+

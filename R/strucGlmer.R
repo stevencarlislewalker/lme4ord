@@ -14,8 +14,8 @@
 ##' \code{\link{setReTrm}} methods
 ##' @param ... further arguments to \code{\link{mkGeneralGlmerDevfun}}
 ##' @export
-strucGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
-                         weights, offset, etastart,
+strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
+                         weights = NULL, offset = NULL, etastart = NULL,
                          ...) {
 
     cat("\nConstructing vectors and matrices...\n")
@@ -34,6 +34,7 @@ strucGlmer <- function(formula, data, addArgs = list(), optVerb = 0L,
                                  mapToCovFact = mkSparseTrans(parsedForm$Lambdat),
                                  mapToModMat = mkSparseTrans(parsedForm$Zt),
                                  devfunEnv = parsedForm$devfunEnv,
+                                 family = family,
                                  ...)
 
     cat("\nInitializing deviance function...\n")

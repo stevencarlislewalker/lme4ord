@@ -11,8 +11,8 @@
 \alias{strucGlmer}
 \title{Structured glmer}
 \usage{
-strucGlmer(formula, data, addArgs = list(), optVerb = 0L, weights, offset,
-  etastart, ...)
+strucGlmer(formula, data, family, addArgs = list(), optVerb = 0L,
+  weights = NULL, offset = NULL, etastart = NULL, ...)
 
 print.strucGlmer(x, ...)
 
