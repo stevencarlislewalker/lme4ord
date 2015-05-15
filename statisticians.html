@@ -41,7 +41,7 @@
             <span class="icon-bar"></span>
             <span class="icon-bar"></span>
           </button>
-          <a class="navbar-brand" href="#">lme4ord</a>
+          <a class="navbar-brand" href="index.html">lme4ord</a>
         </div>
         <div id="navbar" class="navbar-collapse collapse">
           <ul class="nav navbar-nav">
@@ -74,19 +74,21 @@
     manner analogous to <code>lm.fit</code>
 	</p>
 	<pre><code class="r">require(Matrix) # sparse matrices are required!
-dfun <- mkGeneralGlmerDevfun(y = responseVector,
-                             X = modelMatrix, 
-                             Zt = as(t(modelMatrix), "dgCMatrix"),
-                             Lambdat = as(upperTriangularCovarFactor, "dgCMatrix"),
-                             family = binomial(),
-                             initPars = initialParameterVector,
-                             parInds = listOfIndicesToParameterVector,
-                             mapToCovFact = function(covarianceParameters) ..., 
-                             ...)</code></pre>
+devFun <- mkGeneralGlmerDevfun(y = responseVector,
+                               X = modelMatrixFixef, 
+                               Zt = as(t(modelMatrixRanef), "dgCMatrix"),
+                               Lambdat = as(upperTriangularCovarFactor, "dgCMatrix"),
+                               family = binomial(),
+                               initPars = initialParameterVector,
+                               parInds = listOfIndicesToParameterVector,
+                               mapToCovFact = function(covarianceParameters) ..., 
+                               ...)</code></pre>
 
 <p class="lead">Now optimize it!</p>
-<pre><code class="r">opt <- optim(initialParameterVector, dfun)</code></pre>
-        <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p>
+<pre><code class="r">opt <- optim(initialParameterVector, devFun)</code></pre>
+	<p class="lead">The fitted objects are in the environment of the deviance function</p>
+	<pre><code class="r">environment(devFun)$pp$beta(1)</code></pre>
+	<p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p>
       </div>
     </div>
     
