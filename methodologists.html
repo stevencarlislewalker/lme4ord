@@ -17,6 +17,12 @@
     <!-- Custom styles for this template -->
     <link href="jumbotron.css" rel="stylesheet">
 
+    <!-- Styles for R syntax highlighter -->
+    <link href="assets/css/highlightr.css" rel="stylesheet">
+
+    <!-- R syntax highlighter -->
+    <script src="assets/js/highlightr.js"></script>
+
     <!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
     <!--[if lt IE 9]>
       <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
@@ -62,62 +68,41 @@
     <!-- Main jumbotron for a primary marketing message or call to action -->
     <div class="jumbotron">
       <div class="container">
-        <h1>lme4ord</h1>
+        <h1>lme4ord for methodologists</h1>
         <p class="lead">
-	Generalized linear mixed models with flexible covariance
-        structures<br>
-	<code>lme4ord</code> runs on top of the well-tested
-	<code>c++</code> machinery from <a
-	href="https://github.com/lme4/lme4/">lme4</a>
+	Create new (co)variance classes by defining a method for the <code>setReTrm</code> generic
 	</p>
+	<pre><code class="r"> setReTrm.myClass <- function(object, addArgsList, devfunEnv = NULL) {
+    ## Transposed model matrix (as an object of class repSparse)
+    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)),
+                               as.repSparse(object$grpFac)))
+    
+    ## Relative covariance factor (as an object of class repSparse)
+    nc <-    ncol(object$modMat)
+    nl <- nlevels(object$grpFac)
+    templateBlock <- repSparseTri(   diagVals = rep(1,        nc    ),
+                                  offDiagVals = rep(0, choose(nc, 2)),
+                                  low = FALSE)
+    Lambdat <- rep(templateBlock, nl, type = "diag")
+
+    ## Package up the results
+    packReTrm(object, Zt, Lambdat)
+}</code></pre>
+
+<p class="lead">Now use it!</p>
+<pre><code class="r">strucGlmer(y ~ x + myClass(x | g), ...)</code></pre>
         <p><a class="btn btn-primary btn-lg" href="#" role="button">Learn more &raquo;</a></p>
       </div>
     </div>
-
+    
     <div class="container">
-      <!-- Example row of columns -->
-      <div class="row">
-        <div class="col-md-4">
-
-	  <h2>For analysts</h2>
-
-	  <p>Fit models that better match the complexity of your data
-	  with <code>lme4ord</code>'s formula interface for specifying
-	  flexible variance and covariance heterogeneity. </p> <p><a
-	   class="btn btn-default" href="analysts.html"
-	  role="button">Example &raquo;</a></p>
-
-	</div>
-        <div class="col-md-4">
-
-	  <h2>For methodologists</h2>
-
-	  <p>Open up new methodological vistas for your community with
-	  <code>lme4ord</code>, by taking advantage of it's infrastructure
-	  for specifying new types of covariance structures.  </p>
-	  <p><a class="btn btn-default" href="methodologists.html"
-	  role="button">Example &raquo;</a></p></div> <div
-	  class="col-md-4">
-
-	  <h2>For statisticians</h2>
-
-	  <p>If you would rather specify your model as a series of
-	  sparse matrices and updating functions, <code>lme4ord</code>
-	  also provides more direct access to the underlying
-	  <code>lme4</code> machinery.</p> <p><a class="btn
-	  btn-default" href="statisticians.html" role="button">Example &raquo;</a></p>
-	  </div>
-	
-      </div>
-
-      <hr>
-
-      <footer>
-        <p>&copy; Steve C Walker 2015</p>
-      </footer>
+    <hr>
+    <footer>
+    <p>&copy; Steve C Walker 2015</p>
+    </footer>
     </div> <!-- /container -->
-
-
+    
+    
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
