@@ -6,7 +6,8 @@
 mkGeneralGlmerDevfun(y, X, Zt, Lambdat, weights = NULL, offset = NULL,
   etastart = NULL, mustart = NULL, devfunEnv, initPars, parInds,
   mapToCovFact = NULL, mapToModMat = NULL, mapToWeights = NULL, family,
-  tolPwrss = 1e-06, verbose = 0L, pureR = FALSE, Lind = NULL)
+  tolPwrss = 1e-06, maxit = 30, verbose = 0L, pureR = FALSE,
+  Lind = NULL)
 }
 \arguments{
 \item{y}{response vector}

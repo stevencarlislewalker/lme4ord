@@ -121,6 +121,7 @@ VarCorr.glmerc <- function(x, ...) {
 
 ##' @export
 vcov.glmerc <- function(object, justFixef = TRUE, ...) {
+    ## FIXME: DRY with vcov.strucGlmer
     optPar <- object$opt$par
     ans <- solve(0.5 * lme4:::deriv12(object$dfun,
                                       optPar)$Hessian)

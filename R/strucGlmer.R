@@ -1,4 +1,4 @@
-##' Structured glmer
+##' Generalized linear mixed model with structured (co)variance terms
 ##'
 ##' Parses a mixed model formula with special structures (with
 ##' \code{\link{strucParseFormula}}), constructs a generalized linear
@@ -69,7 +69,26 @@ strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
     return(ans)
 }
 
-##' @rdname strucGlmer
+##' Structured GLMM class
+##'
+##' An \code{S3} class for generalized linear mixed models with
+##' structured (co)variance terms, which are lists with the following
+##' elements:
+##' \describe{
+##'   \item{opt}{Result of the optimizer (currently \code{\link{minqa}}).}
+##'   \item{parsedForm}{Results of \code{\link{strucParseFormula}}.}
+##'   \item{dfun}{A function for computing the model deviance.
+##'               The environment of \code{dfun} contains objects for
+##'               representing the model.}}
+##' @name strucGlmer-class
+##' @rdname strucGlmer-class
+##' @exportClass strucGlmer
+setOldClass("strucGlmer")
+
+
+##' @param x,object \code{strucGlmer} objects
+##' @param ... additional arguments to methods
+##' @rdname strucGlmer-class
 ##' @export
 print.strucGlmer <- function(x, ...) {
     cat ("Structured generalized linear mixed model\n")
@@ -78,6 +97,31 @@ print.strucGlmer <- function(x, ...) {
     cat (  "-------------\n")
     print(fixef(x))
     lapply(x$parsedForm$random, printReTrm)
+}
+
+##' @rdname strucGlmer-class
+##' @export
+summary.strucGlmer <- function(object, compSE = TRUE, ...) {
+    print(object)
+}
+
+##' @rdname strucGlmer
+##' @export
+vcov.strucGlmer <- function(object, justFixef = TRUE, ...) {
+    optPar <- pars(object)
+    ans <- solve(0.5 * lme4:::deriv12(object$dfun, optPar)$Hessian)
+    dimnames(ans) <- rep(list(names(optPar)), 2)
+    if(justFixef) {
+        dims <- object$parsedForm$parInds$fixef
+        ans <- ans[dims, dims]
+    }
+    return(ans)
+}
+
+##' @rdname strucGlmer-class
+##' @export
+formula.strucGlmer <- function(x, ...) {
+    stop("not done")
 }
 
 ##' @param type character string giving the type of parameter
@@ -287,7 +331,8 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
                 Zt = Zt, Lambdat = Lambdat,
                 initPars = initPars, parInds = parInds,
                 lower = lower, upper = upper,
-                devfunEnv = devfunEnv))
+                devfunEnv = devfunEnv,
+                formula = formula))
 }
 
 
@@ -519,6 +564,28 @@ nobarsWithSpecials <- function (term) {
 }
 
 
+
+mkStrucGlmer <- function(opt, parsedForm, dfun) {
+    names(opt$par) <- names(parsedForm$initPars)
+
+    ans <- list(opt = opt, parsedForm = parsedForm, dfun = dfun)
+    class(ans) <- "strucGlmer"
+
+    trash <- mapply(setInit, parsedForm$random,
+                    covarPerTerm(ans),
+                    loadsPerTerm(ans))
+    ansRand <- try(lapply(ans$parsedForm$random, update), silent = TRUE)
+    if(inherits(ansRand, "try-error")) {
+        warning("couldn't reset initial values to estimated values,\n",
+                "so model printout is probably misleading.\n",
+                "perhaps check the object itself.")
+    } else {
+        ans$parsedForm$random <- ansRand
+    }
+    return(ans)
+}
+
+
 ## ##' Get components from a structured glmer model
 ## ##'
 ## ##' @param object a \code{\link{strucGlmer}} object
@@ -529,5 +596,4 @@ nobarsWithSpecials <- function (term) {
 ##                   c("y", "X", "Zt", "Lambdat",
 ##                     "")) {
 ## }
-
 

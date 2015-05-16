@@ -7,14 +7,14 @@
 \alias{loads.strucGlmer}
 \alias{loadsPerTerm}
 \alias{pars.strucGlmer}
-\alias{print.strucGlmer}
 \alias{strucGlmer}
-\title{Structured glmer}
+\alias{vcov.strucGlmer}
+\title{Generalized linear mixed model with structured (co)variance terms}
 \usage{
 strucGlmer(formula, data, family, addArgs = list(), optVerb = 0L,
   weights = NULL, offset = NULL, etastart = NULL, ...)
 
-print.strucGlmer(x, ...)
+\method{vcov}{strucGlmer}(object, justFixef = TRUE, ...)
 
 getStrucGlmerPar(object, type, ...)
 

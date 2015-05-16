@@ -39,6 +39,7 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                                  mapToWeights = NULL,
                                  family,
                                  tolPwrss = 1e-6,
+                                 maxit = 30,
                                  verbose = 0L, pureR = FALSE,
                                  Lind = NULL) {
     
@@ -90,6 +91,7 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                        lp0 = etastart,
                        baseOffset = offset,
                        tolPwrss = tolPwrss,
+                       maxit = maxit,
                        GQmat = GHrule(1), ## always Laplace approx
                        compDev = TRUE,
                        fac = NULL,
@@ -112,8 +114,10 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
         spars <- as.numeric(pars[parInds$fixef])
         offset <- if (length(spars)==0) baseOffset else baseOffset + pp$X %*% spars
         resp$setOffset(offset)
-        p <- lme4:::glmerPwrssUpdate(pp, resp, tolPwrss, GQmat,
-                                     compDev, fac, verbose)
+        ## pp, resp, nAGQ, tol, maxit, verbose
+        p <- lme4:::glmerLaplaceHandle(pp$ptr(), resp$ptr(), 1, tolPwrss, maxit, verbose)
+        #p <- lme4:::glmerPwrssUpdate(pp, resp, tolPwrss, GQmat,
+        #                             compDev, fac, verbose)
         resp$updateWts()
         p
     }
