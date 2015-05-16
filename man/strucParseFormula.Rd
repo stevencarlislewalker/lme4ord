@@ -26,6 +26,25 @@ simStrucParsedForm(parsedForm, family = binomial, weights, ...)
 
 \item{weights}{optional weights}
 }
+\value{
+A list with components:
+\item{response}{The response vector}
+\item{fixed}{The fixed effects model matrix}
+\item{random}{List of random effects terms returned by
+\code{\link{mkReTrmStructs}} and updated with
+\code{\link{setReTrm}}.}
+\item{Zt}{The sparse transposed random effects model matrix, of
+class \code{dgCMatrix}.}
+\item{Lambdat}{The sparse transposed relative covariance factor,
+of class \code{dgCMatrix}}
+\item{initPars}{The initial parameter vector}
+\item{parInds}{List of indices to the different types of
+parameters.}
+\item{lower, upper}{Vectors of lower and upper bounds on
+\code{initPars}.}
+\item{devfunEnv}{Environment of the deviance function.}
+\item{formula}{Model formula.}
+}
 \description{
 Parse a mixed model formula
 }

@@ -5,7 +5,8 @@ Version: 0.0-1
 Date: 2015-05-16
 Author: Steve Walker
 Maintainer: Steve Walker <steve.walker@utoronto.ca>
-Description: Generalized linear mixed models with flexible (co)variance structures.
+Description: Generalized linear mixed models with flexible (co)variance
+    structures.
 License: GPL-2
 Roxygen: list(wrap = FALSE)
 Depends:

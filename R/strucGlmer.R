@@ -50,23 +50,7 @@ strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
                                rhoend = 2e-7))
 
     cat("\nPreparing output...\n")
-    names(opt$par) <- names(parsedForm$initPars)
-
-    ans <- list(opt = opt, parsedForm = parsedForm, dfun = dfun)
-    class(ans) <- "strucGlmer"
-
-    trash <- mapply(setInit, parsedForm$random,
-                    covarPerTerm(ans),
-                    loadsPerTerm(ans))
-    ansRand <- try(lapply(ans$parsedForm$random, update), silent = TRUE)
-    if(inherits(ansRand, "try-error")) {
-        warning("couldn't reset initial values to estimated values,\n",
-                "so model printout is probably misleading.\n",
-                "perhaps check the object itself.")
-    } else {
-        ans$parsedForm$random <- ansRand
-    }
-    return(ans)
+    mkStrucGlmer(opt, parsedForm, dfun)
 }
 
 ##' Structured GLMM class
@@ -242,6 +226,23 @@ mkReTrmStructs <- function(splitFormula, data) {
 ##' \code{\link{setReTrm}} methods
 ##' @param reTrmsList if \code{NULL} \code{\link{mkReTrmStructs}} is used
 ##' @param ... additional parameters to \code{\link{as.data.frame}}
+##' @return A list with components:
+##' \item{response}{The response vector}
+##' \item{fixed}{The fixed effects model matrix}
+##' \item{random}{List of random effects terms returned by
+##' \code{\link{mkReTrmStructs}} and updated with
+##' \code{\link{setReTrm}}.}
+##' \item{Zt}{The sparse transposed random effects model matrix, of
+##' class \code{dgCMatrix}.}
+##' \item{Lambdat}{The sparse transposed relative covariance factor,
+##' of class \code{dgCMatrix}}
+##' \item{initPars}{The initial parameter vector}
+##' \item{parInds}{List of indices to the different types of
+##' parameters.}
+##' \item{lower, upper}{Vectors of lower and upper bounds on
+##' \code{initPars}.}
+##' \item{devfunEnv}{Environment of the deviance function.}
+##' \item{formula}{Model formula.}
 ##' @rdname strucParseFormula
 ##' @export
 strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL, ...) {
@@ -564,13 +565,22 @@ nobarsWithSpecials <- function (term) {
 }
 
 
-
+##' Make strucGlmer object
+##'
+##' @param opt,parsedForm,dfun See \code{\link{strucGlmer-class}}
+##' @return An object of \code{\link{strucGlmer-class}}
+##' @export
 mkStrucGlmer <- function(opt, parsedForm, dfun) {
+    
     names(opt$par) <- names(parsedForm$initPars)
 
     ans <- list(opt = opt, parsedForm = parsedForm, dfun = dfun)
     class(ans) <- "strucGlmer"
 
+                                        # update the initialized
+                                        # parameters in the repeated
+                                        # sparse matrices to optimized
+                                        # values
     trash <- mapply(setInit, parsedForm$random,
                     covarPerTerm(ans),
                     loadsPerTerm(ans))
@@ -582,6 +592,7 @@ mkStrucGlmer <- function(opt, parsedForm, dfun) {
     } else {
         ans$parsedForm$random <- ansRand
     }
+    
     return(ans)
 }
 
@@ -591,7 +602,7 @@ mkStrucGlmer <- function(opt, parsedForm, dfun) {
 ## ##' @param object a \code{\link{strucGlmer}} object
 ## ##' @param name a character vector naming the component
 ## ##' @export
-## getSG <- function(object,
+## getSME <- function(object,
 ##                   name =
 ##                   c("y", "X", "Zt", "Lambdat",
 ##                     "")) {
