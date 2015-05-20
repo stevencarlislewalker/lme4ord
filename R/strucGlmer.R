@@ -79,16 +79,18 @@ setOldClass("strucGlmer")
 
 
 
-
+strucGlmerMethTitle <- function() {
+    paste("Structured GLMM",
+                  "fit by maximum likelihood (Laplace Approx)",
+                  collpase = " ")
+}
 
 ##' @param x,object \code{strucGlmer} objects
 ##' @param ... additional arguments to methods
 ##' @rdname strucGlmer-class
 ##' @export
 print.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3),  ...) {
-    xTit <- paste("Structured GLMM",
-                  "fit by maximum likelihood (Laplace Approx)",
-                  collpase = " ")
+    xTit <- strucGlmerMethTitle()
     lme4:::.prt.methTit(xTit, class(x))
     lme4:::.prt.family(lme4:::famlink(x, resp = x$parsedForm$devfunEnv$resp))
     lme4:::.prt.call(x$mc)
@@ -104,26 +106,112 @@ print.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3),  ...) 
 		      print.gap = 2L, quote = FALSE, ...)
     } else cat("No fixed effect coefficients\n")
 
-    ## FIXME: optimizer warnings
+    ## FIXME: optimizer warnings??
 }
 
 ##' @rdname strucGlmer-class
 ##' @export
-summary.strucGlmer <- function(object, compSE = TRUE, ...) {
-    print(object)
+summary.strucGlmer <- function(object, use.hessian = TRUE, ...) {
+    vc <- vcov(object, use.hessian = use.hessian)
+    resp <- object$parsedForm$devfunEnv$resp
+    famL <- lme4:::famlink(resp = resp)
+    p <- length(coefs <- fixef(object))
+    coefs <- cbind("Estimate" = coefs ,
+                   "Std. Error" = sqrt(Matrix:::diag(vc)))
+    if (p > 0) {
+        coefs <- cbind(coefs, (cf3 <- coefs[,1]/coefs[,2]), deparse.level = 0)
+        colnames(coefs)[3] <- paste("z", "value")
+        coefs <- cbind(coefs, "Pr(>|z)" =
+                       2 * pnorm(abs(cf3), lower.tail = FALSE))
+    }
+
+    llAIC <- getStrucLlikAIC(object)
+
+    varcor <- VarCorr(object)
+
+    structure(list(methTitle = strucGlmerMethTitle(),
+                   objClass = class(object),
+                   logLik = llAIC[["logLik"]],
+                   family = famL$fami, link = famL$link,
+                   coefficients = coefs,
+                   vcov = vc, varcor = varcor,
+                   AICtab = llAIC[["AICtab"]], call = object$mc))
+                   
 }
 
 ##' @rdname strucGlmer
 ##' @export
-vcov.strucGlmer <- function(object, justFixef = TRUE, ...) {
-    optPar <- pars(object)
-    ans <- solve(0.5 * lme4:::deriv12(object$dfun, optPar)$Hessian)
-    dimnames(ans) <- rep(list(names(optPar)), 2)
-    if(justFixef) {
-        dims <- object$parsedForm$parInds$fixef
-        ans <- ans[dims, dims]
+residuals.strucGlmer <- function(object, ...) {
+    r <- residuals(object$parsedForm$devfunEnv$resp, "deviance", ...)
+    if (is.null(nm <- names(object$parsedForm$response))) nm <- seq_along(r)
+    names(r) <- nm
+    ## if (!is.null(na.action <- attr(model.frame(object), "na.action")))
+    ##     r <- naresid(na.action, r)
+    r
+}
+         
+calc.vcov.hess <- function(h) {
+    ## ~= forceSymmetric(solve(h/2)[i,i]) : solve(h/2) = 2*solve(h)
+    h <- tryCatch(solve(h),
+                  error=function(e) matrix(NA,nrow=nrow(h),ncol=ncol(h)))
+    forceSymmetric(h + t(h))
+}
+
+##' @rdname strucGlmer
+##' @export
+vcov.strucGlmer <- function(object, correlation = TRUE,
+                            use.hessian = TRUE, justFixef = TRUE, ...) {
+    if(use.hessian) {
+        optPar <- pars(object)
+        h <- try(lme4:::deriv12(object$dfun, optPar)$Hessian, silent = TRUE)
+        hess.avail <- !inherits(h, "error-try")
+        if(!hess.avail) {
+            stop(shQuote("use.hessian"),
+                 "=TRUE specified, ",
+                 "but Hessian can't be computed")
+        }
+    } else {
+        hess.avail <- FALSE
     }
-    return(ans)
+    V <- object$parsedForm$devfunEnv$pp$unsc()
+    if(hess.avail) {
+        V.hess <- calc.vcov.hess(h)
+        bad.V.hess <- any(is.na(V.hess))
+        if(!bad.V.hess) {
+            e.hess <- eigen(V.hess, symmetric = TRUE, only.values = TRUE)$values
+            if(min(e.hess) <= 0) bad.V.hess <- TRUE
+        }
+    }
+    if(use.hessian) {
+        if(!bad.V.hess) {
+            V <- V.hess
+        } else {
+            warning("variance-covariance matrix computed ",
+                    "from finite-difference Hessian is\n",
+                    "not positive definite or contains NA values: falling back to ",
+                    "var-cov estimated from RX")
+        }
+    }
+
+    if(justFixef && hess.avail && use.hessian) {
+        i <- object$parsedForm$parInds$fixef
+        V <- V[i, i]
+    }
+    
+    rr <- tryCatch(as(V, "dpoMatrix"), error = function(e)e)
+    if (inherits(rr, "error")) {
+	warning(gettextf("Computed variance-covariance matrix problem: %s;\nreturning NA matrix",
+                         rr$message), domain = NA)
+        rr <- matrix(NA,nrow(V),ncol(V))
+    }
+
+    nmsX <- colnames(object$parsedForm$devfunEnv$pp$X)
+    dimnames(rr) <- list(nmsX,nmsX)
+
+    if(correlation)
+	rr@factors$correlation <- rr
+	    ## if(!is.na(sigm)) as(rr, "corMatrix") else rr # (is NA anyway)
+    rr
 }
 
 ##' @rdname strucGlmer

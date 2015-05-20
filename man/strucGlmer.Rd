@@ -8,6 +8,7 @@
 \alias{loads.strucGlmer}
 \alias{loadsPerTerm}
 \alias{pars.strucGlmer}
+\alias{residuals.strucGlmer}
 \alias{strucGlmer}
 \alias{vcov.strucGlmer}
 \title{Generalized linear mixed model with structured (co)variance terms}
@@ -15,7 +16,10 @@
 strucGlmer(formula, data, family, addArgs = list(), optVerb = 0L,
   weights = NULL, offset = NULL, etastart = NULL, ...)
 
-\method{vcov}{strucGlmer}(object, justFixef = TRUE, ...)
+\method{residuals}{strucGlmer}(object, ...)
+
+\method{vcov}{strucGlmer}(object, correlation = TRUE, use.hessian = TRUE,
+  justFixef = TRUE, ...)
 
 \method{VarCorr}{strucGlmer}(x, sigma = 1, rdig = 3)
 

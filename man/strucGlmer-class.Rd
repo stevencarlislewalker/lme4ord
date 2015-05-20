@@ -13,7 +13,7 @@
 \usage{
 print.strucGlmer(x, digits = max(3, getOption("digits") - 3), ...)
 
-summary.strucGlmer(object, compSE = TRUE, ...)
+summary.strucGlmer(object, use.hessian = TRUE, ...)
 
 \method{isREML}{strucGlmer}(x, ...)
 
