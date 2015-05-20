@@ -45,6 +45,7 @@ setReTrm.default <- function(object, addArgsList,
                                   offDiagVals = rep(0, choose(nc, 2)),
                                   low = FALSE)
     Lambdat <- rep(templateBlock, nl, type = "diag")
+    attr(Lambdat, "templateBlock") <- templateBlock ## for VarCorr
 
                                         # package up object
                                         # (implicitly sets lower and
@@ -214,6 +215,21 @@ packReTrm <- function(object, Zt, Lambdat,
               class = class(object))
 }
 
+##' @export
+VarCorr.reTrmStruct <- function(x, sigma = 1, rdig = 3) {
+    ## default method
+    if(!is.null(templateBlock <- attr(x$Lambdat, "templateBlock"))) {
+        ans <- update(templateBlock, getInit(x$Lambdat))
+        vc <- as.matrix(Matrix:::crossprod(as.matrix(ans, sparse = TRUE)))
+        rownames(vc) <- colnames(vc) <- colnames(x$modMat)
+    } else {
+        vc <- as.matrix(Matrix:::crossprod(as.matrix(x$Lambdat, sparse = TRUE)))
+    }
+    attr(vc, "stddev") <- sqrt(diag(as.matrix(vc)))
+    attr(vc, "correlation") <- cov2cor(vc)
+    attr(vc, "useSc") <- FALSE
+    return(vc)
+}
 
 ##' Update a random effects term structure with new parameters
 ##'
@@ -296,16 +312,27 @@ printReTrm <- function(object, forSummary = FALSE, ...) {
     }
 }
 
+.printVC <- function(description = "variance-correlation: ", value) {
+    if((nrow(value[[1]]) < 6) && (!is.null(rownames(value[[1]])))) {
+        cat(description, "\n")
+        print(lme4:::formatVC(value), quote = FALSE, digits = 3)
+    }
+}
+
 ##' @rdname printReTrm
 ##' @export
 printReTrm.default <- function(object, forSummary = FALSE, ...) {
-    .title <- paste("Random effects term (class: ", class(object)[1], ")", sep = "")
-    .underline <- paste(rep("-", nchar(.title)), collapse = "")
-    cat ("\n", .title, "\n")
-    cat (.underline, "\n")
-    .printPars("  covariance parameters: ", getInit(object$Lambdat))
-    .printPars("  loadings parameters:   ", getInit(object$Zt))
-    cat("\n")
+    .title <- paste("Random effects term (class: ", class(object)[1], "):", sep = "")
+    cat (.title, "\n")
+    cpd <- if(length(cp <- getInit(object$Lambdat)) > 1L) {
+        "  covariance parameters: " } else "  covariance parameter:  "
+    lpd <- if(length(lp <- getInit(object$Zt)) > 1L) {
+        "  loadings parameters:   " } else "  loadings parameter:    "
+    vc <- structure(list(VarCorr(object)), names = object$grpName, useSc = FALSE)
+    vcd <- "  variance-correlation:  "
+    .printPars(cpd, cp)
+    .printPars(lpd, lp)
+    .printVC  (vcd, vc)
 }
 
 ## FIXME: write specific printReTrm methods for different classes

@@ -1,11 +1,15 @@
 ##' Generalized linear mixed model with structured (co)variance terms
 ##'
-##' Parses a mixed model formula with special structures (with
-##' \code{\link{strucParseFormula}}), constructs a generalized linear
-##' mixed model deviance function (with
-##' \code{\link{mkGeneralGlmerDevfun}}), optimizes this deviance
-##' function (with \code{\link{bobyqa}}), and returns the results as a
-##' \code{strucGlmer} object.
+##' Fits a generalized linear mixed model with structured (co)variance
+##' terms by the following fully modularized steps:
+##' \describe{
+##' \item{\code{\link{strucParseFormula}}}{parses the mixed model
+##' formula with structured terms}
+##' \item{\code{\link{mkGeneralGlmerDevfun}}}{constructs a generalized
+##' linear mixed model deviance function}
+##' \item{\code{\link{bobyqa}}}{optimizer the deviance function}
+##' \item{\code{\link{mkStrucGlmer}}}{constructs an object of
+##' \code{\link{strucGlmer-class}}}}
 ##'
 ##' @param formula extended mixed model formula
 ##' @param data data frame
@@ -18,6 +22,8 @@ strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
                          weights = NULL, offset = NULL, etastart = NULL,
                          ...) {
 
+    mc <- match.call()
+    
     cat("\nConstructing vectors and matrices...\n")
     parsedForm <- strucParseFormula(formula, data, addArgs, ...)
 
@@ -37,9 +43,6 @@ strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
                                  family = family,
                                  ...)
 
-    cat("\nInitializing deviance function...\n")
-    dfun(parsedForm$initPars)
-
     cat("\nOptimizing deviance function...\n")
     opt <- minqa:::bobyqa(parsedForm$initPars, dfun,
                           lower = parsedForm$lower,
@@ -50,7 +53,7 @@ strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
                                rhoend = 2e-7))
 
     cat("\nPreparing output...\n")
-    mkStrucGlmer(opt, parsedForm, dfun)
+    mkStrucGlmer(opt, parsedForm, dfun, mc)
 }
 
 ##' Structured GLMM class
@@ -63,24 +66,45 @@ strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
 ##'   \item{parsedForm}{Results of \code{\link{strucParseFormula}}.}
 ##'   \item{dfun}{A function for computing the model deviance.
 ##'               The environment of \code{dfun} contains objects for
-##'               representing the model.}}
+##'               representing the model.}
+##'   \item{mc}{Matched call}}
 ##' @name strucGlmer-class
 ##' @rdname strucGlmer-class
 ##' @exportClass strucGlmer
 setOldClass("strucGlmer")
+
+## ----------------------------------------------------------------------
+## printing and summary
+## ----------------------------------------------------------------------
+
+
+
 
 
 ##' @param x,object \code{strucGlmer} objects
 ##' @param ... additional arguments to methods
 ##' @rdname strucGlmer-class
 ##' @export
-print.strucGlmer <- function(x, ...) {
-    cat ("Structured generalized linear mixed model\n")
-    cat ("=========================================\n")
-    cat ("\nFixed effects\n")
-    cat (  "-------------\n")
-    print(fixef(x))
+print.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3),  ...) {
+    xTit <- paste("Structured GLMM",
+                  "fit by maximum likelihood (Laplace Approx)",
+                  collpase = " ")
+    lme4:::.prt.methTit(xTit, class(x))
+    lme4:::.prt.family(lme4:::famlink(x, resp = x$parsedForm$devfunEnv$resp))
+    lme4:::.prt.call(x$mc)
+    
+    llAIC <- lme4ord:::getStrucLlikAIC(x)
+    lme4:::.prt.aictab(llAIC$AICtab, 4)
+
     lapply(x$parsedForm$random, printReTrm)
+
+    if(length(cf <- fixef(x)) > 0) {
+	cat("Fixed Effects:\n")
+	print.default(format(cf, digits = digits),
+		      print.gap = 2L, quote = FALSE, ...)
+    } else cat("No fixed effect coefficients\n")
+
+    ## FIXME: optimizer warnings
 }
 
 ##' @rdname strucGlmer-class
@@ -102,11 +126,56 @@ vcov.strucGlmer <- function(object, justFixef = TRUE, ...) {
     return(ans)
 }
 
+##' @rdname strucGlmer
+##' @export
+VarCorr.strucGlmer <- function(x, sigma = 1, rdig = 3) {
+    lapply(x$parsedForm$random, VarCorr)
+}
+
+formatStrucVC <- function(varc) {
+    whichNoNames <- sapply(lapply(varc, rownames), is.null)
+    ans <- vector("list", length(varc))
+    ans[whichNoNames] <- lme4:::formatVC(varc[whichNoNames])
+}
+
+
+getStrucLlikAIC <- function(object) {
+    llik <- logLik(object)
+    AICstats <- c(AIC = AIC(llik), BIC = BIC(llik), logLik = c(llik), 
+                  deviance = deviance(object), df.resid = df.residual(object))
+    list(logLik = llik, AICtab = AICstats)
+}
+
 ##' @rdname strucGlmer-class
 ##' @export
-formula.strucGlmer <- function(x, ...) {
-    stop("not done")
+isREML.strucGlmer <- function(x, ...) FALSE
+
+##' @rdname strucGlmer-class
+##' @export
+df.residual.strucGlmer <- function(object, ...) {
+    nobs(object) - length(pars(object))
 }
+
+##' @rdname strucGlmer-class
+##' @export
+nobs.strucGlmer <- function(object, ...) nrow(object$parsedForm$fixed)
+
+##' @rdname strucGlmer-class
+##' @export
+deviance.strucGlmer <- function(object, ...) object$opt$fval
+
+##' @rdname strucGlmer-class
+##' @export
+logLik.strucGlmer <- function(object, ...) {
+    val = -0.5 * deviance(object, ...)
+    nobs <- nobs(object)
+    structure(val, nobs = nobs, nall = nobs, df = length(pars(object)),
+              class = "logLik")
+}
+
+##' @rdname strucGlmer-class
+##' @export
+formula.strucGlmer <- function(x, ...) x$parsedForm$formula
 
 ##' @param type character string giving the type of parameter
 ##' (e.g. \code{"fixef", "covar"})
@@ -168,7 +237,6 @@ loadsPerTerm <- function(object) {
                          loads(object))
 }
 
-
 ##' Construct random effects structures
 ##'
 ##' Construct random effects structures from a formula and data.
@@ -216,7 +284,6 @@ mkReTrmStructs <- function(splitFormula, data) {
     }
     return(reTrmsList)
 }
-
 
 ##' Parse a mixed model formula
 ##'
@@ -355,30 +422,6 @@ simStrucParsedForm <- function(parsedForm, family = binomial,
     })
 }
 
-
-##' Make general random effects terms
-##'
-##' @param reStructList list of random effects structure functions
-##' @param parsedForm list parsed random effects terms
-##' @param ... potential extra parameters
-##' @rdname mkReTrms
-##' @export
-mkGeneralReTrms <- function(reStructList, parsedForm, ...) {
-    trmList <- listTranspose(mapply(do.call,
-                                    reStructList,
-                                    parsedForm$random,
-                                    SIMPLIFY = FALSE))
-         ZtBind <- as.repSparse(sort(.bind(trmList$Zt,      "row" )))
-    LambdatBind <- as.repSparse(sort(.bind(trmList$Lambdat, "diag")))
-    return(list(Zt = as(ZtBind, "dgCMatrix"),
-                Lambdat = as(LambdatBind, "dgCMatrix"),
-                ZtTrans = mkSparseTrans(ZtBind),
-                LambdatTrans = mkSparseTrans(LambdatBind)))
-}
-
-
-
-
 ##' Split a formula
 ##'
 ##' @param formula Generalized mixed model formula
@@ -489,11 +532,6 @@ noSpecials <- function(term) {
 noSpecials_ <- function(term) {
     if (!anySpecial(term)) return(term)
     if (isSpecial(term)) return(NULL)
-    #if (isAnyArgSpecial(term)) return(NULL)
-    #if (length(term) == 2) {
-    #    term[[2]] <- noSpecials(term[[2]])
-    #    return(term)
-    #}
     nb2 <- noSpecials(term[[2]])
     nb3 <- noSpecials(term[[3]])
     if (is.null(nb2)) return(nb3)
@@ -523,58 +561,16 @@ anySpecial <- function(term) {
     any(findReTrmClasses() %in% all.names(term))
 }
 
-
-##' Version of the recursive nobars function from lme4
-##'
-##' @param term term
-##' @export
-nobarsWithSpecials <- function (term) {
-    specials <- findReTrmClasses()
-    if(length(term) > 2L) {
-        if(any(as.character(term[[1]]) == specials)) {
-            term <- term[1:2]
-        }
-    }
-    ant <- all.names(term)
-    if ((!any(c("|", "||") %in% ant)) && (!any(ant %in% specials)))
-        return(term)
-    if (is.call(term) && term[[1]] == as.name("|")) 
-        return(NULL)
-    if (is.call(term) && term[[1]] == as.name("||")) 
-        return(NULL)
-    #if (as.character(term[[1]]) %in% specials) 
-    #    term <- term[[2]]
-    if (length(term) == 1)
-        return(term)
-    if (length(term) == 2) {
-        nb <- nobarsWithSpecials(term[[2]])
-        if (is.null(nb)) 
-            return(NULL)
-        term[[2]] <- nb
-        return(term)
-    }
-    nb2 <- nobarsWithSpecials(term[[2]])
-    nb3 <- nobarsWithSpecials(term[[3]])
-    if (is.null(nb2)) 
-        return(nb3)
-    if (is.null(nb3)) 
-        return(nb2)
-    term[[2]] <- nb2
-    term[[3]] <- nb3
-    term
-}
-
-
 ##' Make strucGlmer object
 ##'
-##' @param opt,parsedForm,dfun See \code{\link{strucGlmer-class}}
+##' @param opt,parsedForm,dfun,mc See \code{\link{strucGlmer-class}}
 ##' @return An object of \code{\link{strucGlmer-class}}
 ##' @export
-mkStrucGlmer <- function(opt, parsedForm, dfun) {
+mkStrucGlmer <- function(opt, parsedForm, dfun, mc) {
     
     names(opt$par) <- names(parsedForm$initPars)
 
-    ans <- list(opt = opt, parsedForm = parsedForm, dfun = dfun)
+    ans <- list(opt = opt, parsedForm = parsedForm, dfun = dfun, mc = mc)
     class(ans) <- "strucGlmer"
 
                                         # update the initialized
