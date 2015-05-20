@@ -77,8 +77,6 @@ setOldClass("strucGlmer")
 ## printing and summary
 ## ----------------------------------------------------------------------
 
-
-
 strucGlmerMethTitle <- function() {
     paste("Structured GLMM",
                   "fit by maximum likelihood (Laplace Approx)",
@@ -90,8 +88,7 @@ strucGlmerMethTitle <- function() {
 ##' @rdname strucGlmer-class
 ##' @export
 print.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3),  ...) {
-    xTit <- strucGlmerMethTitle()
-    lme4:::.prt.methTit(xTit, class(x))
+    lme4:::.prt.methTit(strucGlmerMethTitle(), class(x))
     lme4:::.prt.family(lme4:::famlink(x, resp = x$parsedForm$devfunEnv$resp))
     lme4:::.prt.call(x$mc)
     
@@ -127,17 +124,73 @@ summary.strucGlmer <- function(object, use.hessian = TRUE, ...) {
 
     llAIC <- getStrucLlikAIC(object)
 
-    varcor <- VarCorr(object)
-
     structure(list(methTitle = strucGlmerMethTitle(),
                    objClass = class(object),
                    logLik = llAIC[["logLik"]],
                    family = famL$fami, link = famL$link,
                    coefficients = coefs,
-                   vcov = vc, varcor = varcor,
-                   AICtab = llAIC[["AICtab"]], call = object$mc))
-                   
+                   residuals = residuals(object, type = "deviance"),
+                   vcov = vc, varcor = VarCorr(object),
+                   AICtab = llAIC[["AICtab"]], call = object$mc),
+              class = "summary.strucGlmer")
+
 }
+
+##' @rdname strucGlmer-class
+##' @export
+print.summary.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3),
+                                     correlation = NULL, 
+                                     signif.stars = getOption("show.signif.stars"),
+                                     show.resids = TRUE, ...) {
+    ## basically just stolen from lme4
+    
+    lme4:::.prt.methTit(x$methTitle, x$objClass)
+    lme4:::.prt.family(x)
+    lme4:::.prt.call(x$call); cat("\n")
+    lme4:::.prt.aictab(x$AICtab); cat("\n")
+    if(show.resids) {
+        lme4:::.prt.resids(x$residuals, digits = digits)
+    }
+    lapply(x$parsedForm$random, printReTrm)
+    p <- nrow(x$coefficients)
+    if(p > 0) {
+        cat("\nFixed effects:\n")
+        printCoefmat(x$coefficients, zap.ind = 3,
+                     digits = digits, signif.stars = signif.stars)
+        if(is.null(correlation)) {
+            correlation <- p <= 10
+            if(!correlation) {
+                nam <- deparse(substitute(x))
+                if(length(nam) > 1 || nchar(nam) >= 32) nam <- "..."
+                message(sprintf(paste(
+                    "\nCorrelation matrix not shown by default, as p = %d > %d.",
+                    "Use print(%s, correlation = TRUE) or",
+                    "    vcov(%s)        if you need it\n", sep = "\n"),
+                                p, 10, nam, nam))
+            }
+        } else if(!is.logical(correlation)) stop("'correlation' must be NULL or logical")
+        if(correlation) {
+            if(is.null(VC <- x$vcov)) VC <- vcov(x, correlation = TRUE)
+            corF <- VC@factors$correlation
+            if(is.null(corF)) {
+                message("\nCorrelation of fixed effects could have been required in summary()")
+                corF <- cov2cor(VC)
+            }
+            p <- ncol(corF)
+            if(p > 1) {
+                rn <- rownames(x$coefficients)
+                rns <- abbreviate(rn, minlength = 11)
+                cat("\nCorrelation of Fixed Effects:\n")
+                corf <- matrix(format(round(corF@x, 3), nsmall = 3),
+                               ncol = p,
+                               dimnames = list(rns, abbreviate(rn, minlength = 6)))
+                corf[!lower.tri(corf)] <- ""
+                print(corf[-1, -p, drop = FALSE], quote = FALSE)
+            }
+        }
+    }               
+}
+    
 
 ##' @rdname strucGlmer
 ##' @export

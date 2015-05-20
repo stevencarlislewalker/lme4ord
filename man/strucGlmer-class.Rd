@@ -7,6 +7,7 @@
 \alias{logLik.strucGlmer}
 \alias{nobs.strucGlmer}
 \alias{print.strucGlmer}
+\alias{print.summary.strucGlmer}
 \alias{strucGlmer-class}
 \alias{summary.strucGlmer}
 \title{Structured GLMM class}
@@ -14,6 +15,10 @@
 print.strucGlmer(x, digits = max(3, getOption("digits") - 3), ...)
 
 summary.strucGlmer(object, use.hessian = TRUE, ...)
+
+print.summary.strucGlmer(x, digits = max(3, getOption("digits") - 3),
+  correlation = NULL, signif.stars = getOption("show.signif.stars"),
+  show.resids = TRUE, ...)
 
 \method{isREML}{strucGlmer}(x, ...)
 
