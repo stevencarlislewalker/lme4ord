@@ -5,7 +5,7 @@
 \alias{covarPerTerm}
 \alias{fixef.strucGlmer}
 \alias{getStrucGlmerPar}
-\alias{loads.strucGlmer}
+\alias{loadings.strucGlmer}
 \alias{loadsPerTerm}
 \alias{pars.strucGlmer}
 \alias{residuals.strucGlmer}
@@ -29,7 +29,7 @@ getStrucGlmerPar(object, type, ...)
 
 \method{covar}{strucGlmer}(object, ...)
 
-loads.strucGlmer(object, ...)
+\method{loadings}{strucGlmer}(object, ...)
 
 \method{pars}{strucGlmer}(object, ...)
 

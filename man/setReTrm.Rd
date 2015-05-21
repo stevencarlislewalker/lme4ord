@@ -7,6 +7,7 @@
 \alias{setReTrm.cooccur}
 \alias{setReTrm.default}
 \alias{setReTrm.edge}
+\alias{setReTrm.factAnal}
 \alias{setReTrm.flexvar}
 \alias{setReTrm.identity}
 \alias{setReTrm.multiVarExp}
@@ -17,6 +18,8 @@ random effects term}
 setReTrm(object, addArgsList, devfunEnv = NULL)
 
 \method{setReTrm}{default}(object, addArgsList, devfunEnv = NULL)
+
+\method{setReTrm}{factAnal}(object, addArgsList, devfunEnv = NULL)
 
 \method{setReTrm}{identity}(object, addArgsList, devfunEnv = NULL)
 

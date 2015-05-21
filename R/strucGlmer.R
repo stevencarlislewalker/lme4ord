@@ -343,7 +343,7 @@ covar.strucGlmer <- function(object, ...) {
 
 ##' @rdname strucGlmer
 ##' @export
-loads.strucGlmer <- function(object, ...) {
+loadings.strucGlmer <- function(object, ...) {
     getStrucGlmerPar(object, "loads")
 }
 

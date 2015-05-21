@@ -76,7 +76,7 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     if(missing(devfunEnv)) devfunEnv <- new.env()
     if(is.null(weights))   weights   <- rep(1, length(y))
     if(is.null(offset))    offset    <- rep(0, length(y))
-    if(is.null(etastart))  etastart <- family$linkfun(initializeEnv$mustart)
+    if(is.null(etastart))  etastart  <- family$linkfun(initializeEnv$mustart)
 
     devfunList <- list(Lind = Lind,
                        pp = lme4:::merPredD$new(
@@ -102,7 +102,7 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                        setFixef = !is.null(parInds$fixef),
                        mapToCovFact = mapToCovFact,
                        mapToModMat  = mapToModMat,
-                       mapToModMat  = mapToWeights,
+                       mapToWeights = mapToWeights,
                        parInds = parInds)
 
     devfun <- function(pars) {

@@ -55,9 +55,30 @@ setReTrm.default <- function(object, addArgsList,
     packReTrm(object, Zt, Lambdat)
 }
 
+##' @rdname setReTrm
+##' @export
+setReTrm.factAnal <- function(object, addArgsList,
+                              devfunEnv = NULL) {
+    addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
+    nl <- nlevels(grpFac <- object$grpFac)
+    nc <- addArgs$nAxes
+    set.seed(addArgs$seed)
+    modMat <- subset(rRepSparse(nl,  nc,
+                                nl * nc,
+                                nl * nc), as.numeric(grpFac))
+    
+    Zt <- kr(t(modMat), as.repSparse(addArgs$obsFac))
+    Lambdat <- resetTransConst(repSparseIdent(nrow(Zt)))
+    
+    lowerLoads <- rep(-Inf, length(getInit(Zt)))
+    upperLoads <- rep( Inf, length(getInit(Zt)))
+
+    packReTrm(object, Zt, Lambdat,
+              lowerLoads = lowerLoads,
+              upperLoads = upperLoads)
+}
 
 
-           
 ##' @rdname setReTrm
 ##' @export
 setReTrm.identity <- function(object, addArgsList, devfunEnv = NULL) {
