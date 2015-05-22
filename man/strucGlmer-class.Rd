@@ -8,6 +8,7 @@
 \alias{nobs.strucGlmer}
 \alias{print.strucGlmer}
 \alias{print.summary.strucGlmer}
+\alias{ranef.strucGlmer}
 \alias{strucGlmer-class}
 \alias{summary.strucGlmer}
 \title{Structured GLMM class}
@@ -31,6 +32,8 @@ print.summary.strucGlmer(x, digits = max(3, getOption("digits") - 3),
 \method{logLik}{strucGlmer}(object, ...)
 
 \method{formula}{strucGlmer}(x, ...)
+
+\method{ranef}{strucGlmer}(object, type = c("u", "Lu", "ZLu"), ...)
 }
 \arguments{
 \item{x,object}{\code{strucGlmer} objects}

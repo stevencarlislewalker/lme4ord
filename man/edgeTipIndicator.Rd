@@ -4,6 +4,7 @@
 \alias{edgeTipIndicator.default}
 \alias{edgeTipIndicator.hclust}
 \alias{edgeTipIndicator.matrix}
+\alias{edgeTipIndicator.mst}
 \alias{edgeTipIndicator.phylo}
 \alias{findEdgesFromPath}
 \alias{findPathFromNode}
@@ -23,6 +24,8 @@ edgeTipIndicator(object, ...)
 \method{edgeTipIndicator}{phylo}(object, ...)
 
 \method{edgeTipIndicator}{hclust}(object, ...)
+
+\method{edgeTipIndicator}{mst}(object, ...)
 
 reorderPhylo(object, ...)
 }

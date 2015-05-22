@@ -83,6 +83,18 @@ edgeTipIndicator.hclust <- function(object, ...) {
 }
 
 ##' @rdname edgeTipIndicator
+##' @export
+edgeTipIndicator.mst <- function(object, ...) {
+    sparseMat <- as(unclass(object), "TsparseMatrix")
+    lowerInds <- sparseMat@i > sparseMat@j
+    ans <- sparseMatrix(i = rep(seq_along(which(lowerInds)), 2),
+                        j = c(sparseMat@i[lowerInds] + 1, sparseMat@j[lowerInds] + 1),
+                        x = rep(1, 2 * sum(lowerInds)))
+    colnames(ans) <- colnames(object)
+    return(as.matrix(ans))
+}
+
+##' @rdname edgeTipIndicator
 ##' @seealso \code{\link{reorder.phylo}}
 ##' @export
 reorderPhylo <- function(object, ...) {

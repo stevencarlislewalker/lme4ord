@@ -19,7 +19,8 @@
 ##' @param ... further arguments to \code{\link{mkGeneralGlmerDevfun}}
 ##' @export
 strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
-                         weights = NULL, offset = NULL, etastart = NULL,
+                       weights = NULL, offset = NULL, etastart = NULL,
+                       devfunOnly = FALSE,
                          ...) {
 
     mc <- match.call()
@@ -42,6 +43,7 @@ strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
                                  devfunEnv = parsedForm$devfunEnv,
                                  family = family,
                                  ...)
+    if(devfunOnly) return(dfun)
 
     cat("\nOptimizing deviance function...\n")
     opt <- minqa:::bobyqa(parsedForm$initPars, dfun,
@@ -202,7 +204,22 @@ residuals.strucGlmer <- function(object, ...) {
     ##     r <- naresid(na.action, r)
     r
 }
-         
+
+##' @rdname strucGlmer
+##' @export
+fitted.strucGlmer <- function(object, ranefTrms, fixef = TRUE, ...) {
+    if(fixef) {
+        fe <- as.numeric(object$parsedForm$fixed %*% fixef(object))
+    } else fe <- 0
+
+    if(missing(ranefTrms)) ranefTrms <- seq_along(object$parsedForm$random)
+    if(!is.null(ranefTrms)) {
+        re <- Reduce("+", ranef(object, type = "ZLu")[ranefTrms])
+    } else re <- 0
+
+    return(fe + re)
+}
+
 calc.vcov.hess <- function(h) {
     ## ~= forceSymmetric(solve(h/2)[i,i]) : solve(h/2) = 2*solve(h)
     h <- tryCatch(solve(h),
@@ -248,7 +265,7 @@ vcov.strucGlmer <- function(object, correlation = TRUE,
 
     if(justFixef && hess.avail && use.hessian) {
         i <- object$parsedForm$parInds$fixef
-        V <- V[i, i]
+        V <- V[i, i, drop = FALSE]
     }
     
     rr <- tryCatch(as(V, "dpoMatrix"), error = function(e)e)
@@ -258,8 +275,12 @@ vcov.strucGlmer <- function(object, correlation = TRUE,
         rr <- matrix(NA,nrow(V),ncol(V))
     }
 
-    nmsX <- colnames(object$parsedForm$devfunEnv$pp$X)
-    dimnames(rr) <- list(nmsX,nmsX)
+    if(justFixef) {
+        nmsX <- colnames(object$parsedForm$devfunEnv$pp$X)
+    } else {
+        nmsX <- names(pars(object))
+    }
+    dimnames(rr) <- list(nmsX, nmsX)
 
     if(correlation)
 	rr@factors$correlation <- rr
@@ -318,6 +339,7 @@ logLik.strucGlmer <- function(object, ...) {
 ##' @export
 formula.strucGlmer <- function(x, ...) x$parsedForm$formula
 
+
 ##' @param type character string giving the type of parameter
 ##' (e.g. \code{"fixef", "covar"})
 ##' @rdname strucGlmer
@@ -353,6 +375,26 @@ pars.strucGlmer <- function(object, ...) object$opt$par
 
 subRagByLens <- function(x, lens) {
     split(x, rep(seq_along(lens), lens)) ## split no good ... order of levels !
+}
+
+##' @rdname strucGlmer-class
+##' @export
+ranef.strucGlmer <- function(object, type = c("u", "Lu", "ZLu"), ...) {
+    type <- type[1]
+    pp <- object$parsedForm$devfunEnv$pp
+    structs <- object$parsedForm$random
+    nms <- names(nRePerTrm <- environment(object$dfun)$nRePerTrm)
+    if(type ==   "u") {
+        re <- pp$u(1)
+    } else {
+        re <- pp$b(1)
+        if(type == "ZLu") {
+            b <- subRagByLens(re, nRePerTrm)
+            multFn <- function(struc, re) as.numeric(as.matrix(t(struc$Zt), sparse = TRUE) %*% re)
+            return(setNames(mapply(multFn, structs, b, SIMPLIFY = FALSE), nms))
+        }
+    }
+    setNames(subRagByLens(re, nRePerTrm), nms)
 }
 
 strucGlmerParPerTerm <- function(lens, pars) {
@@ -551,7 +593,8 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
 ##' @rdname strucParseFormula
 ##' @export
 simStrucParsedForm <- function(parsedForm, family = binomial,
-                                 weights, ...) {
+                               weights, nsim) {
+                               ## ranefTrms, fixef = TRUE) {
     if(missing(weights)) weights <- rep(1, length(parsedForm$response))
     with(parsedForm, {
         reMM <- t(as(Zt, "dgCMatrix")) %*% t(as(Lambdat, "dgCMatrix"))
@@ -559,9 +602,10 @@ simStrucParsedForm <- function(parsedForm, family = binomial,
         fe <- as.numeric(feMM %*% initPars[parInds$fixef])
         re <- as.numeric(reMM %*% rnorm(ncol(reMM)))
         simFun <- simfunList[[family()$family]]
-        return(simFun(weights, length(weights), family()$linkinv(fe + re)))
+        return(simFun(weights, nsim, family()$linkinv(fe + re)))
     })
 }
+
 
 ##' Split a formula
 ##'
@@ -729,7 +773,8 @@ mkStrucGlmer <- function(opt, parsedForm, dfun, mc) {
     } else {
         ans$parsedForm$random <- ansRand
     }
-    
+    ans$parsedForm$Lambdat <- update(ans$parsedForm$Lambdat, covar(ans))
+    ans$parsedForm$Zt      <- update(ans$parsedForm$Zt,      loads(ans))
     return(ans)
 }
 

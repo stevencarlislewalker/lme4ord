@@ -7,10 +7,12 @@
 \alias{setReTrm.cooccur}
 \alias{setReTrm.default}
 \alias{setReTrm.edge}
+\alias{setReTrm.expcutdist}
 \alias{setReTrm.factAnal}
 \alias{setReTrm.flexvar}
 \alias{setReTrm.identity}
 \alias{setReTrm.multiVarExp}
+\alias{setReTrm.obslev}
 \alias{setReTrm.varIdent}
 \title{Set model matrix slice and relative covariance factor block for a
 random effects term}
@@ -25,6 +27,8 @@ setReTrm(object, addArgsList, devfunEnv = NULL)
 
 \method{setReTrm}{flexvar}(object, addArgsList, devfunEnv = NULL)
 
+\method{setReTrm}{expcutdist}(object, addArgsList, devfunEnv = NULL)
+
 \method{setReTrm}{edge}(object, addArgsList, devfunEnv = NULL)
 
 \method{setReTrm}{cooccur}(object, addArgsList, devfunEnv = NULL)
@@ -32,6 +36,8 @@ setReTrm(object, addArgsList, devfunEnv = NULL)
 \method{setReTrm}{varIdent}(object, addArgsList, devfunEnv = NULL)
 
 \method{setReTrm}{multiVarExp}(object, addArgsList, devfunEnv = NULL)
+
+\method{setReTrm}{obslev}(object, addArgsList, devfunEnv = NULL)
 
 packReTrm(object, Zt, Lambdat, lowerLoads, upperLoads, lowerCovar, upperCovar,
   ...)

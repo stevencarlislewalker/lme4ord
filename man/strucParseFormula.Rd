@@ -6,7 +6,7 @@
 \usage{
 strucParseFormula(formula, data, addArgs = list(), reTrmsList = NULL, ...)
 
-simStrucParsedForm(parsedForm, family = binomial, weights, ...)
+simStrucParsedForm(parsedForm, family = binomial, weights, nsim)
 }
 \arguments{
 \item{formula}{mixed model formula}

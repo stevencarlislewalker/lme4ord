@@ -3,6 +3,7 @@
 \alias{VarCorr.strucGlmer}
 \alias{covar.strucGlmer}
 \alias{covarPerTerm}
+\alias{fitted.strucGlmer}
 \alias{fixef.strucGlmer}
 \alias{getStrucGlmerPar}
 \alias{loadings.strucGlmer}
@@ -14,9 +15,12 @@
 \title{Generalized linear mixed model with structured (co)variance terms}
 \usage{
 strucGlmer(formula, data, family, addArgs = list(), optVerb = 0L,
-  weights = NULL, offset = NULL, etastart = NULL, ...)
+  weights = NULL, offset = NULL, etastart = NULL, devfunOnly = FALSE,
+  ...)
 
 \method{residuals}{strucGlmer}(object, ...)
+
+\method{fitted}{strucGlmer}(object, ranefTrms, fixef = TRUE, ...)
 
 \method{vcov}{strucGlmer}(object, correlation = TRUE, use.hessian = TRUE,
   justFixef = TRUE, ...)

@@ -67,7 +67,7 @@ setReTrm.factAnal <- function(object, addArgsList,
                                 nl * nc,
                                 nl * nc), as.numeric(grpFac))
     
-    Zt <- kr(t(modMat), as.repSparse(addArgs$obsFac))
+    Zt <- kr(t(modMat), resetTransConst(as.repSparse(addArgs$obsFac)))
     Lambdat <- resetTransConst(repSparseIdent(nrow(Zt)))
     
     lowerLoads <- rep(-Inf, length(getInit(Zt)))
@@ -121,15 +121,50 @@ setReTrm.flexvar <- function(object, addArgsList, devfunEnv = NULL) {
 
 ##' @rdname setReTrm
 ##' @export
+setReTrm.expcutdist <- function(object, addArgsList, devfunEnv = NULL) {
+    addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
+    distCutoff <- addArgs$distCutoff
+    minCov <- addArgs$minCov
+    distMat <- edgeMat <- addArgs$distMat
+    
+    edgeMat[] <- 1 * (distMat[] < distCutoff)
+    sparseMat <- as(as.matrix(distMat), "TsparseMatrix")
+    inds <- (sparseMat@x < distCutoff) & (sparseMat@i > sparseMat@j)
+    Jedge <- sparseMatrix(i = rep(seq_along(which(inds)), 2),
+                          j = c(sparseMat@i[inds] + 1, sparseMat@j[inds] + 1),
+                          x = rep(1, 2 * sum(inds)))
+    colnames(Jedge) <- attr(distMat, "Labels")
+    edgeDists <- sparseMat@x[inds]
+    Jgrp <- as(object$grpFac, "sparseMatrix")
+    Jt <- as.repSparse(Jedge %*% Jgrp)
+    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)), Jt))
+    transFun <- local({
+        init <- c(0.01)
+        edgeDists <- edgeDists
+        distCutoff <- distCutoff
+        minCov <- minCov
+        function(matPars) {
+            q1 <- (minCov - 1)/(exp(-(matPars[1]) * distCutoff) - 1)
+            q2 <- 1 - q1
+            (q2 + q1 * exp(-(matPars[1]) * edgeDists))
+        }
+    })
+    Lambdat <- repSparseDiag(transFun(1))
+    Lambdat$trans <- transFun
+    packReTrm(object, Zt, update(Lambdat))
+}
+
+##' @rdname setReTrm
+##' @export
 setReTrm.edge <- function(object, addArgsList, devfunEnv = NULL) {
                                         # get additional arguments
-    addArgs <- eval(object$addArgs, addArgsList)
+    addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
 
                                         # Zt
     Jedge <- as(edgeTipIndicator(addArgs$phy), "sparseMatrix")
     Jspp <- as(object$grpFac, "sparseMatrix")
     Jt <- resetTransConst(as.repSparse(Jedge %*% Jspp))
-    Zt <- kr(t(as.repSparse(object$modMat)), Jt)
+    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)), Jt))
 
                                         # Lambdat
     nl <- nrow(Jedge)
@@ -210,6 +245,17 @@ setReTrm.multiVarExp <- function(object, addArgsList, devfunEnv = NULL) {
                                         # package up object
     packReTrm(object, Zt, Lambdat,
               lowerCovar = rep(-Inf, length(init)))
+}
+
+##' @rdname setReTrm
+##' @export
+setReTrm.obslev <- function(object, addArgsList,
+                             devfunEnv = NULL) {
+
+    n <- nrow(object$modMat)
+    Zt <- resetTransConst(repSparseIdent(n))
+    Lambdat <- repSparseIdent(n)
+    packReTrm(object, Zt, Lambdat)
 }
 
 
@@ -418,3 +464,12 @@ getAddArgs <- function(addArgsExpr, addArgsList) {
               names(addArgsExpr))
 }
 
+##' Simulate from a random effects term (experimental)
+##'
+##' @param \code{reTrmStruct} object
+##' @export
+simReTrm <- function(object) {
+    with(object, {
+        as.numeric(rnorm(nrow(Lambdat)) %*% as.matrix(Lambdat) %*% as.matrix(Zt))
+    })
+}
