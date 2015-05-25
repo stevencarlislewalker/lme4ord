@@ -308,6 +308,7 @@ getStrucLlikAIC <- function(object) {
     list(logLik = llik, AICtab = AICstats)
 }
 
+##' @importFrom lme4 isREML
 ##' @rdname strucGlmer-class
 ##' @export
 isREML.strucGlmer <- function(x, ...) FALSE
@@ -318,14 +319,17 @@ df.residual.strucGlmer <- function(object, ...) {
     nobs(object) - length(pars(object))
 }
 
+##' @importFrom lme4 nobs
 ##' @rdname strucGlmer-class
 ##' @export
 nobs.strucGlmer <- function(object, ...) nrow(object$parsedForm$fixed)
 
+##' @importFrom stats deviance
 ##' @rdname strucGlmer-class
 ##' @export
 deviance.strucGlmer <- function(object, ...) object$opt$fval
 
+##' @importFrom stats logLik
 ##' @rdname strucGlmer-class
 ##' @export
 logLik.strucGlmer <- function(object, ...) {
@@ -335,6 +339,7 @@ logLik.strucGlmer <- function(object, ...) {
               class = "logLik")
 }
 
+##' @importFrom stats formula
 ##' @rdname strucGlmer-class
 ##' @export
 formula.strucGlmer <- function(x, ...) x$parsedForm$formula
@@ -349,6 +354,7 @@ getStrucGlmerPar <- function(object, type, ...) {
     optPar <- object$opt$par
     optPar[unlist(parInds[type])]
 }
+
 
 ##' @rdname strucGlmer
 ##' @export

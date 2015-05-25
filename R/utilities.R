@@ -268,3 +268,9 @@ showSkeleton <- function(whichSkel, package = "lme4ord") {
    cat(paste(c(readLines(fn), ""), collapse = "\n"))
 }
 
+
+.safeExtractDiag <- function(x) {
+    if(length(x) == 1) return(x)
+    diag(x)
+}
+
