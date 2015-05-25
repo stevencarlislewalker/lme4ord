@@ -14,7 +14,10 @@ Depends:
     nlme,
     lme4pureR,
     ape,
-    reshape2
+    reshape2,
+    minqa,
+    MASS,
+    lattice
 Imports:
     stats,
     Matrix,

@@ -79,13 +79,11 @@ be used}
 \description{
 An \code{S3} class for generalized linear mixed models with
 structured (co)variance terms, which are lists with the following
-elements:
-\describe{
-  \item{opt}{Result of the optimizer (currently \code{\link[minqa]{bobyqa}}).}
-  \item{parsedForm}{Results of \code{\link{strucParseFormula}}.}
-  \item{dfun}{A function for computing the model deviance.
-              The environment of \code{dfun} contains objects for
-              representing the model.}
-  \item{mc}{Matched call}}
+elements: \describe{ \item{opt}{Result of the optimizer (currently
+\code{bobyqa} in the \code{minqa} package).}
+\item{parsedForm}{Results of \code{\link{strucParseFormula}}.}
+\item{dfun}{A function for computing the model deviance.  The
+environment of \code{dfun} contains objects for representing the
+model.}  \item{mc}{Matched call}}
 }
 

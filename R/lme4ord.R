@@ -18,4 +18,5 @@
 ##' @docType package
 ##' @name lme4ord
 ##' @aliases lme4ord package-lme4ord lme4ord-package
+##' @import MASS lattice minqa
 NULL

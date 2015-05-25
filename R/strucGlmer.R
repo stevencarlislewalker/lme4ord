@@ -7,7 +7,7 @@
 ##' formula with structured terms}
 ##' \item{\code{\link{mkGeneralGlmerDevfun}}}{constructs a generalized
 ##' linear mixed model deviance function}
-##' \item{\code{\link{bobyqa}}}{optimizer the deviance function}
+##' \item{\code{bobyqa}}{optimizer the deviance function}
 ##' \item{\code{\link{mkStrucGlmer}}}{constructs an object of
 ##' \code{\link{strucGlmer-class}}}}
 ##'
