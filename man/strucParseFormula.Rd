@@ -20,6 +20,9 @@ simStrucParsedForm(parsedForm, family = binomial, weights, nsim)
 
 \item{...}{additional parameters to \code{\link{as.data.frame}}}
 
+\item{nsim}{number of simulations (FIXME: inconsistent between
+binomial and poisson)}
+
 \item{parsedForm}{result of \code{strucParseFormula}}
 
 \item{family}{family object}

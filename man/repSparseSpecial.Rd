@@ -69,9 +69,7 @@ repSparseExpChol(distObj, cutOffDist = Inf)
 
 \item{offDiagInds}{indices for the two correlated objects}
 
-\item{sdVal}{standard deviation of crossproduct of the result}
-
-\item{offDiagVals}{values for the off-diagonal of the Cholesky
+\item{sdVal}{standard deviation of crossproduct of the result
 factor}
 
 \item{offDiagPars}{parameters determining the off-diagonal of the
@@ -92,6 +90,8 @@ length of \code{varPars}}
 example).}
 
 \item{distObj}{distance matrix object}
+
+\item{cutOffDist}{maximum distance with nonzero correlations}
 }
 \description{
 Special sparse repeated matrices

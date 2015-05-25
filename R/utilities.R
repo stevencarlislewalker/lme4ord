@@ -284,6 +284,10 @@ listTranspose <- function(lst) {
 }
 
 
+subRagByLens <- function(x, lens) {
+    split(x, rep(seq_along(lens), lens)) ## split no good ... order of levels !
+}
+
 ##----------------------------------------------------------------------
 ## edgeNodeTools
 ##----------------------------------------------------------------------

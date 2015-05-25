@@ -22,6 +22,11 @@ mkGeneralGlmerDevfun(y, X, Zt, Lambdat, weights = NULL, offset = NULL,
 
 \item{offset}{known additive offsets}
 
+\item{etastart,mustart}{starting values for linear predictor
+(\code{etastart}) or mean (\code{mustart})}
+
+\item{devfunEnv}{environment of the returned deviance function}
+
 \item{initPars}{initial values for the parameter vector}
 
 \item{parInds}{a named list of vectors for identifying each of the
@@ -37,12 +42,16 @@ and returning the values of the non-zero elements of
 returning the values of the non-zero elements of \code{Zt}
 (i.e. the \code{x} slot of \code{Zt})}
 
+\item{mapToWeights}{function taking the \code{weigh} parameters}
+
 \item{family}{\code{\link{family}}}
 
 \item{tolPwrss}{tolerance for penalized weighted residual sum of
 squares}
 
 \item{verbose}{verbose}
+
+\item{maxit}{maximum number of PIRLS iterations}
 
 \item{pureR}{should the PIRLS algorithm be run in
 \code{lme4pureR}?}

@@ -12,8 +12,6 @@ setUpperDefault(init, ...)
 \arguments{
 \item{init}{initial parameter value}
 
-\item{lower,upper}{lower or upper bound}
-
 \item{...}{additional arguments not currently used}
 }
 \description{

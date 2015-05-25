@@ -45,6 +45,8 @@ parLength(ll)
 \item{initCovar}{initial value for the covariance parameter vector}
 
 \item{initLoads}{initial value for the loadings parameter vector}
+
+\item{ll}{length of parameter vector}
 }
 \description{
 Get and set initial parameter values for repeated sparse matrices

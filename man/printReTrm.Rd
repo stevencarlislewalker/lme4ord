@@ -13,6 +13,8 @@ printReTrm(object, forSummary = FALSE, ...)
 
 \item{forSummary}{print for \code{\link{summary}} instead of
 \code{\link{print}}?}
+
+\item{...}{additional arguments}
 }
 \description{
 Print random effects term

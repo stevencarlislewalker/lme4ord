@@ -6,6 +6,9 @@
 ##' @param Lambdat relative covariance factor
 ##' @param weights prior weights
 ##' @param offset known additive offsets
+##' @param etastart,mustart starting values for linear predictor
+##' (\code{etastart}) or mean (\code{mustart})
+##' @param devfunEnv environment of the returned deviance function
 ##' @param initPars initial values for the parameter vector
 ##' @param parInds a named list of vectors for identifying each of the
 ##' three types of parameters in \code{initPars}, one vector for each
@@ -17,10 +20,12 @@
 ##' @param mapToModMat function taking the \code{loads} parameters and
 ##' returning the values of the non-zero elements of \code{Zt}
 ##' (i.e. the \code{x} slot of \code{Zt})
+##' @param mapToWeights function taking the \code{weigh} parameters
 ##' @param family \code{\link{family}}
 ##' @param tolPwrss tolerance for penalized weighted residual sum of
 ##' squares
 ##' @param verbose verbose
+##' @param maxit maximum number of PIRLS iterations
 ##' @param pureR should the PIRLS algorithm be run in
 ##' \code{lme4pureR}?
 ##' @param Lind optional indices mapping covariance parameters to the
@@ -132,24 +137,6 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     return(devfun)
 }
 
-##' Get parameters
-##'
-##' @param object \code{lme4ord} fitted model object
-##' @rdname pars
-##' @export
-covar <- function(object, ...) UseMethod("covar")
-
-##' @rdname pars
-##' @export
-loads <- function(object, ...) loadings(object)
-
-##' @rdname pars
-##' @export
-pars <- function(object, ...) UseMethod("pars")
-
-.covar <- function(pars, ind) pars[ind$covar]
-.fixef <- function(pars, ind) pars[ind$fixef]
-.loads <- function(pars, ind) pars[ind$loads]
 
 ##' @param parList named list of parameters with possible names:
 ##' (\code{covar}, \code{fixef}, \code{weigh}, \code{loads})

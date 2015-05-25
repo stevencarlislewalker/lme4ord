@@ -293,8 +293,10 @@ dim.repSparse <- function(x) attr(x, "Dim")
 ##' used throughout, and in particular is required for using the
 ##' \code{\link{kr}} function.
 ##'
+##' @param x \code{\link{repSparse}} object
 ##' @param decreasing see \code{\link{sort}}
 ##' @param type sort by column, row, or value indices?
+##' @param ... for consistency with generic
 ##' @rdname sort.repSparse
 ##' @export
 sort.repSparse <- function(x, decreasing = FALSE,
@@ -610,6 +612,7 @@ setInit.reTrmStruct <- function(x, initCovar, initLoads, ...) {
     setInit(x$Zt,      initLoads)
 }
 
+##' @param ll length of parameter vector
 ##' @rdname getInit
 ##' @export
 parLength <- function(ll) {
@@ -626,6 +629,7 @@ parLength <- function(ll) {
 
 ##' Kronecker and Khatri-Rao products for repeated sparse matrices
 ##'
+##' @param X,Y repeated sparse matrices (\code{\link{repSparse-class}})
 ##' @param trans see argument \code{FUN} in \code{\link{outer}}
 ##' @param makedimnames ignored
 ##' @param ... ignored
@@ -847,6 +851,9 @@ mkCorMatCholTrans <- function(init) {
     })
 }
 
+##' @param cholObj,symmObj corresponding triangular cholesky and
+##' symmetric \code{\link{repSparse}} matrix objects
+##' @param vecDist distances as a vector
 ##' @rdname mkTrans
 ##' @export
 mkExpCholTrans <- function(init, cholObj, symmObj, vecDist) {
@@ -976,6 +983,7 @@ mkVarExpTrans <- function(init, covariate, grpFac) {
     })
 }
 
+##' @param modMat model matrix
 ##' @rdname mkTrans
 ##' @export
 mkMultiVarExpTrans <- function(init, modMat, grpFac) {
@@ -1291,11 +1299,11 @@ repSparseRowSubset <- function(x, rowInds) {
 ##' Changing sparse format
 ##'
 ##' \code{point2ind} takes a vector of column pointers, as used in
-##' sparse matrices of class \code{\link{dgCMatrix}}, and returns a
-##' vector of column indices, as used in sparse matrices of class
-##' \code{\link{dgTMatrix}}.  \code{ind2point} is the approximate
-##' inverse of \code{point2ind}.  See \code{\link{sparseMatrix}} for
-##' more information about these conversions.
+##' sparse matrices of class \code{dgCMatrix}, and returns a vector of
+##' column indices, as used in sparse matrices of class
+##' \code{dgTMatrix}.  \code{ind2point} is the approximate inverse of
+##' \code{point2ind}.  See \code{\link{sparseMatrix}} for more
+##' information about these conversions.
 ##'
 ##' @param point vector of column pointers
 ##' @rdname changeSparseFormat
@@ -1587,7 +1595,6 @@ setIs("repSparseOneOffDiag", "repSparse")
 
 
 ##' @param sdVal standard deviation of crossproduct of the result
-##' @param offDiagVals values for the off-diagonal of the Cholesky
 ##' factor
 ##' @rdname repSparseSpecial
 ##' @export
@@ -1700,6 +1707,7 @@ setIs("repSparseVarWithCovariate", "repSparse")
 
 
 ##' @param distObj distance matrix object
+##' @param cutOffDist maximum distance with nonzero correlations
 ##' @rdname repSparseSpecial
 ##' @export
 ##' @examples

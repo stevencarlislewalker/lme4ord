@@ -39,8 +39,7 @@ setReTrm(object, addArgsList, devfunEnv = NULL)
 
 \method{setReTrm}{obslev}(object, addArgsList, devfunEnv = NULL)
 
-packReTrm(object, Zt, Lambdat, lowerLoads, upperLoads, lowerCovar, upperCovar,
-  ...)
+packReTrm(object, Zt, Lambdat, lowerLoads, upperLoads, lowerCovar, upperCovar)
 
 findReTrmClasses(formula = NULL)
 
@@ -49,7 +48,8 @@ getAddArgs(addArgsExpr, addArgsList)
 \arguments{
 \item{object}{a \code{reTrmStruct} object}
 
-\item{addArgsList}{named list of additional arguments}
+\item{addArgsList}{a list of named quantities within which
+\code{addArgsExpr} is evaluated}
 
 \item{devfunEnv}{optional environment of the deviance function}
 
@@ -67,9 +67,6 @@ possible covariance parameters (for \code{Lambdat})}
 
 \item{addArgsExpr}{a list of expressions for evaluating within
 \code{addArgsList}}
-
-\item{addArgsList}{a list of named quantities within which
-\code{addArgsExpr} is evaluated}
 }
 \value{
 \code{object} with the following additional elements:

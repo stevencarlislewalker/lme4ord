@@ -9,6 +9,8 @@ kron(X, Y, trans = "*", makedimnames = FALSE, ...)
 kr(X, Y, trans = "*")
 }
 \arguments{
+\item{X,Y}{repeated sparse matrices (\code{\link{repSparse-class}})}
+
 \item{trans}{see argument \code{FUN} in \code{\link{outer}}}
 
 \item{makedimnames}{ignored}

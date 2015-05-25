@@ -14,6 +14,9 @@ update.flexvar(object, newCovar, newLoads, ...)
 \item{newCovar}{new covariance parameters}
 
 \item{newLoads}{new loadings parameters}
+
+\item{...}{potential additional arguments (ignored by the default
+method)}
 }
 \description{
 Update a random effects term structure with new parameters

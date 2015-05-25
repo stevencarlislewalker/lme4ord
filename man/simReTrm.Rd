@@ -6,7 +6,7 @@
 simReTrm(object)
 }
 \arguments{
-\item{\code{reTrmStruct}}{object}
+\item{object}{\code{reTrmStruct} object}
 }
 \description{
 Simulate from a random effects term (experimental)

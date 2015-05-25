@@ -21,11 +21,11 @@ in \code{Matrix} package)?}
 }
 \description{
 \code{point2ind} takes a vector of column pointers, as used in
-sparse matrices of class \code{\link{dgCMatrix}}, and returns a
-vector of column indices, as used in sparse matrices of class
-\code{\link{dgTMatrix}}.  \code{ind2point} is the approximate
-inverse of \code{point2ind}.  See \code{\link{sparseMatrix}} for
-more information about these conversions.
+sparse matrices of class \code{dgCMatrix}, and returns a vector of
+column indices, as used in sparse matrices of class
+\code{dgTMatrix}.  \code{ind2point} is the approximate inverse of
+\code{point2ind}.  See \code{\link{sparseMatrix}} for more
+information about these conversions.
 }
 \seealso{
 Other repeated.sparse.matrix.topics: \code{\link{.bind}},

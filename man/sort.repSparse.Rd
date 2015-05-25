@@ -10,9 +10,13 @@
 standardSort(x)
 }
 \arguments{
+\item{x}{\code{\link{repSparse}} object}
+
 \item{decreasing}{see \code{\link{sort}}}
 
 \item{type}{sort by column, row, or value indices?}
+
+\item{...}{for consistency with generic}
 }
 \description{
 The ordering of the indices is arbitrary, but some orders are more

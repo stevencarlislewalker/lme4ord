@@ -15,6 +15,8 @@ noSpecials(term)
 \item{formula}{Generalized mixed model formula}
 
 \item{splitFormula}{results of \code{splitForm}}
+
+\item{term}{language object}
 }
 \description{
 Split a formula

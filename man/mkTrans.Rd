@@ -52,6 +52,11 @@ mkCholCompSymmTrans(init, matSize)
 \arguments{
 \item{init}{initial parameter values}
 
+\item{cholObj,symmObj}{corresponding triangular cholesky and
+symmetric \code{\link{repSparse}} matrix objects}
+
+\item{vecDist}{distances as a vector}
+
 \item{defaultOutput}{default vector for diagonal elements}
 
 \item{devfunEnv}{environment of the deviance function}
@@ -69,6 +74,8 @@ sparse matrices, \code{A} and \code{B} say}
 \item{grpFac}{a grouping factor (or anything coercible to
 \code{numeric} really) with the number of levels equal to the
 length of \code{init}}
+
+\item{modMat}{model matrix}
 
 \item{matSize}{number of rows (or columns) of the matrix}
 }

@@ -2,7 +2,8 @@
 ##' random effects term
 ##' 
 ##' @param object a \code{reTrmStruct} object
-##' @param addArgsList named list of additional arguments
+##' @param addArgsList a list of named quantities within which
+##' \code{addArgsExpr} is evaluated
 ##' @param devfunEnv optional environment of the deviance function
 ##' @rdname setReTrm
 ##' @seealso \code{\link{mkReTrmStructs}} for construction of these objects
@@ -268,7 +269,7 @@ setReTrm.obslev <- function(object, addArgsList,
 ##' @export
 packReTrm <- function(object, Zt, Lambdat,
                       lowerLoads, upperLoads,
-                      lowerCovar, upperCovar, ...) {
+                      lowerCovar, upperCovar) {
     if(missing(lowerLoads)) lowerLoads <- setLowerDefault(getInit(Zt))
     if(missing(upperLoads)) upperLoads <- setUpperDefault(getInit(Zt))
     if(missing(lowerCovar)) lowerCovar <- setLowerDefault(getInit(Lambdat))
@@ -303,6 +304,8 @@ VarCorr.reTrmStruct <- function(x, sigma = 1, rdig = 3) {
 ##' @param object a \code{reTrmStruct} object
 ##' @param newCovar new covariance parameters
 ##' @param newLoads new loadings parameters
+##' @param ... potential additional arguments (ignored by the default
+##' method)
 ##' @rdname update.reTrmStruct
 ##' @export
 update.reTrmStruct <- function(object, newCovar, newLoads, ...) {
@@ -335,7 +338,6 @@ update.flexvar <- function(object, newCovar, newLoads, ...) {
 ##' parameter
 ##'
 ##' @param init initial parameter value
-##' @param lower,upper lower or upper bound
 ##' @param ... additional arguments not currently used
 ##' @rdname setLowerUpperDefault
 ##' @export
@@ -364,10 +366,11 @@ indsForClass <- function(reTrmClass, reTrmClasses, nValuesPerTrm) {
 }
 
 ##' Print random effects term
-##'
+##' 
 ##' @param object \code{\link{repSparse}} object
 ##' @param forSummary print for \code{\link{summary}} instead of
 ##' \code{\link{print}}?
+##' @param ... additional arguments
 ##' @export
 printReTrm <- function(object, forSummary = FALSE, ...) {
     UseMethod("printReTrm")
@@ -455,8 +458,6 @@ findReTrmClasses <- function(formula = NULL) {
 
 ##' @param addArgsExpr a list of expressions for evaluating within
 ##' \code{addArgsList}
-##' @param addArgsList a list of named quantities within which
-##' \code{addArgsExpr} is evaluated
 ##' @rdname setReTrm
 ##' @export
 getAddArgs <- function(addArgsExpr, addArgsList) {
@@ -466,7 +467,7 @@ getAddArgs <- function(addArgsExpr, addArgsList) {
 
 ##' Simulate from a random effects term (experimental)
 ##'
-##' @param \code{reTrmStruct} object
+##' @param object \code{reTrmStruct} object
 ##' @export
 simReTrm <- function(object) {
     with(object, {
