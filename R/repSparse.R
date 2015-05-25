@@ -171,6 +171,7 @@ print.repSparse <- function(x, n = 6L, ...) {
 
 ##' @param object \code{repSparse} object
 ##' @param newPars new parameter values
+##' @importFrom stats update
 ##' @rdname repSparse-class
 ##' @export
 update.repSparse <- function(object, newPars, ...) {
@@ -191,17 +192,17 @@ update.repSparse <- function(object, newPars, ...) {
 }
 
 .removeLatticeWhitespace <- function() {
-    lh <- lattice:::trellis.par.get("layout.heights")
-    lw <- lattice:::trellis.par.get("layout.widths")
+    lh <- lattice::trellis.par.get("layout.heights")
+    lw <- lattice::trellis.par.get("layout.widths")
     lh[grep("padding", names(lh))] <- lw[grep("padding", names(lw))] <- 0
-    ac <- lattice:::trellis.par.get("axis.components")
+    ac <- lattice::trellis.par.get("axis.components")
     for(i in 1:4) ac[[i]][c("pad1", "pad2")] <- 0
-    lattice:::trellis.par.set(layout.heights = lh, layout.widths = lw,
+    lattice::trellis.par.set(layout.heights = lh, layout.widths = lw,
                               axis.components = ac)
 }
 
 .xscaleComponents <- function(...) {
-    ans <- lattice:::xscale.components.default(...)
+    ans <- lattice::xscale.components.default(...)
     ans$bottom$labels$labels <- rep("", length(ans$bottom$labels$labels))
     ans$bottom$ticks$tck <- 0
     #ans$bottom$ticks$at <- c()
@@ -211,7 +212,7 @@ update.repSparse <- function(object, newPars, ...) {
 }
 
 .yscaleComponents <- function(...) {
-    ans <- lattice:::yscale.components.default(...)
+    ans <- lattice::yscale.components.default(...)
     ans$left$labels$labels <- rep("", length(ans$left$labels$labels))
     ans$left$ticks$tck <- 0
     #ans$left$ticks$at <- c()
@@ -221,8 +222,9 @@ update.repSparse <- function(object, newPars, ...) {
 }
 
 ##' @param plain should a completely plain plot be used? (try and see)
+##' @importFrom Matrix image 
 ##' @rdname repSparse-class
-##' @export
+##' @S3method image repSparse
 image.repSparse <- function(x, plain = FALSE, ...) {
     blank <- length(x$vals) == 0
     x <- as.matrix(x, sparse = TRUE)
@@ -253,7 +255,7 @@ image.repSparse <- function(x, plain = FALSE, ...) {
 ##' @param y not used
 ##' @rdname repSparse-class
 ##' @export
-plot.repSparse <- function(x, y, plain = FALSE...) image(x, plain = plain, ...)
+plot.repSparse <- function(x, y, plain = FALSE, ...) image(x, plain = plain, ...)
 
 ##' @rdname repSparse-class
 ##' @export
@@ -448,13 +450,8 @@ as.data.frame.repSparse <- function(x, ...) {
     })
 }
 
-##' @param keep.rownames passed to \code{as.data.table}
-##' @rdname as.repSparse
-##' @export
-as.data.table.repSparse <- function(x, keep.rownames = FALSE) {
-    as.data.table(as.data.frame(x), keep.rownames = keep.rownames)
-}
 
+##' @importFrom Matrix sparseMatrix
 ##' @rdname as.repSparse
 ##' @param sparse return \code{sparseMatrix}?
 ##' @method as.matrix repSparse
@@ -1790,13 +1787,13 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
 ##' @param ... passed to subsequent functions
 ##' @rdname chol
 ##' @family repeated sparse matrix topics
-##' @export
+##' @S3method chol repSparse
 chol.repSparse <- function(x, ...) {
     as.repSparse(chol(as.matrix(x, sparse = TRUE)))
 }
 
 ##' @rdname chol
-##' @export
+##' @S3method chol repSparseOneOffDiag
 chol.repSparseOneOffDiag <- function(x, ...) {
     offRow <- sort(x$rowInds[c(0, -1) + length(x$valInds)]) + 1L
     va <- c(sqrt(x$vals[1]),
@@ -1815,7 +1812,7 @@ chol.repSparseOneOffDiag <- function(x, ...) {
 }
 
 ##' @rdname chol
-##' @export
+##' @S3method chol repSparseCompSymm
 ##' @examples
 ##' x <- repSparseCompSymm(1.2, -0.11, 4)
 ##' as.matrix(chol(x))

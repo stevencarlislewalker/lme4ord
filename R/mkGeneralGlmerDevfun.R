@@ -79,13 +79,13 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     if(is.null(etastart))  etastart  <- family$linkfun(initializeEnv$mustart)
 
     devfunList <- list(Lind = Lind,
-                       pp = lme4:::merPredD$new(
+                       pp = lme4::merPredD$new(
                            X = X, Zt = Zt,
                            Lambdat = Lambdat,
                            Lind = Lind,
                            theta = as.double(theta),
                            n = nrow(X)),
-                       resp = lme4:::glmResp$new(
+                       resp = lme4::glmResp$new(
                            y = y, family = family,
                            weights = weights),
                        lp0 = etastart,
@@ -115,7 +115,7 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
         offset <- if (length(spars)==0) baseOffset else baseOffset + pp$X %*% spars
         resp$setOffset(offset)
         ## pp, resp, nAGQ, tol, maxit, verbose
-        p <- lme4:::glmerLaplaceHandle(pp$ptr(), resp$ptr(), 1, tolPwrss, maxit, verbose)
+        p <- lme4::glmerLaplaceHandle(pp$ptr(), resp$ptr(), 1, tolPwrss, maxit, verbose)
         #p <- lme4:::glmerPwrssUpdate(pp, resp, tolPwrss, GQmat,
         #                             compDev, fac, verbose)
         resp$updateWts()

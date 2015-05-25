@@ -29,7 +29,6 @@ Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
 Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{bind}}, \code{\link{rep.repSparse}};
   \code{\link{as.data.frame.repSparse}},
-  \code{\link{as.data.table.repSparse}},
   \code{\link{as.matrix.repSparse}},
   \code{\link{as.repSparse}},
   \code{\link{as.repSparse.dCHMsimpl}},

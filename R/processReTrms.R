@@ -287,10 +287,10 @@ VarCorr.reTrmStruct <- function(x, sigma = 1, rdig = 3) {
     ## default method
     if(!is.null(templateBlock <- attr(x$Lambdat, "templateBlock"))) {
         ans <- update(templateBlock, getInit(x$Lambdat))
-        vc <- as.matrix(Matrix:::crossprod(as.matrix(ans, sparse = TRUE)))
+        vc <- as.matrix(Matrix::crossprod(as.matrix(ans, sparse = TRUE)))
         rownames(vc) <- colnames(vc) <- colnames(x$modMat)
     } else {
-        vc <- as.matrix(Matrix:::crossprod(as.matrix(x$Lambdat, sparse = TRUE)))
+        vc <- as.matrix(Matrix::crossprod(as.matrix(x$Lambdat, sparse = TRUE)))
     }
     attr(vc, "stddev") <- sqrt(diag(as.matrix(vc)))
     attr(vc, "correlation") <- cov2cor(vc)

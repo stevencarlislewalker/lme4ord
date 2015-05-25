@@ -5,7 +5,7 @@
 \alias{formula.strucGlmer}
 \alias{isREML.strucGlmer}
 \alias{logLik.strucGlmer}
-\alias{nobs.strucGlmer}
+\alias{nobs}
 \alias{print.strucGlmer}
 \alias{print.summary.strucGlmer}
 \alias{ranef.strucGlmer}
@@ -25,7 +25,7 @@ print.summary.strucGlmer(x, digits = max(3, getOption("digits") - 3),
 
 \method{df.residual}{strucGlmer}(object, ...)
 
-\method{nobs}{strucGlmer}(object, ...)
+nobs(object, ...)
 
 \method{deviance}{strucGlmer}(object, ...)
 

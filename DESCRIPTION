@@ -11,10 +11,11 @@ License: GPL-2
 Roxygen: list(wrap = FALSE)
 Depends:
     lme4,
+    nlme,
     lme4pureR,
-    multitable,
     ape,
     reshape2
 Imports:
+    stats,
     Matrix,
     grid

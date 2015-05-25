@@ -33,7 +33,7 @@ getStrucGlmerPar(object, type, ...)
 
 \method{covar}{strucGlmer}(object, ...)
 
-\method{loadings}{strucGlmer}(object, ...)
+loadings.strucGlmer(object, ...)
 
 \method{pars}{strucGlmer}(object, ...)
 

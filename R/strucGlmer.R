@@ -46,14 +46,14 @@ strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
     if(devfunOnly) return(dfun)
 
     cat("\nOptimizing deviance function...\n")
-    opt <- minqa:::bobyqa(parsedForm$initPars, dfun,
-                          lower = parsedForm$lower,
-                          upper = parsedForm$upper,
-                          control =
-                          list(iprint = optVerb,
-                               rhobeg = 0.0002,
-                               rhoend = 2e-7))
-
+    opt <- minqa::bobyqa(parsedForm$initPars, dfun,
+                         lower = parsedForm$lower,
+                         upper = parsedForm$upper,
+                         control =
+                         list(iprint = optVerb,
+                              rhobeg = 0.0002,
+                              rhoend = 2e-7))
+    
     cat("\nPreparing output...\n")
     mkStrucGlmer(opt, parsedForm, dfun, mc)
 }
@@ -94,7 +94,7 @@ print.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3),  ...) 
     lme4:::.prt.family(lme4:::famlink(x, resp = x$parsedForm$devfunEnv$resp))
     lme4:::.prt.call(x$mc)
     
-    llAIC <- lme4ord:::getStrucLlikAIC(x)
+    llAIC <- getStrucLlikAIC(x)
     lme4:::.prt.aictab(llAIC$AICtab, 4)
 
     lapply(x$parsedForm$random, printReTrm)
@@ -116,7 +116,7 @@ summary.strucGlmer <- function(object, use.hessian = TRUE, ...) {
     famL <- lme4:::famlink(resp = resp)
     p <- length(coefs <- fixef(object))
     coefs <- cbind("Estimate" = coefs ,
-                   "Std. Error" = sqrt(Matrix:::diag(vc)))
+                   "Std. Error" = sqrt(Matrix::diag(vc)))
     if (p > 0) {
         coefs <- cbind(coefs, (cf3 <- coefs[,1]/coefs[,2]), deparse.level = 0)
         colnames(coefs)[3] <- paste("z", "value")
@@ -220,6 +220,7 @@ fitted.strucGlmer <- function(object, ranefTrms, fixef = TRUE, ...) {
     return(fe + re)
 }
 
+##' @importFrom Matrix forceSymmetric
 calc.vcov.hess <- function(h) {
     ## ~= forceSymmetric(solve(h/2)[i,i]) : solve(h/2) = 2*solve(h)
     h <- tryCatch(solve(h),
@@ -288,6 +289,7 @@ vcov.strucGlmer <- function(object, correlation = TRUE,
     rr
 }
 
+##' @importFrom nlme VarCorr
 ##' @rdname strucGlmer
 ##' @export
 VarCorr.strucGlmer <- function(x, sigma = 1, rdig = 3) {
@@ -319,10 +321,9 @@ df.residual.strucGlmer <- function(object, ...) {
     nobs(object) - length(pars(object))
 }
 
-##' @importFrom lme4 nobs
 ##' @rdname strucGlmer-class
 ##' @export
-nobs.strucGlmer <- function(object, ...) nrow(object$parsedForm$fixed)
+nobs <- function(object, ...) nrow(object$parsedForm$fixed)
 
 ##' @importFrom stats deviance
 ##' @rdname strucGlmer-class
@@ -356,6 +357,7 @@ getStrucGlmerPar <- function(object, type, ...) {
 }
 
 
+##' @importFrom nlme fixef 
 ##' @rdname strucGlmer
 ##' @export
 fixef.strucGlmer <- function(object, ...) {
@@ -369,6 +371,7 @@ covar.strucGlmer <- function(object, ...) {
     unname(getStrucGlmerPar(object, "covar"))
 }
 
+##' @importFrom stats loadings
 ##' @rdname strucGlmer
 ##' @export
 loadings.strucGlmer <- function(object, ...) {
@@ -383,6 +386,7 @@ subRagByLens <- function(x, lens) {
     split(x, rep(seq_along(lens), lens)) ## split no good ... order of levels !
 }
 
+##' @importFrom nlme ranef
 ##' @rdname strucGlmer-class
 ##' @export
 ranef.strucGlmer <- function(object, type = c("u", "Lu", "ZLu"), ...) {

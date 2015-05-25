@@ -34,7 +34,6 @@ t(chol(as.matrix(x)))
 Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{bind}}, \code{\link{rep.repSparse}};
   \code{\link{as.data.frame.repSparse}},
-  \code{\link{as.data.table.repSparse}},
   \code{\link{as.matrix.repSparse}},
   \code{\link{as.repSparse}},
   \code{\link{as.repSparse.dCHMsimpl}},

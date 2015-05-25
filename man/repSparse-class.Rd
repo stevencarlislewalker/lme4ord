@@ -16,7 +16,7 @@ update.repSparse(object, newPars, ...)
 
 image.repSparse(x, plain = FALSE, ...)
 
-\method{plot}{repSparse}(x, y, plain = FALSE...)
+\method{plot}{repSparse}(x, y, plain = FALSE, ...)
 
 t.repSparse(x)
 
@@ -82,7 +82,6 @@ image(bind(X, Y, type = "diag"))
 Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{bind}}, \code{\link{rep.repSparse}};
   \code{\link{as.data.frame.repSparse}},
-  \code{\link{as.data.table.repSparse}},
   \code{\link{as.matrix.repSparse}},
   \code{\link{as.repSparse}},
   \code{\link{as.repSparse.dCHMsimpl}},

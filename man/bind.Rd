@@ -55,7 +55,6 @@ Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
 }
 \seealso{
 Other repeated.sparse.matrix.topics: \code{\link{as.data.frame.repSparse}},
-  \code{\link{as.data.table.repSparse}},
   \code{\link{as.matrix.repSparse}},
   \code{\link{as.repSparse}},
   \code{\link{as.repSparse.dCHMsimpl}},
