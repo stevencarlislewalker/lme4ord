@@ -1341,17 +1341,18 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 ## repSparseIdent, rRepSparse
 ## ----------------------------------------------------------------------
 
-##' Special sparse repeated matrices
+##' Blank repeated sparse matrix
 ##'
 ##' @param nrow,ncol number of rows and columns
-##' @rdname repSparseSpecial
 ##' @export
-##' @aliases repSparseSpecial
+##' @family repSparseSpecial
 ##' @examples
 ##' (xBlank <- repSparseBlank(5, 5))
 repSparseBlank <- function(nrow, ncol) {
     ## MATNAME: Blank
-    repSparse(integer(0), integer(0), integer(0), numeric(0), Dim = c(nrow, ncol))
+    ans <- repSparse(integer(0), integer(0), integer(0), numeric(0), Dim = c(nrow, ncol))
+    class(ans) <- c("repSparseBlank", class(ans))
+    return(ans)
 }
 
 ##' @name repSparse-class
@@ -1361,7 +1362,10 @@ setOldClass("repSparseBlank")
 setIs("repSparseBlank", "repSparse")
 
 
-##' @rdname repSparseSpecial
+##' Identity repeated sparse matrix
+##'
+##' @param matSize matrix size
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' (xIdent <- repSparseIdent(5))
@@ -1379,9 +1383,11 @@ setOldClass("repSparseIdent")
 setIs("repSparseIdent", "repSparse")
 
 
+##' Diagonal repeated sparse matrix
+##' 
 ##' @param vals vector of values
 ##' @param valInds vector of value indices
-##' @rdname repSparseSpecial
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -1401,7 +1407,11 @@ repSparseDiag <- function(vals, valInds) {
 setOldClass("repSparseDiag")
 setIs("repSparseDiag", "repSparse")
 
-##' @rdname repSparseSpecial
+##' Column vector as repeated sparse matrix
+##'
+##' @param vals vector of values
+##' @param valInds vector of value indices
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -1421,8 +1431,10 @@ repSparseCol <- function(vals, valInds) {
 setOldClass("repSparseCol")
 setIs("repSparseCol", "repSparse")
 
+##' Repeated sparse indicator matrix
+##' 
 ##' @param fac vector coercible to factor
-##' @rdname repSparseSpecial
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' (xInd <- repSparseInd(rep(1:3, c(2, 2, 1))))
@@ -1439,10 +1451,12 @@ repSparseInd <- function(fac) {
 setOldClass("repSparseInd")
 setIs("repSparseInd", "repSparse")
 
+##' Triangular repeated sparse matrix
+##' 
 ##' @param diagVals values for the diagonal
 ##' @param offDiagVals values for the off-diagonal
 ##' @param low lower triangular?
-##' @rdname repSparseSpecial
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -1479,7 +1493,10 @@ setOldClass("repSparseTri")
 setIs("repSparseTri", "repSparse")
 
 
-##' @rdname repSparseSpecial
+##' Repeated sparse matrix of ones
+##'
+##' @param nrow,ncol numbers of rows and columns
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' (xOnes <- repSparseOnes(5, 5))
@@ -1500,7 +1517,11 @@ setIs("repSparseOnes", "repSparse")
 
 
 
-##' @rdname repSparseSpecial
+##' Symmetric repeated sparse matrix
+##'
+##' @param diagVals values for the diagonal
+##' @param offDiagVals values for the off-diagonal
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -1536,11 +1557,12 @@ setOldClass("repSparseSymm")
 setIs("repSparseSymm", "repSparse")
 
 
+##' Repeated sparse matrix with compound symmetry
+##' 
 ##' @param diagVal value for the diagonal
 ##' @param offDiagVal value for the off-diagonal
 ##' @param matSize size of the resulting matrix
-##' @rdname repSparseSpecial
-##' @family repeated sparse matrix topics
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' (xCompSymm <- repSparseCompSymm(1, -0.2, 5))
@@ -1567,8 +1589,14 @@ setOldClass("repSparseCompSymm")
 setIs("repSparseCompSymm", "repSparse")
 
 
+##' Repeated sparse matrix with only one non-zero value off the
+##' diagonal
+##'
+##' @param diagVal unique value for the diagonal
+##' @param offDiagVal unique value for the off-diagonal
 ##' @param offDiagInds indices for the two correlated objects
-##' @rdname repSparseSpecial
+##' @param matSize size of the matrix
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' (xOneOffDiag <- repSparseOneOffDiag(1, -0.2, c(5, 2), 5))
@@ -1594,9 +1622,12 @@ setOldClass("repSparseOneOffDiag")
 setIs("repSparseOneOffDiag", "repSparse")
 
 
+##' Repeated sparse Cholesky factor leading to constant variance
+##'
 ##' @param sdVal standard deviation of crossproduct of the result
 ##' factor
-##' @rdname repSparseSpecial
+##' @param offDiagVals off diagonal values of the Cholesky factor
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -1630,9 +1661,11 @@ setOldClass("repSparseConstVarChol")
 setIs("repSparseConstVarChol", "repSparse")
 
 
+##' Repeated sparse Cholesky factor of a correlation matrix
+##' 
 ##' @param offDiagPars parameters determining the off-diagonal of the
 ##' Cholesky factor
-##' @rdname repSparseSpecial
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -1671,6 +1704,9 @@ setOldClass("repSparseCorMatChol")
 setIs("repSparseCorMatChol", "repSparse")
 
 
+##' Repeated sparse diagonal covariance matrix with a covariate
+##' determining the diagonal
+##' 
 ##' @param varPars vector of variance parameters (one per level of
 ##' \code{grpFac})
 ##' @param covariate covariate
@@ -1681,7 +1717,7 @@ setIs("repSparseCorMatChol", "repSparse")
 ##' \code{covariate}, and \code{grpFac} for constructing a
 ##' \code{trans} function (see \code{\link{mkVarExpTrans}} for an
 ##' example).
-##' @rdname repSparseSpecial
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' (xVarWithCovariate <- repSparseVarWithCovariate(rep(1, 5), 0.05*(4:0)))
@@ -1706,9 +1742,12 @@ setOldClass("repSparseVarWithCovariate")
 setIs("repSparseVarWithCovariate", "repSparse")
 
 
+##' Cholesky factor of a repeated sparse covariance matrix obeying
+##' exponential distance decay in covariance
+##'
 ##' @param distObj distance matrix object
 ##' @param cutOffDist maximum distance with nonzero correlations
-##' @rdname repSparseSpecial
+##' @family repSparseSpecial
 ##' @export
 ##' @examples
 ##' (xExpChol <- repSparseExpChol(dist(matrix(rnorm(10), 5, 2))))

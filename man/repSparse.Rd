@@ -70,7 +70,7 @@ functions assume certain orderings (e.g. \code{\link{kr}}).
 repSparse(1:4, 4:1, rep(1:2, 2), c(-pi, pi))
 }
 \seealso{
-Other repeated.sparse.matrix.topics: \code{\link{.bind}},
+Other repeated sparse matrix topics: \code{\link{.bind}},
   \code{\link{bind}}, \code{\link{rep.repSparse}};
   \code{\link{as.data.frame.repSparse}},
   \code{\link{as.matrix.repSparse}},
@@ -136,18 +136,6 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{mkVarExpTrans}},
   \code{\link{mkVarFixedTrans}},
   \code{\link{mkVarIdentTrans}},
-  \code{\link{mkVarPowerTrans}};
-  \code{\link{repSparseBlank}}, \code{\link{repSparseCol}},
-  \code{\link{repSparseCompSymm}},
-  \code{\link{repSparseConstVarChol}},
-  \code{\link{repSparseCorMatChol}},
-  \code{\link{repSparseDiag}},
-  \code{\link{repSparseExpChol}},
-  \code{\link{repSparseIdent}}, \code{\link{repSparseInd}},
-  \code{\link{repSparseOneOffDiag}},
-  \code{\link{repSparseOnes}},
-  \code{\link{repSparseSpecial}},
-  \code{\link{repSparseSymm}}, \code{\link{repSparseTri}},
-  \code{\link{repSparseVarWithCovariate}}
+  \code{\link{mkVarPowerTrans}}
 }
 

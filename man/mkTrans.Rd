@@ -89,7 +89,7 @@ vector called \code{init}, which contains the initial values (aka,
 the prototype) of \code{matPars}.
 }
 \seealso{
-Other repeated.sparse.matrix.topics: \code{\link{.bind}},
+Other repeated sparse matrix topics: \code{\link{.bind}},
   \code{\link{bind}}, \code{\link{rep.repSparse}};
   \code{\link{as.data.frame.repSparse}},
   \code{\link{as.matrix.repSparse}},
@@ -142,19 +142,6 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{setInit.reTrmStruct}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
   \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}; \code{\link{repSparseBlank}},
-  \code{\link{repSparseCol}},
-  \code{\link{repSparseCompSymm}},
-  \code{\link{repSparseConstVarChol}},
-  \code{\link{repSparseCorMatChol}},
-  \code{\link{repSparseDiag}},
-  \code{\link{repSparseExpChol}},
-  \code{\link{repSparseIdent}}, \code{\link{repSparseInd}},
-  \code{\link{repSparseOneOffDiag}},
-  \code{\link{repSparseOnes}},
-  \code{\link{repSparseSpecial}},
-  \code{\link{repSparseSymm}}, \code{\link{repSparseTri}},
-  \code{\link{repSparseVarWithCovariate}};
-  \code{\link{repSparse}}
+  \code{\link{kron}}; \code{\link{repSparse}}
 }
 

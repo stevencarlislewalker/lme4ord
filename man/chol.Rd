@@ -31,7 +31,7 @@ as.matrix(chol(x))
 t(chol(as.matrix(x)))
 }
 \seealso{
-Other repeated.sparse.matrix.topics: \code{\link{.bind}},
+Other repeated sparse matrix topics: \code{\link{.bind}},
   \code{\link{bind}}, \code{\link{rep.repSparse}};
   \code{\link{as.data.frame.repSparse}},
   \code{\link{as.matrix.repSparse}},
@@ -94,19 +94,6 @@ Other repeated.sparse.matrix.topics: \code{\link{.bind}},
   \code{\link{mkVarExpTrans}},
   \code{\link{mkVarFixedTrans}},
   \code{\link{mkVarIdentTrans}},
-  \code{\link{mkVarPowerTrans}};
-  \code{\link{repSparseBlank}}, \code{\link{repSparseCol}},
-  \code{\link{repSparseCompSymm}},
-  \code{\link{repSparseConstVarChol}},
-  \code{\link{repSparseCorMatChol}},
-  \code{\link{repSparseDiag}},
-  \code{\link{repSparseExpChol}},
-  \code{\link{repSparseIdent}}, \code{\link{repSparseInd}},
-  \code{\link{repSparseOneOffDiag}},
-  \code{\link{repSparseOnes}},
-  \code{\link{repSparseSpecial}},
-  \code{\link{repSparseSymm}}, \code{\link{repSparseTri}},
-  \code{\link{repSparseVarWithCovariate}};
-  \code{\link{repSparse}}
+  \code{\link{mkVarPowerTrans}}; \code{\link{repSparse}}
 }
 
