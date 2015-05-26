@@ -24,4 +24,9 @@ set.seed(1)
 X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
 (subsetExample <- subset(X, c(1, 2, 2, 2, 1, 1)))
 }
+\seealso{
+Other matrixCombining: \code{\link{.bind}},
+  \code{\link{bind}}, \code{\link{rep.repSparse}};
+  \code{\link{kr}}, \code{\link{kron}}
+}
 

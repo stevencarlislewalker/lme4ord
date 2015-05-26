@@ -79,9 +79,7 @@ image(kron(t(X), Y))
 image(bind(X, Y, type = "diag"))
 }
 \seealso{
-Other repeated sparse matrix topics: \code{\link{.bind}},
-  \code{\link{bind}}, \code{\link{rep.repSparse}};
-  \code{\link{as.data.frame.repSparse}},
+Other repeated sparse matrix topics: \code{\link{as.data.frame.repSparse}},
   \code{\link{as.matrix.repSparse}},
   \code{\link{as.repSparse}},
   \code{\link{as.repSparse.dCHMsimpl}},
@@ -106,8 +104,8 @@ Other repeated sparse matrix topics: \code{\link{.bind}},
   \code{\link{setInit.function}},
   \code{\link{setInit.reTrmStruct}},
   \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
-  \code{\link{point2ind}}; \code{\link{kr}},
-  \code{\link{kron}}; \code{\link{mkCholCompSymmTrans}},
+  \code{\link{point2ind}};
+  \code{\link{mkCholCompSymmTrans}},
   \code{\link{mkCholOneOffDiagTrans}},
   \code{\link{mkConstVarCholTrans}},
   \code{\link{mkCorMatCholTrans}},
