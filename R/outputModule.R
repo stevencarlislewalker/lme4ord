@@ -334,6 +334,8 @@ formula.strucGlmer <- function(x, ...) x$parsedForm$formula
 ## parameter retrieval
 ## ----------------------------------------------------------------------
 
+##' @rdname pars
+##' @export
 pars <- function(object, ...) UseMethod("pars")
 
 ##' Parameter retrieval for structured generalized linear mixed models
@@ -357,6 +359,8 @@ getStrucGlmerPar <- function(object, type, ...) {
     optPar[unlist(parInds[type])]
 }
 
+##' @rdname pars
+##' @export
 covar <- function(object, ...) UseMethod("covar")
 
 ##' @param ... not used
