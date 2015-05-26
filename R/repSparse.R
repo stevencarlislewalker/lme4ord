@@ -661,6 +661,9 @@ kron <- function(X, Y, trans = "*",
               Dim = dim(X) * dim(Y))
 }
 
+setOldClass("repSparseKron")
+setIs("repSparseKron", "repSparse")
+
 
 ##' @rdname matrixOperations
 ##' @family matrixCombining
@@ -706,6 +709,9 @@ kr <- function(X, Y, trans = "*") {
               class = c("repSparseKr", "repSparse"),
               Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
 }
+
+setOldClass("repSparseKr")
+setIs("repSparseKr", "repSparse")
 
 
 ## ----------------------------------------------------------------------
@@ -1138,6 +1144,10 @@ bind <- function(...,
     })
 }
 
+setOldClass("repSparseBind")
+setIs("repSparseBind", "repSparse")
+
+
 ##' @param mats list of \code{repSparse} matrix objects
 ##' @rdname bind
 ##' @export
@@ -1207,6 +1217,10 @@ rep.repSparse <- function(x, times,
     ans$mkNewPars <- x$mkNewPars
     return(ans)
 }
+
+setOldClass("repSparseRep")
+setIs("repSparseRep", "repSparse")
+
 
 ## ----------------------------------------------------------------------
 ## Subsetting
@@ -1334,6 +1348,10 @@ repSparseBlank <- function(nrow, ncol) {
     return(ans)
 }
 
+setOldClass("repSparseBlank")
+setIs("repSparseBlank", "repSparse")
+
+
 ##' Identity repeated sparse matrix
 ##'
 ##' @param matSize matrix size
@@ -1347,6 +1365,10 @@ repSparseIdent <- function(matSize) {
     class(ans) <- c("repSparseIdent", class(ans))
     return(ans)
 }
+
+setOldClass("repSparseIdent")
+setIs("repSparseIdent", "repSparse")
+
 
 ##' Diagonal repeated sparse matrix
 ##' 
@@ -1366,6 +1388,10 @@ repSparseDiag <- function(vals, valInds) {
     return(ans)
 }
 
+setOldClass("repSparseDiag")
+setIs("repSparseDiag", "repSparse")
+
+
 ##' Column vector as repeated sparse matrix
 ##'
 ##' @param vals vector of values
@@ -1384,6 +1410,10 @@ repSparseCol <- function(vals, valInds) {
     return(ans)
 }
 
+setOldClass("repSparseCol")
+setIs("repSparseCol", "repSparse")
+
+
 ##' Repeated sparse indicator matrix
 ##' 
 ##' @param fac vector coercible to factor
@@ -1397,6 +1427,10 @@ repSparseInd <- function(fac) {
     class(ans) <- c("repSparseInd", class(ans))
     return(ans)
 }
+
+setOldClass("repSparseInd")
+setIs("repSparseInd", "repSparse")
+
 
 ##' Triangular repeated sparse matrix
 ##' 
@@ -1433,6 +1467,10 @@ repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
     return(ans)
 }
 
+setOldClass("repSparseTri")
+setIs("repSparseTri", "repSparse")
+
+
 ##' Repeated sparse matrix of ones
 ##'
 ##' @param nrow,ncol numbers of rows and columns
@@ -1448,6 +1486,10 @@ repSparseOnes <- function(nrow, ncol) {
     class(ans) <- c("repSparseOnes", class(ans))
     return(ans)
 }
+
+setOldClass("repSparseOnes")
+setIs("repSparseOnes", "repSparse")
+
 
 ##' Symmetric repeated sparse matrix
 ##'
@@ -1481,6 +1523,10 @@ repSparseSymm <- function(diagVals, offDiagVals) {
     return(ans)
 }
 
+setOldClass("repSparseSymm")
+setIs("repSparseSymm", "repSparse")
+
+
 ##' Repeated sparse matrix with compound symmetry
 ##' 
 ##' @param diagVal value for the diagonal
@@ -1505,6 +1551,10 @@ repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
     class(ans) <- c("repSparseCompSymm", class(ans))
     return(ans)
 }
+
+setOldClass("repSparseCompSymm")
+setIs("repSparseCompSymm", "repSparse")
+
 
 ##' Repeated sparse matrix with only one non-zero value off the
 ##' diagonal
@@ -1531,6 +1581,10 @@ repSparseOneOffDiag <- function(diagVal, offDiagVal, offDiagInds, matSize) {
     class(ans) <- c("repSparseOneOffDiag", class(ans))
     return(ans)
 }
+
+setOldClass("repSparseOnesOffDiag")
+setIs("repSparseOnesOffDiag", "repSparse")
+
 
 ##' Repeated sparse Cholesky factor leading to constant variance
 ##'
@@ -1563,6 +1617,10 @@ repSparseConstVarChol <- function(sdVal, offDiagVals) {
     class(ans) <- c("repSparseConstVarChol", class(ans))
     return(ans)
 }
+
+setOldClass("repSparseConstVarChol")
+setIs("repSparseConstVarChol", "repSparse")
+
 
 ##' Repeated sparse Cholesky factor of a correlation matrix
 ##' 
@@ -1600,6 +1658,10 @@ repSparseCorMatChol <- function(offDiagPars) {
     return(ans)
 }
 
+setOldClass("repSparseCorMatChol")
+setIs("repSparseCorMatChol", "repSparse")
+
+
 ##' Repeated sparse diagonal covariance matrix with a covariate
 ##' determining the diagonal
 ##' 
@@ -1630,6 +1692,11 @@ repSparseVarWithCovariate <- function(varPars, covariate, grpFac,
     class(ans) <- c("repSparseVarWithCovariate", class(ans))
     return(ans)
 }
+
+setOldClass("repSparseVarWithCovariate")
+setIs("repSparseVarWithCovariate", "repSparse")
+
+
 
 ##' Cholesky factor of a repeated sparse covariance matrix obeying
 ##' exponential distance decay in covariance
@@ -1672,6 +1739,8 @@ repSparseExpChol <- function(distObj, cutOffDist = Inf) {
     return(ans)
 }
 
+setOldClass("repSparseExpChol")
+setIs("repSparseExpChol", "repSparse")
 
 ## ----------------------------------------------------------------------
 ## Random repeated sparse matrices

@@ -415,7 +415,7 @@ parPerTerm <- function(nParPerTrm, pars) {
     if(is.null(pars)) pars <- numeric(0)
     whichThere <- (nParPerTrm > 0) & (!is.na(nParPerTrm))
     ans <- vector("list", length(whichThere))
-    ans[whichThere] <- subRagByLens(nParPerTrm, lens[whichThere])
+    ans[whichThere] <- subRagByLens(pars, nParPerTrm[whichThere])
     names(ans) <- names(nParPerTrm)
     return(ans)
 }
