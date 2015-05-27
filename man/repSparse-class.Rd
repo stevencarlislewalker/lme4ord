@@ -14,7 +14,7 @@ print.repSparse(x, n = 6L, ...)
 
 update.repSparse(object, newPars, ...)
 
-image.repSparse(x, plain = FALSE, ...)
+\method{image}{repSparse}(x, plain = FALSE, ...)
 
 \method{plot}{repSparse}(x, y, plain = FALSE, ...)
 

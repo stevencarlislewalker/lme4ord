@@ -5,11 +5,11 @@
 \alias{chol.repSparseOneOffDiag}
 \title{Cholesky decomposition of repeated sparse matrices}
 \usage{
-chol.repSparse(x, ...)
+\method{chol}{repSparse}(x, ...)
 
-chol.repSparseOneOffDiag(x, ...)
+\method{chol}{repSparseOneOffDiag}(x, ...)
 
-chol.repSparseCompSymm(x, ...)
+\method{chol}{repSparseCompSymm}(x, ...)
 }
 \arguments{
 \item{x}{an object that inherits from class

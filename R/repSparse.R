@@ -224,7 +224,8 @@ update.repSparse <- function(object, newPars, ...) {
 ##' @param plain should a completely plain plot be used? (try and see)
 ##' @importFrom Matrix image 
 ##' @rdname repSparse-class
-##' @S3method image repSparse
+##' @method image repSparse
+##' @export
 image.repSparse <- function(x, plain = FALSE, ...) {
     blank <- length(x$vals) == 0
     x <- as.matrix(x, sparse = TRUE)
@@ -1785,13 +1786,15 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
 ##' @param ... passed to subsequent functions
 ##' @rdname chol
 ##' @family repeated sparse matrix topics
-##' @S3method chol repSparse
+##' @method chol repSparse
+##' @export
 chol.repSparse <- function(x, ...) {
     as.repSparse(chol(as.matrix(x, sparse = TRUE)))
 }
 
 ##' @rdname chol
-##' @S3method chol repSparseOneOffDiag
+##' @method chol repSparseOneOffDiag
+##' @export
 chol.repSparseOneOffDiag <- function(x, ...) {
     offRow <- sort(x$rowInds[c(0, -1) + length(x$valInds)]) + 1L
     va <- c(sqrt(x$vals[1]),
@@ -1810,7 +1813,7 @@ chol.repSparseOneOffDiag <- function(x, ...) {
 }
 
 ##' @rdname chol
-##' @S3method chol repSparseCompSymm
+##' @method chol repSparseCompSymm
 ##' @examples
 ##' x <- repSparseCompSymm(1.2, -0.11, 4)
 ##' as.matrix(chol(x))

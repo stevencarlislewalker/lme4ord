@@ -4,40 +4,13 @@
 \alias{getAddArgs}
 \alias{packReTrm}
 \alias{setReTrm}
-\alias{setReTrm.cooccur}
 \alias{setReTrm.default}
-\alias{setReTrm.edge}
-\alias{setReTrm.expcutdist}
-\alias{setReTrm.factAnal}
-\alias{setReTrm.flexvar}
-\alias{setReTrm.identity}
-\alias{setReTrm.multiVarExp}
-\alias{setReTrm.obslev}
-\alias{setReTrm.varIdent}
 \title{Set model matrix slice and relative covariance factor block for a
 random effects term}
 \usage{
 setReTrm(object, addArgsList, devfunEnv = NULL)
 
 \method{setReTrm}{default}(object, addArgsList, devfunEnv = NULL)
-
-\method{setReTrm}{factAnal}(object, addArgsList, devfunEnv = NULL)
-
-\method{setReTrm}{identity}(object, addArgsList, devfunEnv = NULL)
-
-\method{setReTrm}{flexvar}(object, addArgsList, devfunEnv = NULL)
-
-\method{setReTrm}{expcutdist}(object, addArgsList, devfunEnv = NULL)
-
-\method{setReTrm}{edge}(object, addArgsList, devfunEnv = NULL)
-
-\method{setReTrm}{cooccur}(object, addArgsList, devfunEnv = NULL)
-
-\method{setReTrm}{varIdent}(object, addArgsList, devfunEnv = NULL)
-
-\method{setReTrm}{multiVarExp}(object, addArgsList, devfunEnv = NULL)
-
-\method{setReTrm}{obslev}(object, addArgsList, devfunEnv = NULL)
 
 packReTrm(object, Zt, Lambdat, lowerLoads, upperLoads, lowerCovar, upperCovar)
 
@@ -86,7 +59,28 @@ and/or covariance parameters (possible parameters for \code{Lambdat})}
 Set model matrix slice and relative covariance factor block for a
 random effects term
 }
+\section{Mixed model formula usage}{
+
+The default method is identical to a standard \code{lme4} random effects term.
+\code{(linForm | grpFac)}
+\describe{
+\item{linForm}{linear model formula}
+\item{grpFac}{grouping factor}
+}
+}
 \seealso{
 \code{\link{mkReTrmStructs}} for construction of these objects
+
+Other setReTrm: \code{\link{cooccur}},
+  \code{\link{setReTrm.cooccur}}; \code{\link{edge}},
+  \code{\link{setReTrm.edge}}; \code{\link{expDecay}},
+  \code{\link{setReTrm.expDecay}}; \code{\link{factAnal}},
+  \code{\link{setReTrm.factAnal}}; \code{\link{flexvar}},
+  \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
+  \code{\link{setReTrm.identity}};
+  \code{\link{multiVarExp}},
+  \code{\link{setReTrm.multiVarExp}}; \code{\link{obslev}},
+  \code{\link{setReTrm.obslev}};
+  \code{\link{setReTrm.varIdent}}, \code{\link{varIdent}}
 }
 

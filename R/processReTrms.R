@@ -20,6 +20,15 @@
 ##' bounds on loading parameters (possible parameters for \code{Zt})
 ##' and/or covariance parameters (possible parameters for \code{Lambdat})}
 ##'
+##' @section Mixed model formula usage:
+##' The default method is identical to a standard \code{lme4} random effects term.
+##' \code{(linForm | grpFac)}
+##' \describe{
+##' \item{linForm}{linear model formula}
+##' \item{grpFac}{grouping factor}
+##' }
+##' 
+##' @family setReTrm
 ##' @export
 setReTrm <- function(object, addArgsList,
                      devfunEnv = NULL) {
@@ -56,8 +65,14 @@ setReTrm.default <- function(object, addArgsList,
     packReTrm(object, Zt, Lambdat)
 }
 
-##' @rdname setReTrm
+##' Random effects term for factor analysis
+##'
 ##' @export
+##' @template setReTrm
+##' @templateVar cls factAnal
+##' @templateVar form \code{factAnal(1 | grpFac, nAxes, seed)}
+##' @templateVar arg c("grpFac", "nAxes", "seed")
+##' @templateVar desc c("grouping factor for loadings", "number of axes", "random seed for initial axis values")
 setReTrm.factAnal <- function(object, addArgsList,
                               devfunEnv = NULL) {
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
@@ -80,8 +95,14 @@ setReTrm.factAnal <- function(object, addArgsList,
 }
 
 
-##' @rdname setReTrm
+##' Random effects term for covariance proportional to identity matrix
+##'
 ##' @export
+##' @template setReTrm
+##' @templateVar cls identity
+##' @templateVar form \code{identity(linForm | grpFac)}
+##' @templateVar arg c("linForm", "grpFac")
+##' @templateVar desc c("linear model formula decribing effects", "grouping factor")
 setReTrm.identity <- function(object, addArgsList, devfunEnv = NULL) {
 
                                         # Zt
@@ -97,8 +118,14 @@ setReTrm.identity <- function(object, addArgsList, devfunEnv = NULL) {
     packReTrm(object, Zt, Lambdat)
 }
 
-##' @rdname setReTrm
+##' Random effects term for a flexible variance function
+##'
 ##' @export
+##' @template setReTrm
+##' @templateVar cls flexvar
+##' @templateVar form \code{flexvar(linForm, init, nBasis)}
+##' @templateVar arg c("linForm", "init", "nBasis")
+##' @templateVar desc c("linear model formula decribing effects", "initial values for coefficients for the linear predictor of the variance function", "number of coefficients for the linear predictor")
 setReTrm.flexvar <- function(object, addArgsList, devfunEnv = NULL) {
                                         # get additional arguments and
                                         # sample size
@@ -120,12 +147,18 @@ setReTrm.flexvar <- function(object, addArgsList, devfunEnv = NULL) {
 }
 
 
-##' @rdname setReTrm
+##' Random effects term with exponential decay in distance-based covariance
+##'
 ##' @export
-setReTrm.expcutdist <- function(object, addArgsList, devfunEnv = NULL) {
+##' @template setReTrm
+##' @templateVar cls expDecay
+##' @templateVar form \code{expDecay(1 | grpFac, distCutoff, minCov, distmat)}
+##' @templateVar arg c("grpFac", "distCutoff", "minCov", "distmat")
+##' @templateVar desc c("grouping factor (e.g. with levels given by geographical sites)", "maximum distance with covariance greater than minCov", "minimum covariance", "distance matrix object over the levels of grpFac")
+setReTrm.expDecay <- function(object, addArgsList, devfunEnv = NULL) {
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
-    distCutoff <- addArgs$distCutoff
-    minCov <- addArgs$minCov
+    distCutoff         <- addArgs$distCutoff
+    minCov             <- addArgs$minCov
     distMat <- edgeMat <- addArgs$distMat
     
     edgeMat[] <- 1 * (distMat[] < distCutoff)
@@ -155,8 +188,14 @@ setReTrm.expcutdist <- function(object, addArgsList, devfunEnv = NULL) {
     packReTrm(object, Zt, update(Lambdat))
 }
 
-##' @rdname setReTrm
+##' Random effects term for edge-based model of tree-induced covariance
+##'
 ##' @export
+##' @template setReTrm
+##' @templateVar cls edge
+##' @templateVar form \code{edge(linForm | grpFac, phy)}
+##' @templateVar arg c("linForm", "grpFac", "phy")
+##' @templateVar desc c("linear model formula decribing effects", "grouping factor", "phylo object relating the levels of the grouping factor")
 setReTrm.edge <- function(object, addArgsList, devfunEnv = NULL) {
                                         # get additional arguments
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
@@ -176,12 +215,15 @@ setReTrm.edge <- function(object, addArgsList, devfunEnv = NULL) {
     packReTrm(object, Zt, Lambdat)
 }
 
-##' @rdname setReTrm
+##' Random effects term for cooccurence model (experimental)
+##'
 ##' @export
+##' @template setReTrm
+##' @templateVar cls cooccur
+##' @templateVar form \code{cooccur(linForm | grpFac)}
+##' @templateVar arg c("linForm", "grpFac")
+##' @templateVar desc c("linear model formula decribing effects", "grouping factor")
 setReTrm.cooccur <- function(object, addArgsList, devfunEnv = NULL) {
-
-                                        # get additional arguments
-    addArgs <- eval(object$addArgs, addArgsList)
 
                                         # Zt
     Jt <- as.repSparse(as(object$grpFac, "sparseMatrix"))
@@ -196,8 +238,14 @@ setReTrm.cooccur <- function(object, addArgsList, devfunEnv = NULL) {
     packReTrm(object, Zt, Lambdat)
 }
 
-##' @rdname setReTrm
+##' Random effects term with constant variance within groups
+##'
 ##' @export
+##' @template setReTrm
+##' @templateVar cls varIdent
+##' @templateVar form \code{varIdent(1 | grpFac)}
+##' @templateVar arg c("grpFac")
+##' @templateVar desc c("grouping factor")
 setReTrm.varIdent <- function(object, addArgsList, devfunEnv = NULL) {
                                         # transposed model matrix (or
                                         # loadings matrix) -- Zt rows
@@ -220,8 +268,14 @@ setReTrm.varIdent <- function(object, addArgsList, devfunEnv = NULL) {
               lowerCovar = rep(0, nl))
 }
 
-##' @rdname setReTrm
+##' Random effects term with exponential variance structure
+##'
 ##' @export
+##' @template setReTrm
+##' @templateVar cls multiVarExp
+##' @templateVar form \code{multiVarExp(linForm | grpFac)} or \code{multiVarExp(linForm)}
+##' @templateVar arg c("linForm", "grpFac")
+##' @templateVar desc c("linear model formula decribing effects", "grouping factor")
 setReTrm.multiVarExp <- function(object, addArgsList, devfunEnv = NULL) {
                                         # transposed model matrix (or
                                         # loadings matrix) -- Zt rows
@@ -248,8 +302,14 @@ setReTrm.multiVarExp <- function(object, addArgsList, devfunEnv = NULL) {
               lowerCovar = rep(-Inf, length(init)))
 }
 
-##' @rdname setReTrm
+##' Random effects term with observation level random effects
+##'
 ##' @export
+##' @template setReTrm
+##' @templateVar cls obslev
+##' @templateVar form \code{obslev(1)}
+##' @templateVar arg "no arguments"
+##' @templateVar desc "NULL"
 setReTrm.obslev <- function(object, addArgsList,
                              devfunEnv = NULL) {
 
