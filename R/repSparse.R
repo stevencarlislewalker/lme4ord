@@ -127,6 +127,7 @@ setOldClass("repSparse")
 ##' @param n how many indices and repeated values to print?
 ##' @param ... passed to subsequent functions
 ##' @rdname repSparse-class
+##' @method print repSparse
 ##' @export
 print.repSparse <- function(x, n = 6L, ...) {
 
@@ -470,6 +471,9 @@ as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
     return(as.matrix(ans))
 }
 
+##' @param from object to coerce from
+##' @rdname as.repSparse
+##' @export
 repSparse2Csparse <- function(from) {
     ans <- new("dgCMatrix")
     ans@i <- as.integer(from$rowInds)
@@ -478,6 +482,9 @@ repSparse2Csparse <- function(from) {
     ans@Dim <- as.integer(dim(from))
     return(ans)
 }
+
+##' @rdname as.repSparse
+##' @export
 repSparse2Tsparse <- function(from) {
     ans <- new("dgTMatrix")
     ans@i <- as.integer(from$rowInds)
@@ -491,6 +498,8 @@ repSparse2Tsparse <- function(from) {
 ##' @name repSparse2sparseMatrix
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix sparseMatrix
+##' @importFrom methods coerce
+##' @importFrom methods as
 setAs("repSparse",  "sparseMatrix", def = repSparse2Csparse)
 
 ##' as("repSparse", "CsparseMatrix")

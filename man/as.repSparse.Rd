@@ -9,7 +9,9 @@
 \alias{as.repSparse.factor}
 \alias{as.repSparse.matrix}
 \alias{as.repSparse.repSparse}
+\alias{repSparse2Csparse}
 \alias{repSparse2CsparseMatrix}
+\alias{repSparse2Tsparse}
 \alias{repSparse2TsparseMatrix}
 \alias{repSparse2dgCMatrix}
 \alias{repSparse2dgTMatrix}
@@ -33,6 +35,10 @@ as.repSparse(x, ...)
 \method{as.data.frame}{repSparse}(x, ...)
 
 \method{as.matrix}{repSparse}(x, sparse = FALSE, ...)
+
+repSparse2Csparse(from)
+
+repSparse2Tsparse(from)
 }
 \arguments{
 \item{x}{an object}
@@ -40,6 +46,8 @@ as.repSparse(x, ...)
 \item{...}{dots}
 
 \item{sparse}{return \code{sparseMatrix}?}
+
+\item{from}{object to coerce from}
 }
 \description{
 Coerce to and from repeated sparse matrices

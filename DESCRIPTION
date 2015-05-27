@@ -10,6 +10,7 @@ Description: Generalized linear mixed models with flexible (co)variance
 License: GPL-2
 Roxygen: list(wrap = FALSE)
 Depends:
+    methods,
     lme4,
     nlme,
     lme4pureR,

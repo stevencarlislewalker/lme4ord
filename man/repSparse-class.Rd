@@ -10,7 +10,7 @@
 \alias{update.repSparse}
 \title{A repeated sparse matrix class}
 \usage{
-print.repSparse(x, n = 6L, ...)
+\method{print}{repSparse}(x, n = 6L, ...)
 
 update.repSparse(object, newPars, ...)
 
@@ -88,7 +88,9 @@ Other repeated sparse matrix topics: \code{\link{as.data.frame.repSparse}},
   \code{\link{as.repSparse.factor}},
   \code{\link{as.repSparse.matrix}},
   \code{\link{as.repSparse.repSparse}},
+  \code{\link{repSparse2Csparse}},
   \code{\link{repSparse2CsparseMatrix}},
+  \code{\link{repSparse2Tsparse}},
   \code{\link{repSparse2TsparseMatrix}},
   \code{\link{repSparse2dgCMatrix}},
   \code{\link{repSparse2dgTMatrix}},
