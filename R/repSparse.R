@@ -560,7 +560,13 @@ repSparse2gTsparse <- function(from) {
     return(ans)
 }
 
+repSparse2tCsparse <- function(from) {
+    as(as(from, "dgCMatrix"), "dtCMatrix")
+}
 
+repSparse2tTsparse <- function(from) {
+    as(as(from, "dgTMatrix"), "dtTMatrix")
+}
 
 ##' as("repSparse", "sparseMatrix")
 ##' @name repSparse2sparseMatrix
@@ -582,6 +588,12 @@ setAs("repSparse", "CsparseMatrix", def = repSparse2gCsparse)
 ##' @importClassesFrom Matrix dgCMatrix
 setAs("repSparse",     "dgCMatrix", def = repSparse2gCsparse)
 
+##' as("repSparse", "dtCMatrix")
+##' @name repSparse2dtCMatrix
+##' @rdname as.repSparse
+##' @importClassesFrom Matrix dtCMatrix
+setAs("repSparse",     "dtCMatrix", def = repSparse2tCsparse)
+
 ##' as("repSparse", "TsparseMatrix")
 ##' @name repSparse2gTsparseMatrix
 ##' @rdname as.repSparse
@@ -593,6 +605,13 @@ setAs("repSparse", "TsparseMatrix", def = repSparse2gTsparse)
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix dgTMatrix
 setAs("repSparse", "dgTMatrix", def = repSparse2gTsparse)
+
+##' as("repSparse", "dtTMatrix")
+##' @name repSparse2dtTMatrix
+##' @rdname as.repSparse
+##' @importClassesFrom Matrix dtTMatrix
+setAs("repSparse",     "dtTMatrix", def = repSparse2tTsparse)
+
 
 
 ##' Get repetition pattern of a repeated sparse matrix

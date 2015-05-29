@@ -12,6 +12,8 @@
 \alias{as.repSparse.repSparse}
 \alias{repSparse2dgCMatrix}
 \alias{repSparse2dgTMatrix}
+\alias{repSparse2dtCMatrix}
+\alias{repSparse2dtTMatrix}
 \alias{repSparse2gCsparseMatrix}
 \alias{repSparse2gTsparseMatrix}
 \alias{repSparse2sparseMatrix}
@@ -53,9 +55,13 @@ as("repSparse", "CsparseMatrix")
 
 as("repSparse", "dgCMatrix")
 
+as("repSparse", "dtCMatrix")
+
 as("repSparse", "TsparseMatrix")
 
 as("repSparse", "dgTMatrix")
+
+as("repSparse", "dtTMatrix")
 }
 \examples{
 set.seed(1)

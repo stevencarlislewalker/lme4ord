@@ -101,6 +101,8 @@ Other repeated sparse matrix topics: \code{\link{as.data.frame.repSparse}},
   \code{\link{as.repSparse.repSparse}},
   \code{\link{repSparse2dgCMatrix}},
   \code{\link{repSparse2dgTMatrix}},
+  \code{\link{repSparse2dtCMatrix}},
+  \code{\link{repSparse2dtTMatrix}},
   \code{\link{repSparse2gCsparseMatrix}},
   \code{\link{repSparse2gTsparseMatrix}},
   \code{\link{repSparse2sparseMatrix}};
