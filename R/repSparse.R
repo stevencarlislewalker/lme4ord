@@ -290,7 +290,6 @@ setMethod("diag", signature(x = "repSparse"), {
 
 ##' @param value replacement value for diagonal
 ##' @rdname repSparse-class
-##' @method diag<- repSparse
 ##' @export
 setMethod("diag<-", signature(x = "repSparse"), {
     function(x, value) {
@@ -543,7 +542,7 @@ as.matrix.repSparseChol <- function(x, sparse = FALSE, ...) {
 }
 
 
-repSparse2Csparse <- function(from) {
+repSparse2gCsparse <- function(from) {
     ans <- new("dgCMatrix")
     ans@i <- as.integer(from$rowInds)
     ans@p <- as.integer(ind2point(from$colInds, ncol(from)))
@@ -552,8 +551,7 @@ repSparse2Csparse <- function(from) {
     return(ans)
 }
 
-
-repSparse2Tsparse <- function(from) {
+repSparse2gTsparse <- function(from) {
     ans <- new("dgTMatrix")
     ans@i <- as.integer(from$rowInds)
     ans@j <- as.integer(from$colInds)
@@ -562,37 +560,39 @@ repSparse2Tsparse <- function(from) {
     return(ans)
 }
 
+
+
 ##' as("repSparse", "sparseMatrix")
 ##' @name repSparse2sparseMatrix
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix sparseMatrix
 ##' @importFrom methods coerce
 ##' @importFrom methods as
-setAs("repSparse",  "sparseMatrix", def = repSparse2Csparse)
+setAs("repSparse",  "sparseMatrix", def = repSparse2gCsparse)
 
 ##' as("repSparse", "CsparseMatrix")
-##' @name repSparse2CsparseMatrix
+##' @name repSparse2gCsparseMatrix
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix CsparseMatrix
-setAs("repSparse", "CsparseMatrix", def = repSparse2Csparse)
+setAs("repSparse", "CsparseMatrix", def = repSparse2gCsparse)
 
 ##' as("repSparse", "dgCMatrix")
 ##' @name repSparse2dgCMatrix
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix dgCMatrix
-setAs("repSparse",     "dgCMatrix", def = repSparse2Csparse)
+setAs("repSparse",     "dgCMatrix", def = repSparse2gCsparse)
 
 ##' as("repSparse", "TsparseMatrix")
-##' @name repSparse2TsparseMatrix
+##' @name repSparse2gTsparseMatrix
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix TsparseMatrix
-setAs("repSparse", "TsparseMatrix", def = repSparse2Tsparse)
+setAs("repSparse", "TsparseMatrix", def = repSparse2gTsparse)
 
 ##' as("repSparse", "dgTMatrix")
 ##' @name repSparse2dgTMatrix
 ##' @rdname as.repSparse
 ##' @importClassesFrom Matrix dgTMatrix
-setAs("repSparse", "dgTMatrix", def = repSparse2Tsparse)
+setAs("repSparse", "dgTMatrix", def = repSparse2gTsparse)
 
 
 ##' Get repetition pattern of a repeated sparse matrix
@@ -1660,8 +1660,8 @@ repSparseOneOffDiag <- function(diagVal, offDiagVal, offDiagInds, matSize) {
     return(ans)
 }
 
-setOldClass("repSparseOnesOffDiag")
-setIs("repSparseOnesOffDiag", "repSparse")
+setOldClass("repSparseOneOffDiag")
+setIs("repSparseOneOffDiag", "repSparse")
 
 
 ##' Repeated sparse Cholesky factor leading to constant variance
@@ -1866,50 +1866,55 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
 ##' @rdname chol
 ##' @family repeated sparse matrix topics
 ##' @export
-chol.repSparse <- function(x, ...) {
-    ans <- as.repSparse(as(chol(as.matrix(x, sparse = TRUE)), "dgCMatrix"))
-    class(ans) <- c("repSparseChol", class(x))
-    return(ans)
-}
+setMethod("chol", signature(x = "repSparse"), {
+    function(x, ...) {
+        ans <- as.repSparse(as(chol(as.matrix(x, sparse = TRUE)), "dgCMatrix"))
+        class(ans) <- c("repSparseChol", class(x))
+        return(ans)
+    }
+})
 
 ##' @rdname chol
-##' @method chol repSparseOneOffDiag
 ##' @export
-chol.repSparseOneOffDiag <- function(x, ...) {
-    offRow <- sort(x$rowInds[c(0, -1) + length(x$valInds)]) + 1L
-    va <- c(sqrt(x$vals[1]),
-            x$vals[2]/sqrt(x$vals[1]),
-            sqrt(x$vals[1] - ((x$vals[2]^2) / x$vals[1])))
-    ni <- length(x$valInds)
-    vi <- x$valInds[-ni]
-    ri <- x$rowInds[-ni] + 1L
-    ci <- x$colInds[-ni] + 1L
-    vi[offRow[2]] <- 3
-    vi[length(vi)] <- 2
-    ans <- repSparse(ri, ci, vi, va,
-                     trans = mkCholOneOffDiagTrans(x$vals),
-                     Dim = dim(x))
-    class(ans) <- c("repSparseChol", class(x))
-    return(ans)
-}
+setMethod("chol", signature(x = "repSparseOneOffDiag"), {
+    function(x, ...) {
+        offRow <- sort(x$rowInds[c(0, -1) + length(x$valInds)]) + 1L
+        va <- c(sqrt(x$vals[1]),
+                x$vals[2]/sqrt(x$vals[1]),
+                sqrt(x$vals[1] - ((x$vals[2]^2) / x$vals[1])))
+        ni <- length(x$valInds)
+        vi <- x$valInds[-ni]
+        ri <- x$rowInds[-ni] + 1L
+        ci <- x$colInds[-ni] + 1L
+        vi[offRow[2]] <- 3
+        vi[length(vi)] <- 2
+        ans <- repSparse(ri, ci, vi, va,
+                         trans = mkCholOneOffDiagTrans(x$vals),
+                         Dim = dim(x))
+        class(ans) <- c("repSparseChol", class(x))
+        return(ans)
+    }
+})
 
 ##' @rdname chol
-##' @method chol repSparseCompSymm
+##' @export
 ##' @examples
 ##' x <- repSparseCompSymm(1.2, -0.11, 4)
 ##' as.matrix(chol(x))
 ##' t(chol(as.matrix(x)))
-chol.repSparseCompSymm <- function(x, ...) {
-    n <- nrow(x)
-    trans <- mkCholCompSymmTrans(x$vals, n)
-    sa <- seq_len(n)
-    ii <- rep.int(1:(n-1), (n-1):1)
-    ri <- c(sa, unlist(lapply(2:n, ":", n)))
-    ci <- c(sa, ii)
-    vi <- c(sa, ii + n)
-    repSparse(ri, ci, vi,
-              trans(x$vals), trans = trans,
-              Dim = dim(x))
-    class(ans) <- c("repSparseChol", class(x))
-    return(ans)
-}
+setMethod("chol", signature(x = "repSparseCompSymm"), {
+    function(x, ...) {
+        n <- nrow(x)
+        trans <- mkCholCompSymmTrans(x$vals, n)
+        sa <- seq_len(n)
+        ii <- rep.int(1:(n-1), (n-1):1)
+        ri <- c(sa, unlist(lapply(2:n, ":", n)))
+        ci <- c(sa, ii)
+        vi <- c(sa, ii + n)
+        ans <- repSparse(ri, ci, vi,
+                         trans(x$vals), trans = trans,
+                         Dim = dim(x))
+        class(ans) <- c("repSparseChol", class(x))
+        return(ans)
+    }
+})

@@ -10,10 +10,10 @@
 \alias{as.repSparse.factor}
 \alias{as.repSparse.matrix}
 \alias{as.repSparse.repSparse}
-\alias{repSparse2CsparseMatrix}
-\alias{repSparse2TsparseMatrix}
 \alias{repSparse2dgCMatrix}
 \alias{repSparse2dgTMatrix}
+\alias{repSparse2gCsparseMatrix}
+\alias{repSparse2gTsparseMatrix}
 \alias{repSparse2sparseMatrix}
 \title{Coerce to and from repeated sparse matrices}
 \usage{
@@ -72,9 +72,9 @@ as(m2, "dgCMatrix")
 as(m2, "sparseMatrix")
 }
 \seealso{
-Other repeated sparse matrix topics: \code{\link{chol.repSparse}},
-  \code{\link{chol.repSparseCompSymm}},
-  \code{\link{chol.repSparseOneOffDiag}};
+Other repeated sparse matrix topics: \code{\link{chol,repSparse-method}},
+  \code{\link{chol,repSparseCompSymm-method}},
+  \code{\link{chol,repSparseOneOffDiag-method}};
   \code{\link{diag,repSparse-method}},
   \code{\link{diag<-,repSparse-method}},
   \code{\link{dim.repSparse}},
