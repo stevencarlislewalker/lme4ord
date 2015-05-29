@@ -254,7 +254,8 @@ splitForm <- function(formula) {
 
     if(length(formSplitSpec) == 0) stop(
                  "no special covariance structures. ",
-                 "please use lmer or glmer")
+                 "please use lmer or glmer, ",
+                 "or use findReTrmClasses() for available structures.")
 
 
     fixedFormula <- formula(paste(formula[[2]], "~",
