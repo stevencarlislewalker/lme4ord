@@ -367,6 +367,7 @@ VarCorr.reTrmStruct <- function(x, sigma = 1, rdig = 3) {
 ##' @param ... potential additional arguments (ignored by the default
 ##' method)
 ##' @rdname update.reTrmStruct
+##' @method update reTrmStruct
 ##' @export
 update.reTrmStruct <- function(object, newCovar, newLoads, ...) {
     object$Lambdat <- update(object$Lambdat, newCovar)
@@ -375,6 +376,7 @@ update.reTrmStruct <- function(object, newCovar, newLoads, ...) {
 }
 
 ##' @rdname update.reTrmStruct
+##' @method update flexvar
 ##' @export
 update.flexvar <- function(object, newCovar, newLoads, ...) {
 

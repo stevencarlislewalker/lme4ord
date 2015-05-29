@@ -4,9 +4,9 @@
 \alias{update.reTrmStruct}
 \title{Update a random effects term structure with new parameters}
 \usage{
-update.reTrmStruct(object, newCovar, newLoads, ...)
+\method{update}{reTrmStruct}(object, newCovar, newLoads, ...)
 
-update.flexvar(object, newCovar, newLoads, ...)
+\method{update}{flexvar}(object, newCovar, newLoads, ...)
 }
 \arguments{
 \item{object}{a \code{reTrmStruct} object}

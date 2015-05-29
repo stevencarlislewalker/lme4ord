@@ -19,12 +19,12 @@
 \usage{
 mkStrucGlmer(opt, parsedForm, dfun, mc)
 
-print.strucGlmer(x, digits = max(3, getOption("digits") - 3), ...)
+\method{print}{strucGlmer}(x, digits = max(3, getOption("digits") - 3), ...)
 
-summary.strucGlmer(object, use.hessian = TRUE, ...)
+\method{summary}{strucGlmer}(object, use.hessian = TRUE, ...)
 
-print.summary.strucGlmer(x, digits = max(3, getOption("digits") - 3),
-  correlation = NULL, signif.stars = getOption("show.signif.stars"),
+\method{print}{summary.strucGlmer}(x, digits = max(3, getOption("digits") -
+  3), correlation = NULL, signif.stars = getOption("show.signif.stars"),
   show.resids = TRUE, ...)
 
 \method{residuals}{strucGlmer}(object, ...)

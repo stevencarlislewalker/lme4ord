@@ -5,7 +5,7 @@
 \alias{chol.repSparseOneOffDiag}
 \title{Cholesky decomposition of repeated sparse matrices}
 \usage{
-\method{chol}{repSparse}(x, ...)
+chol.repSparse(x, ...)
 
 \method{chol}{repSparseOneOffDiag}(x, ...)
 
@@ -33,6 +33,7 @@ t(chol(as.matrix(x)))
 \seealso{
 Other repeated sparse matrix topics: \code{\link{as.data.frame.repSparse}},
   \code{\link{as.matrix.repSparse}},
+  \code{\link{as.matrix.repSparseChol}},
   \code{\link{as.repSparse}},
   \code{\link{as.repSparse.dCHMsimpl}},
   \code{\link{as.repSparse.dist}},
@@ -40,14 +41,13 @@ Other repeated sparse matrix topics: \code{\link{as.data.frame.repSparse}},
   \code{\link{as.repSparse.factor}},
   \code{\link{as.repSparse.matrix}},
   \code{\link{as.repSparse.repSparse}},
-  \code{\link{repSparse2Csparse}},
   \code{\link{repSparse2CsparseMatrix}},
-  \code{\link{repSparse2Tsparse}},
   \code{\link{repSparse2TsparseMatrix}},
   \code{\link{repSparse2dgCMatrix}},
   \code{\link{repSparse2dgTMatrix}},
   \code{\link{repSparse2sparseMatrix}};
-  \code{\link{diag.repSparse}},
+  \code{\link{diag,repSparse-method}},
+  \code{\link{diag<-,repSparse-method}},
   \code{\link{dim.repSparse}},
   \code{\link{image.repSparse}},
   \code{\link{plot.repSparse}},

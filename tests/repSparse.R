@@ -63,10 +63,10 @@ X <- repSparseCompSymm(1, -0.2, 5)
                                         # check that cholesky follows
                                         # as.matrix is equivalent to
                                         # as.matrix follows cholesky
-stopifnot(all.equal(as(chol(as.matrix(X, TRUE)), "dgCMatrix"),
-                    as.matrix(t(chol(X)), TRUE)))
+stopifnot(all.equal(chol(as.matrix(X, TRUE)),
+                    as.matrix(chol(X), TRUE)))
                                         # ditto for the update method
-stopifnot(all.equal(as(chol(as.matrix(update(X, c(1.2, -0.2)), TRUE)), "dgCMatrix"),
+stopifnot(all.equal(chol(as.matrix(update(X, c(1.2, -0.2)), TRUE)),
                     t(as.matrix(update(chol(X), c(1.2, -0.2)), TRUE))))
                                         # and if we take the transpose
                                         # of the chol(repSparse)

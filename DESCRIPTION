@@ -1,12 +1,13 @@
 Package: lme4ord
 Type: Package
-Title: Flexible mixed effects and factor models with the lme4 engine
+Title: Generalized linear mixed models with flexible (co)variance structures.
 Version: 0.0-1
 Date: 2015-05-16
 Author: Steve Walker
 Maintainer: Steve Walker <steve.walker@utoronto.ca>
 Description: Generalized linear mixed models with flexible (co)variance
-    structures.
+    structures. The package was written to solve applied problems in biology
+    and ecology, but should be more general than that.
 License: GPL-2
 Roxygen: list(wrap = FALSE)
 Depends:

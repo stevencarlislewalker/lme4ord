@@ -58,6 +58,7 @@ strucGlmerMethTitle <- function() {
 ##' @param digits number of significant digits
 ##' @param ... additional arguments to methods
 ##' @rdname strucGlmer-class
+##' @method print strucGlmer
 ##' @export
 print.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3),  ...) {
     lme4:::.prt.methTit(strucGlmerMethTitle(), class(x))
@@ -81,6 +82,7 @@ print.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3),  ...) 
 ##' @param use.hessian use numerical hessian in covariance
 ##' calculations if available
 ##' @rdname strucGlmer-class
+##' @method summary strucGlmer
 ##' @export
 summary.strucGlmer <- function(object, use.hessian = TRUE, ...) {
     vc <- vcov(object, use.hessian = use.hessian)
@@ -114,6 +116,7 @@ summary.strucGlmer <- function(object, use.hessian = TRUE, ...) {
 ##' @param signif.stars display significance stars?
 ##' @param show.resids show residuals?
 ##' @rdname strucGlmer-class
+##' @method print summary.strucGlmer
 ##' @export
 print.summary.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3),
                                      correlation = NULL, 

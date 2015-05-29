@@ -139,7 +139,7 @@ print.repSparse <- function(x, n = 6L, ...) {
     reportTruncVals <- length(x$vals) > n
     reportTruncInds <- nrow(inds) > n
     reportTruncPars <- length(init) > n
-    
+
     cat("Repeated sparse matrix\n")
     cat("----------------------\n")
     cat("dimensions:\n")
@@ -174,6 +174,7 @@ print.repSparse <- function(x, n = 6L, ...) {
 ##' @param newPars new parameter values
 ##' @importFrom stats update
 ##' @rdname repSparse-class
+##' @method update repSparse
 ##' @export
 update.repSparse <- function(object, newPars, ...) {
     l... <- list(...)
@@ -223,7 +224,7 @@ update.repSparse <- function(object, newPars, ...) {
 }
 
 ##' @param plain should a completely plain plot be used? (try and see)
-##' @importFrom Matrix image 
+##' @importFrom Matrix image
 ##' @rdname repSparse-class
 ##' @method image repSparse
 ##' @export
@@ -256,10 +257,12 @@ image.repSparse <- function(x, plain = FALSE, ...) {
 
 ##' @param y not used
 ##' @rdname repSparse-class
+##' @method plot repSparse
 ##' @export
 plot.repSparse <- function(x, y, plain = FALSE, ...) image(x, plain = plain, ...)
 
 ##' @rdname repSparse-class
+##' @method t repSparse
 ##' @export
 t.repSparse <- function(x) {
     tx <- x
@@ -269,19 +272,48 @@ t.repSparse <- function(x) {
     return(standardSort(tx))
 }
 
-##' @rdname repSparse-class
-##' @export
-diag.repSparse <- function(x, ...) {
-    with(x, {
-        diagInds <- which(rowInds == colInds)
-        rowDiagInds <- rowInds[diagInds] + 1L
-        fullInds <- match(seq_len(min(dim(x))), rowDiagInds)
-        ans <- vals[valInds[diagInds]][fullInds]
-        ifelse(is.na(ans), 0, ans)
-    })
-}
+
 
 ##' @rdname repSparse-class
+##' @export
+setMethod("diag", signature(x = "repSparse"), {
+    function(x) {
+        with(x, {
+            diagInds <- which(rowInds == colInds)
+            rowDiagInds <- rowInds[diagInds] + 1L
+            fullInds <- match(seq_len(min(dim(x))), rowDiagInds)
+            ans <- vals[valInds[diagInds]][fullInds]
+            ifelse(is.na(ans), 0, ans)
+        })
+    }
+})
+
+##' @param value replacement value for diagonal
+##' @rdname repSparse-class
+##' @method diag<- repSparse
+##' @export
+setMethod("diag<-", signature(x = "repSparse"), {
+    function(x, value) {
+        diagInds <- with(x, {
+            diagInds <- unique(valInds[  rowInds == colInds])
+            offDiagInds <- unique(valInds[!(rowInds == colInds)])
+            if(length(diagInds) != length(value)) { # length mismatch
+                stop("too many replacement values for the number of repeated diagonal values")
+            }
+            if(any(diagInds %in% offDiagInds)) { # complex pattern
+                stop(" the repetition pattern is too complicated to replace the diagonal.\n",
+                     "some repeated values are both on the diagonal and off of it")
+            }
+            diagInds
+        })
+        x$vals[diagInds] <- value
+        return(x)
+    }
+})
+
+
+##' @rdname repSparse-class
+##' @method dim repSparse
 ##' @export
 dim.repSparse <- function(x) attr(x, "Dim")
 
@@ -300,6 +332,7 @@ dim.repSparse <- function(x) attr(x, "Dim")
 ##' @param type sort by column, row, or value indices?
 ##' @param ... for consistency with generic
 ##' @rdname sort.repSparse
+##' @method sort repSparse
 ##' @export
 sort.repSparse <- function(x, decreasing = FALSE,
                            type = c("col", "row", "val"), ...) {
@@ -320,6 +353,35 @@ standardSort <- function(x) {
     sort(sort(x, type = "row"), type = "col")
 }
 
+##' Simplify repeated sparse matrices
+##'
+##' Simplify repeated sparse matrices by (1) forcing non structural
+##' zeros to be structural zeros, (2) eliminate duplicates in the
+##' repeated values, and (3) resetting the transformation function to
+##' be the identity.
+##'
+##' @param object repeated sparse matrix
+##' @param ... not yet used
+##' @export
+simplifyRepSparse <- function(object, ...) {
+                                        # force non structural zeros
+                                        # to be structural
+    valsToKeep <- which(object$vals != 0L)
+    elementsToKeep <- with(object, valInds %in% valsToKeep)
+    object$vals <- object$vals[valsToKeep]
+    object$rowInds <- object$rowInds[elementsToKeep]
+    object$colInds <- object$colInds[elementsToKeep]
+    object$valInds <- flattenIntVec(object$valInds[elementsToKeep])
+                                        # eliminate duplicates in the
+                                        # repeated values
+    newVals <- with(object, vals[which(!duplicated(vals))])
+    newValInds <- with(object, match(vals[valInds], newVals))
+    object$vals <- newVals
+    object$valInds <- newValInds
+                                        # reset to identity trans
+    object$trans <- mkIdentityTrans(object$vals)
+    return(object)
+}
 
 ## ----------------------------------------------------------------------
 ## Coercion -- as...
@@ -444,6 +506,7 @@ triInds <- function(rowInds, colInds, maxInd,
 
 
 ##' @rdname as.repSparse
+##' @method as.data.frame repSparse
 ##' @export
 as.data.frame.repSparse <- function(x, ...) {
     with(x, {
@@ -471,9 +534,15 @@ as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
     return(as.matrix(ans))
 }
 
-##' @param from object to coerce from
 ##' @rdname as.repSparse
+##' @method as.matrix repSparseChol
 ##' @export
+as.matrix.repSparseChol <- function(x, sparse = FALSE, ...) {
+    ans <- as.matrix.repSparse(x, sparse = sparse, ...)
+    return(as(ans, "dtCMatrix"))
+}
+
+
 repSparse2Csparse <- function(from) {
     ans <- new("dgCMatrix")
     ans@i <- as.integer(from$rowInds)
@@ -483,8 +552,7 @@ repSparse2Csparse <- function(from) {
     return(ans)
 }
 
-##' @rdname as.repSparse
-##' @export
+
 repSparse2Tsparse <- function(from) {
     ans <- new("dgTMatrix")
     ans@i <- as.integer(from$rowInds)
@@ -1166,7 +1234,7 @@ setIs("repSparseBind", "repSparse")
 }
 
 ##' Repeat repeated sparse matrix
-##' 
+##'
 ##' @param x \code{repSparse} object
 ##' @param times like \code{rep}
 ##' @param repVals should the unique values (\code{x$vals}) be
@@ -1282,7 +1350,7 @@ repSparseRowSubset <- function(x, rowInds) {
     ## FIXME: decided not to use this code to remove any possible
     ## unused repeated values, mostly because it hurts my head to
     ## think about how to deal with special parameterized matrics
-    
+
     ## valsToKeep <- seq_along(va) %in% viNew
     ## vaNew <- va[valsToKeep]
     ## viNew <- flattenIntVec(viNew)
@@ -1381,7 +1449,7 @@ setIs("repSparseIdent", "repSparse")
 
 
 ##' Diagonal repeated sparse matrix
-##' 
+##'
 ##' @param vals vector of values
 ##' @param valInds vector of value indices
 ##' @family repSparseSpecial
@@ -1425,7 +1493,7 @@ setIs("repSparseCol", "repSparse")
 
 
 ##' Repeated sparse indicator matrix
-##' 
+##'
 ##' @param fac vector coercible to factor
 ##' @family repSparseSpecial
 ##' @export
@@ -1443,7 +1511,7 @@ setIs("repSparseInd", "repSparse")
 
 
 ##' Triangular repeated sparse matrix
-##' 
+##'
 ##' @param diagVals values for the diagonal
 ##' @param offDiagVals values for the off-diagonal
 ##' @param low lower triangular?
@@ -1473,7 +1541,7 @@ repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
             vals[!diagIndices] <- offDiagVals
             return(vals)
         }
-    })  
+    })
     return(ans)
 }
 
@@ -1538,7 +1606,7 @@ setIs("repSparseSymm", "repSparse")
 
 
 ##' Repeated sparse matrix with compound symmetry
-##' 
+##'
 ##' @param diagVal value for the diagonal
 ##' @param offDiagVal value for the off-diagonal
 ##' @param matSize size of the resulting matrix
@@ -1620,7 +1688,7 @@ repSparseConstVarChol <- function(sdVal, offDiagVals) {
     ## a little DRY
     vals[ diagIndices] <- diagVals
     vals[!diagIndices] <- offDiagVals
-    
+
     ans <- repSparse(rowIndices, colIndices,
                      seq_along(vals), vals,
                      mkConstVarCholTrans(c(sdVal, offDiagVals)))
@@ -1633,7 +1701,7 @@ setIs("repSparseConstVarChol", "repSparse")
 
 
 ##' Repeated sparse Cholesky factor of a correlation matrix
-##' 
+##'
 ##' @param offDiagPars parameters determining the off-diagonal of the
 ##' Cholesky factor
 ##' @family repSparseSpecial
@@ -1660,7 +1728,7 @@ repSparseCorMatChol <- function(offDiagPars) {
     ## a little DRY
     vals[ diagIndices] <- diagVals
     vals[!diagIndices] <- sign(offDiagPars) * unlist(offDiagValsList)
-    
+
     ans <- repSparse(rowIndices, colIndices,
                      seq_along(vals), vals,
                      mkCorMatCholTrans(offDiagPars))
@@ -1674,7 +1742,7 @@ setIs("repSparseCorMatChol", "repSparse")
 
 ##' Repeated sparse diagonal covariance matrix with a covariate
 ##' determining the diagonal
-##' 
+##'
 ##' @param varPars vector of variance parameters (one per level of
 ##' \code{grpFac})
 ##' @param covariate covariate
@@ -1729,12 +1797,12 @@ repSparseExpChol <- function(distObj, cutOffDist = Inf) {
     ri <- ri[ord]; ci <- ci[ord]; va <- va[ord]
     ord <- order(ci, decreasing = FALSE)
     ri <- ri[ord]; ci <- ci[ord]; va <- va[ord]
-    
+
     symmObj <- new("dsCMatrix", uplo = "L",
                    i = ri, p = ind2point(ci, matSize),
                    x = va,
                    Dim = rep(matSize, 2))
-    
+
     vecDist <- symmObj@x
     symmObj@x <- exp(-vecDist)
     cholObj <- Cholesky(symmObj)
@@ -1781,6 +1849,8 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
 }
 
 
+
+
 ## ----------------------------------------------------------------------
 ## Cholesky --
 ## ----------------------------------------------------------------------
@@ -1795,10 +1865,11 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
 ##' @param ... passed to subsequent functions
 ##' @rdname chol
 ##' @family repeated sparse matrix topics
-##' @method chol repSparse
 ##' @export
 chol.repSparse <- function(x, ...) {
-    as.repSparse(chol(as.matrix(x, sparse = TRUE)))
+    ans <- as.repSparse(as(chol(as.matrix(x, sparse = TRUE)), "dgCMatrix"))
+    class(ans) <- c("repSparseChol", class(x))
+    return(ans)
 }
 
 ##' @rdname chol
@@ -1818,6 +1889,7 @@ chol.repSparseOneOffDiag <- function(x, ...) {
     ans <- repSparse(ri, ci, vi, va,
                      trans = mkCholOneOffDiagTrans(x$vals),
                      Dim = dim(x))
+    class(ans) <- c("repSparseChol", class(x))
     return(ans)
 }
 
@@ -1838,6 +1910,6 @@ chol.repSparseCompSymm <- function(x, ...) {
     repSparse(ri, ci, vi,
               trans(x$vals), trans = trans,
               Dim = dim(x))
-    ## FIXME:  set special class?
+    class(ans) <- c("repSparseChol", class(x))
+    return(ans)
 }
-

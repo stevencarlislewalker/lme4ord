@@ -2,6 +2,7 @@
 \name{as.repSparse}
 \alias{as.data.frame.repSparse}
 \alias{as.matrix.repSparse}
+\alias{as.matrix.repSparseChol}
 \alias{as.repSparse}
 \alias{as.repSparse.dCHMsimpl}
 \alias{as.repSparse.dist}
@@ -9,9 +10,7 @@
 \alias{as.repSparse.factor}
 \alias{as.repSparse.matrix}
 \alias{as.repSparse.repSparse}
-\alias{repSparse2Csparse}
 \alias{repSparse2CsparseMatrix}
-\alias{repSparse2Tsparse}
 \alias{repSparse2TsparseMatrix}
 \alias{repSparse2dgCMatrix}
 \alias{repSparse2dgTMatrix}
@@ -36,9 +35,7 @@ as.repSparse(x, ...)
 
 \method{as.matrix}{repSparse}(x, sparse = FALSE, ...)
 
-repSparse2Csparse(from)
-
-repSparse2Tsparse(from)
+\method{as.matrix}{repSparseChol}(x, sparse = FALSE, ...)
 }
 \arguments{
 \item{x}{an object}
@@ -46,8 +43,6 @@ repSparse2Tsparse(from)
 \item{...}{dots}
 
 \item{sparse}{return \code{sparseMatrix}?}
-
-\item{from}{object to coerce from}
 }
 \description{
 Coerce to and from repeated sparse matrices
@@ -80,7 +75,8 @@ as(m2, "sparseMatrix")
 Other repeated sparse matrix topics: \code{\link{chol.repSparse}},
   \code{\link{chol.repSparseCompSymm}},
   \code{\link{chol.repSparseOneOffDiag}};
-  \code{\link{diag.repSparse}},
+  \code{\link{diag,repSparse-method}},
+  \code{\link{diag<-,repSparse-method}},
   \code{\link{dim.repSparse}},
   \code{\link{image.repSparse}},
   \code{\link{plot.repSparse}},
