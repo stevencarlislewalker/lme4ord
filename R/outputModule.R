@@ -182,8 +182,6 @@ residuals.strucGlmer <- function(object, ...) {
     r <- residuals(object$parsedForm$devfunEnv$resp, "deviance", ...)
     if (is.null(nm <- names(object$parsedForm$response))) nm <- seq_along(r)
     names(r) <- nm
-    ## if (!is.null(na.action <- attr(model.frame(object), "na.action")))
-    ##     r <- naresid(na.action, r)
     r
 }
 
@@ -315,7 +313,7 @@ nobs <- function(object, ...) nrow(object$parsedForm$fixed)
 ##' @importFrom stats deviance
 ##' @rdname strucGlmer-class
 ##' @export
-deviance.strucGlmer <- function(object, ...) object$opt$fval
+deviance.strucGlmer <- function(object, ...) sum(residuals(object, ...)^2) ## object$opt$fval
 
 ##' @importFrom stats logLik
 ##' @rdname strucGlmer-class
