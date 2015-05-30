@@ -272,11 +272,11 @@ setReTrm.varIdent <- function(object, addArgsList, devfunEnv = NULL) {
 ##'
 ##' @export
 ##' @template setReTrm
-##' @templateVar cls multiVarExp
-##' @templateVar form \code{multiVarExp(linForm | grpFac)} or \code{multiVarExp(linForm)}
+##' @templateVar cls varExp
+##' @templateVar form \code{varExp(linForm | grpFac)} or \code{varExp(linForm)}
 ##' @templateVar arg c("linForm", "grpFac")
 ##' @templateVar desc c("linear model formula decribing effects", "grouping factor")
-setReTrm.multiVarExp <- function(object, addArgsList, devfunEnv = NULL) {
+setReTrm.varExp <- function(object, addArgsList, devfunEnv = NULL) {
                                         # transposed model matrix (or
                                         # loadings matrix) -- Zt rows
                                         # associated with this term
