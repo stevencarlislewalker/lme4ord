@@ -11,6 +11,7 @@
 \alias{mkParInds}
 \alias{parPerTerm}
 \alias{pars}
+\alias{pars.glmerMod}
 \alias{pars.strucGlmer}
 \alias{ranef.strucGlmer}
 \title{Parameter retrieval for structured generalized linear mixed models}
@@ -20,6 +21,8 @@ mkParInds(parList)
 pars(object, ...)
 
 \method{pars}{strucGlmer}(object, ...)
+
+\method{pars}{glmerMod}(object, ...)
 
 getStrucGlmerPar(object, type, ...)
 

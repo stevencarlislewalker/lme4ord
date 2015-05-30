@@ -346,6 +346,10 @@ pars <- function(object, ...) UseMethod("pars")
 ##' @export
 pars.strucGlmer <- function(object, ...) object$opt$par
 
+##' @rdname pars
+##' @export
+pars.glmerMod <- function(object, ...) unlist(getME(object, c("theta", "beta")))
+
 .covar <- function(pars, ind) pars[ind$covar]
 .fixef <- function(pars, ind) pars[ind$fixef]
 .loads <- function(pars, ind) pars[ind$loads]
