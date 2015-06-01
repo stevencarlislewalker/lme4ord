@@ -77,10 +77,9 @@ Other setReTrm: \code{\link{cooccur}},
   \code{\link{setReTrm.expDecay}}; \code{\link{factAnal}},
   \code{\link{setReTrm.factAnal}}; \code{\link{flexvar}},
   \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
-  \code{\link{setReTrm.identity}};
-  \code{\link{multiVarExp}},
-  \code{\link{setReTrm.multiVarExp}}; \code{\link{obslev}},
+  \code{\link{setReTrm.identity}}; \code{\link{obslev}},
   \code{\link{setReTrm.obslev}};
+  \code{\link{setReTrm.varExp}}, \code{\link{varExp}};
   \code{\link{setReTrm.varIdent}}, \code{\link{varIdent}}
 }
 

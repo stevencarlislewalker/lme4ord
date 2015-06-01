@@ -35,8 +35,7 @@ Other setReTrm: \code{\link{cooccur}},
   \code{\link{setReTrm.default}}; \code{\link{flexvar}},
   \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
   \code{\link{setReTrm.identity}};
-  \code{\link{multiVarExp}},
-  \code{\link{setReTrm.multiVarExp}};
+  \code{\link{setReTrm.varExp}}, \code{\link{varExp}};
   \code{\link{setReTrm.varIdent}}, \code{\link{varIdent}}
 }
 
