@@ -20,7 +20,7 @@ laplace.default <- function(object, ...) {
         stop("resp must be a glmResp object and ",
              "pp must be a merPredD object")
     }
-    -0.5 * resp$aic() + pp$sqrL(1) + pp$ldL2()
+    -0.5 * (resp$aic() + pp$sqrL(1) + pp$ldL2())
 }
 
 ##' @rdname laplace

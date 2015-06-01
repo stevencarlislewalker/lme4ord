@@ -319,7 +319,7 @@ deviance.strucGlmer <- function(object, ...) sum(residuals(object, ...)^2) ## ob
 ##' @rdname strucGlmer-class
 ##' @export
 logLik.strucGlmer <- function(object, ...) {
-    val = -0.5 * deviance(object, ...)
+    val = laplace(object, ...)
     nobs <- nobs(object)
     structure(val, nobs = nobs, nall = nobs, df = length(pars(object)),
               class = "logLik")
