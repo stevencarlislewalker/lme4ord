@@ -22,6 +22,7 @@ Other repSparseSpecial: \code{\link{repSparseBlank}};
   \code{\link{repSparseCol}};
   \code{\link{repSparseCompSymm}};
   \code{\link{repSparseConstVarChol}};
+  \code{\link{repSparseCorFactor}};
   \code{\link{repSparseCorMatChol}};
   \code{\link{repSparseExpChol}};
   \code{\link{repSparseIdent}}; \code{\link{repSparseInd}};

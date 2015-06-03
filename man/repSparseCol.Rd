@@ -21,6 +21,7 @@ set.seed(1)
 Other repSparseSpecial: \code{\link{repSparseBlank}};
   \code{\link{repSparseCompSymm}};
   \code{\link{repSparseConstVarChol}};
+  \code{\link{repSparseCorFactor}};
   \code{\link{repSparseCorMatChol}};
   \code{\link{repSparseDiag}};
   \code{\link{repSparseExpChol}};

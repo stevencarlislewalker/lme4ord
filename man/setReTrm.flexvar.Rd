@@ -34,7 +34,8 @@ Other setReTrm: \code{\link{cooccur}},
   \code{\link{packReTrm}}, \code{\link{setReTrm}},
   \code{\link{setReTrm.default}}; \code{\link{identity}},
   \code{\link{setReTrm.identity}}; \code{\link{obslev}},
-  \code{\link{setReTrm.obslev}};
+  \code{\link{setReTrm.nlmeCorStruct}};
+  \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
   \code{\link{setReTrm.varExp}}, \code{\link{varExp}};
   \code{\link{setReTrm.varIdent}}, \code{\link{varIdent}}
 }

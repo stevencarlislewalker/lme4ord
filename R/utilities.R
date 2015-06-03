@@ -246,6 +246,15 @@ assignWith <- function(expr, name, data, envir, enclos = parent.frame()) {
     assign(name, eval(substitute(expr), data, enclos = enclos), envir = envir)
 }
 
+
+mapplyInvList <- function(vecList, lens) {
+    matList <- lapply(mapply(matrix, vecList, lens, lens, SIMPLIFY = FALSE), t)
+    diagList <- mapply(diag, nrow = lens, ncol = lens, SIMPLIFY = FALSE)
+    mapply(backsolve, matList, diagList, SIMPLIFY = FALSE)
+}
+
+
+
 ##' Show skeleton for some type of function
 ##'
 ##' @param whichSkel length-one character giving the name of the
@@ -287,6 +296,29 @@ listTranspose <- function(lst) {
 subRagByLens <- function(x, lens) {
     split(x, rep(seq_along(lens), lens)) ## split no good ... order of levels !
 }
+
+##' Indices for square dense matrices
+##'
+##' @param n matrix size
+##' @rdname denseInds
+##' @export
+denseDiagInds <- function(n) {
+    seq(1, n^2, length.out = n)
+}
+
+##' @rdname denseInds
+##' @export
+denseLowerInds <- function(n) {
+    unlist(lapply(1:(n-1), function(i) (i - 1) * n + ((i + 1):n)))
+}
+
+##' @rdname denseInds
+##' @export
+denseUpperInds <- function(n) {
+    unlist(lapply(1:(n-1), function(i) i * n + (1:i)))
+}
+
+
 
 ##----------------------------------------------------------------------
 ## edgeNodeTools

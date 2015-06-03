@@ -319,6 +319,25 @@ setReTrm.obslev <- function(object, addArgsList,
     packReTrm(object, Zt, Lambdat)
 }
 
+##' Random effects term from an \code{nlme}-style \code{corStruct}
+##' object
+##'
+##' @export
+##' @template setReTrm
+##' @templateVar cls obslev
+##' @templateVar form \code{nlmeCorStruct(1 | grpFac)}
+##' @templateVar arg "corObj"
+##' @templateVar desc "corStruct object"
+setReTrm.nlmeCorStruct <- function(object, addArgsList,
+                                   devfunEnv = NULL) {
+
+    addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
+    corObj <- addArgs$corObj
+    Lambdat <- repSparseCorFactor(corObj)
+    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)),
+                               as.repSparse(object$grpFac)))
+    packReTrm(object, Zt, Lambdat)
+}
 
 ##' @param Zt transposed model matrix
 ##' @param Lambdat relative covariance factor
@@ -335,11 +354,9 @@ packReTrm <- function(object, Zt, Lambdat,
     if(missing(lowerCovar)) lowerCovar <- setLowerDefault(getInit(Lambdat))
     if(missing(upperCovar)) upperCovar <- setUpperDefault(getInit(Lambdat))
     structure(c(object,
-                list(Zt = Zt, Lambdat = Lambdat,
-                     lowerLoads = lowerLoads,
-                     upperLoads = upperLoads,
-                     lowerCovar = lowerCovar,
-                     upperCovar = upperCovar)),
+                lme4:::namedList(Zt, Lambdat,
+                                 lowerLoads, upperLoads,
+                                 lowerCovar, upperCovar)),
               class = class(object))
 }
 

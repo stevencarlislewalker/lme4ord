@@ -1839,6 +1839,69 @@ repSparseExpChol <- function(distObj, cutOffDist = Inf) {
 setOldClass("repSparseExpChol")
 setIs("repSparseExpChol", "repSparse")
 
+##' Construct a repeated sparse upper Cholesky factor from an
+##' \code{nlme}-style \code{corStruct} object
+##'
+##' @param object a \code{corStruct} object
+##' @param sd initial standard deviation (FIXME: not used yet)
+##' @family repSparseSpecial
+##' @export
+##' @examples
+##' (xCorFactor <- repSparseCorFactor(Initialize(corAR1(0.5, form = ~ 1 | Subject), data = Orthodont)))
+repSparseCorFactor <- function(object, sd = 1) {
+    ## MATNAME: Cholesky from corStruct object
+    corFac <- corFactor(object)
+    lens <- Dim(object)$len
+    vecLens <- 2 * choose(lens, 2) + lens
+    vecList <- lme4ord:::subRagByLens(corFactor(object), vecLens)
+
+    invList <- mapplyInvList(vecList, lens)
+    upperInds <- lapply(invList, upper.tri)
+    
+    Lambdat <- .bind(mapply(repSparseTri,
+                            lapply(invList, diag),
+                            mapply("[", invList, upperInds, SIMPLIFY = FALSE),
+                            MoreArgs = list(low = FALSE),
+                            SIMPLIFY = FALSE), "diag")
+
+    diagIndices <- lapply(lens, seq, from = 1, by = 1)
+    rowIndices <- mapply(rep, diagIndices, diagIndices, SIMPLIFY = FALSE)
+    colIndices <- lapply(diagIndices, sequence)
+    diagIndices <- mapply("==", rowIndices, colIndices, SIMPLIFY = FALSE)
+
+    transEnv <- environment(Lambdat$trans)
+    list4env <- list(object = object,
+                     init = coef(object),
+                     lens = lens,
+                     diagIndices = diagIndices,
+                     rowIndices = rowIndices,
+                     colIndices = colIndices,
+                     vecLens = vecLens,
+                     upperInds = upperInds)
+    list2env(list4env, transEnv)
+    
+    Lambdat$trans <- local({
+        function(matPars) {
+            coef(object) <- matPars
+            vecList <- lme4ord:::subRagByLens(corFactor(object), vecLens)
+            invList <- mapplyInvList(vecList, lens)
+            diagVals <- lapply(invList, diag)
+            upperVals <- mapply("[", invList, upperInds, SIMPLIFY = FALSE)
+            for(i in seq_along(diagVals)) {
+                parList[[i]][ diagIndices[[i]]] <-  diagVals[[i]]
+                parList[[i]][!diagIndices[[i]]] <- upperVals[[i]]
+            }
+            unlist(parList)
+        }
+    }, transEnv)
+
+    class(Lambdat) <- c("repSparseCorFactor", class(Lambdat))
+    return(Lambdat)
+}
+
+setOldClass("repSparseCorFactor")
+setIs("repSparseCorFactor", "repSparse")
+
 ## ----------------------------------------------------------------------
 ## Random repeated sparse matrices
 ## ----------------------------------------------------------------------

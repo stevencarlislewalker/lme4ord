@@ -22,6 +22,7 @@ Repeated sparse matrix with compound symmetry
 Other repSparseSpecial: \code{\link{repSparseBlank}};
   \code{\link{repSparseCol}};
   \code{\link{repSparseConstVarChol}};
+  \code{\link{repSparseCorFactor}};
   \code{\link{repSparseCorMatChol}};
   \code{\link{repSparseDiag}};
   \code{\link{repSparseExpChol}};

@@ -18,6 +18,7 @@ Blank repeated sparse matrix
 Other repSparseSpecial: \code{\link{repSparseCol}};
   \code{\link{repSparseCompSymm}};
   \code{\link{repSparseConstVarChol}};
+  \code{\link{repSparseCorFactor}};
   \code{\link{repSparseCorMatChol}};
   \code{\link{repSparseDiag}};
   \code{\link{repSparseExpChol}};
