@@ -4,12 +4,12 @@
 \title{Construct a repeated sparse upper Cholesky factor from an
 \code{nlme}-style \code{corStruct} object}
 \usage{
-repSparseCorFactor(object, sd = 1)
+repSparseCorFactor(object, sig = 1)
 }
 \arguments{
 \item{object}{a \code{corStruct} object}
 
-\item{sd}{initial standard deviation (FIXME: not used yet)}
+\item{sig}{initial standard deviation}
 }
 \description{
 Construct a repeated sparse upper Cholesky factor from an

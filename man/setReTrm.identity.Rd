@@ -33,7 +33,8 @@ Other setReTrm: \code{\link{cooccur}},
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
   \code{\link{packReTrm}}, \code{\link{setReTrm}},
   \code{\link{setReTrm.default}}; \code{\link{flexvar}},
-  \code{\link{setReTrm.flexvar}}; \code{\link{obslev}},
+  \code{\link{setReTrm.flexvar}};
+  \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
   \code{\link{setReTrm.varExp}}, \code{\link{varExp}};

@@ -324,18 +324,26 @@ setReTrm.obslev <- function(object, addArgsList,
 ##'
 ##' @export
 ##' @template setReTrm
-##' @templateVar cls obslev
-##' @templateVar form \code{nlmeCorStruct(1 | grpFac)}
-##' @templateVar arg "corObj"
-##' @templateVar desc "corStruct object"
+##' @templateVar cls nlmeCorStruct
+##' @templateVar form \code{nlmeCorStruct(1, corObj)} or \code{nlmeCorStruct(1 | grpFac, corObj)}
+##' @templateVar arg c("corObj", "sig")
+##' @templateVar desc c("corStruct object", "initial standard deviation")
 setReTrm.nlmeCorStruct <- function(object, addArgsList,
                                    devfunEnv = NULL) {
 
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
     corObj <- addArgs$corObj
-    Lambdat <- repSparseCorFactor(corObj)
-    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)),
-                               as.repSparse(object$grpFac)))
+    sig <- addArgs$sig
+
+    modMat <- object$modMat
+    if(is.na(object$grpFac)) {
+        grpFac <- as.factor(1:nrow(modMat))
+    } else {
+        grpFac <- object$grpFac
+    }
+    Lambdat <- repSparseCorFactor(corObj, sig = sig)
+    Zt <- resetTransConst(kr(t(as.repSparse(modMat)),
+                               as.repSparse(grpFac)))
     packReTrm(object, Zt, Lambdat)
 }
 
