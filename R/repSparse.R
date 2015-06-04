@@ -1173,7 +1173,6 @@ simplifyRepSparse <- function(object, ...) {
 ##' @param object repeated sparse matrix
 ##' @param mult initial value for the multiplier parameter
 ##' @family modifications
-##' @rdname scalarMultAdd
 ##' @export
 scalarMult <- function(object, mult) {
     object$trans <- local({

@@ -77,40 +77,4 @@ as(m1, "TsparseMatrix")
 as(m2, "dgCMatrix")
 as(m2, "sparseMatrix")
 }
-\seealso{
-Other repeated sparse matrix topics: \code{\link{chol,repSparse-method}},
-  \code{\link{chol,repSparseCompSymm-method}},
-  \code{\link{chol,repSparseOneOffDiag-method}};
-  \code{\link{diag,repSparse-method}},
-  \code{\link{diag<-,repSparse-method}},
-  \code{\link{dim.repSparse}},
-  \code{\link{image.repSparse}},
-  \code{\link{plot.repSparse}},
-  \code{\link{print.repSparse}},
-  \code{\link{repSparse-class}}, \code{\link{t.repSparse}},
-  \code{\link{update.repSparse}}; \code{\link{getInit}},
-  \code{\link{getInit.default}},
-  \code{\link{getInit.function}},
-  \code{\link{getInit.reTrmStruct}},
-  \code{\link{getInit.repSparse}}, \code{\link{parLength}},
-  \code{\link{setInit}}, \code{\link{setInit.default}},
-  \code{\link{setInit.function}},
-  \code{\link{setInit.reTrmStruct}},
-  \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
-  \code{\link{point2ind}};
-  \code{\link{mkCholCompSymmTrans}},
-  \code{\link{mkCholOneOffDiagTrans}},
-  \code{\link{mkConstVarCholTrans}},
-  \code{\link{mkCorMatCholTrans}},
-  \code{\link{mkExpCholTrans}},
-  \code{\link{mkFlexDiagTrans}},
-  \code{\link{mkGenCholInPlaceTrans}},
-  \code{\link{mkIdentityTrans}}, \code{\link{mkListTrans}},
-  \code{\link{mkMultiVarExpTrans}},
-  \code{\link{mkOuterTrans}}, \code{\link{mkTrans}},
-  \code{\link{mkVarExpTrans}},
-  \code{\link{mkVarFixedTrans}},
-  \code{\link{mkVarIdentTrans}},
-  \code{\link{mkVarPowerTrans}}; \code{\link{repSparse}}
-}
 

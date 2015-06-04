@@ -88,43 +88,4 @@ The environment of these transformation functions must contain a
 vector called \code{init}, which contains the initial values (aka,
 the prototype) of \code{matPars}.
 }
-\seealso{
-Other repeated sparse matrix topics: \code{\link{as.data.frame.repSparse}},
-  \code{\link{as.matrix.repSparse}},
-  \code{\link{as.matrix.repSparseChol}},
-  \code{\link{as.repSparse}},
-  \code{\link{as.repSparse.dCHMsimpl}},
-  \code{\link{as.repSparse.dist}},
-  \code{\link{as.repSparse.dsparseMatrix}},
-  \code{\link{as.repSparse.factor}},
-  \code{\link{as.repSparse.matrix}},
-  \code{\link{as.repSparse.repSparse}},
-  \code{\link{repSparse2dgCMatrix}},
-  \code{\link{repSparse2dgTMatrix}},
-  \code{\link{repSparse2dtCMatrix}},
-  \code{\link{repSparse2dtTMatrix}},
-  \code{\link{repSparse2gCsparseMatrix}},
-  \code{\link{repSparse2gTsparseMatrix}},
-  \code{\link{repSparse2sparseMatrix}};
-  \code{\link{chol,repSparse-method}},
-  \code{\link{chol,repSparseCompSymm-method}},
-  \code{\link{chol,repSparseOneOffDiag-method}};
-  \code{\link{diag,repSparse-method}},
-  \code{\link{diag<-,repSparse-method}},
-  \code{\link{dim.repSparse}},
-  \code{\link{image.repSparse}},
-  \code{\link{plot.repSparse}},
-  \code{\link{print.repSparse}},
-  \code{\link{repSparse-class}}, \code{\link{t.repSparse}},
-  \code{\link{update.repSparse}}; \code{\link{getInit}},
-  \code{\link{getInit.default}},
-  \code{\link{getInit.function}},
-  \code{\link{getInit.reTrmStruct}},
-  \code{\link{getInit.repSparse}}, \code{\link{parLength}},
-  \code{\link{setInit}}, \code{\link{setInit.default}},
-  \code{\link{setInit.function}},
-  \code{\link{setInit.reTrmStruct}},
-  \code{\link{setInit.repSparse}}; \code{\link{ind2point}},
-  \code{\link{point2ind}}; \code{\link{repSparse}}
-}
 
