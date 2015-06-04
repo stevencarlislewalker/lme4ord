@@ -197,6 +197,30 @@ simfunList <- list(gaussian = gaussian_simfun,
 		   negative.binomial = negative.binomial_simfun)
 
 
+##' Convert row and column indices to vector indices, for a triangular
+##' matrix
+##'
+##' @param rowInds,colInds vectors of 1-based row and column indices
+##' @param maxInd maximum index (could be larger than
+##' \code{max(rowInds, colInds)})
+##' @param type type of parameterization (currently only
+##' \code{"distClass"} available)
+##' @export
+##' @examples
+##' n <- 5
+##' set.seed(1)
+##' X <- dist(matrix(rnorm((n + 1) * 2), n + 1, 2))
+##' rowInds <- rep(1:n, 1:n)
+##' colInds <- sequence(1:n)
+##' X[triInds(rowInds, colInds, n)]
+##' X
+triInds <- function(rowInds, colInds, maxInd,
+                    type = c("distClass")) {
+    stopifnot(type == "distClass")
+    rowInds + (colInds - 1) * maxInd - choose(colInds, 2)
+}
+
+
 ##' Count unique values
 ##'
 ##' @param x numeric (for \code{countUnique}) or integer (for

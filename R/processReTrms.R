@@ -336,7 +336,7 @@ setReTrm.nlmeCorStruct <- function(object, addArgsList,
     sig <- addArgs$sig
 
     modMat <- object$modMat
-    if(is.na(object$grpFac)) {
+    if(is.na(object$grpFac[[1]])) {
         grpFac <- as.factor(1:nrow(modMat))
     } else {
         grpFac <- object$grpFac

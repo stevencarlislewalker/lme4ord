@@ -52,7 +52,6 @@
 ##' \code{\link{kr}}).  see details.
 ##' @return A member of the \code{\link{repSparse-class}}.
 ##' @rdname repSparse
-##' @family repeated sparse matrix topics
 ##' @export
 ##' @examples
 ##' repSparse(1:4, 4:1, rep(1:2, 2), c(-pi, pi))
@@ -109,7 +108,6 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim,
 ##'
 ##' @name repSparse-class
 ##' @rdname repSparse-class
-##' @family repeated sparse matrix topics
 ##' @exportClass repSparse
 ##' @examples
 ##' (X <- repSparse(rowInds = 1:6,
@@ -185,7 +183,12 @@ update.repSparse <- function(object, newPars, ...) {
                                     "constructing a parameter vector")
         newPars <- do.call(mkNewPars, l...)
     }
-    if(missing(newPars)) newPars <- getInit(object)
+    if(missing(newPars)) {
+        if(length(gi <- getInit(object)) == 0L) {
+            return(object)
+        }
+        newPars <- gi
+    }
     if(length(newPars) != (np <- length(getInit(object))))
         stop("newPars must have the same length as getInit(object), ",
              "which in this case is ", np)
@@ -352,35 +355,6 @@ standardSort <- function(x) {
     sort(sort(x, type = "row"), type = "col")
 }
 
-##' Simplify repeated sparse matrices
-##'
-##' Simplify repeated sparse matrices by (1) forcing non structural
-##' zeros to be structural zeros, (2) eliminate duplicates in the
-##' repeated values, and (3) resetting the transformation function to
-##' be the identity.
-##'
-##' @param object repeated sparse matrix
-##' @param ... not yet used
-##' @export
-simplifyRepSparse <- function(object, ...) {
-                                        # force non structural zeros
-                                        # to be structural
-    valsToKeep <- which(object$vals != 0L)
-    elementsToKeep <- with(object, valInds %in% valsToKeep)
-    object$vals <- object$vals[valsToKeep]
-    object$rowInds <- object$rowInds[elementsToKeep]
-    object$colInds <- object$colInds[elementsToKeep]
-    object$valInds <- flattenIntVec(object$valInds[elementsToKeep])
-                                        # eliminate duplicates in the
-                                        # repeated values
-    newVals <- with(object, vals[which(!duplicated(vals))])
-    newValInds <- with(object, match(vals[valInds], newVals))
-    object$vals <- newVals
-    object$valInds <- newValInds
-                                        # reset to identity trans
-    object$trans <- mkIdentityTrans(object$vals)
-    return(object)
-}
 
 ## ----------------------------------------------------------------------
 ## Coercion -- as...
@@ -391,7 +365,6 @@ simplifyRepSparse <- function(object, ...) {
 ##' @param x an object
 ##' @param ... dots
 ##' @rdname as.repSparse
-##' @family repeated sparse matrix topics
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -478,29 +451,6 @@ as.repSparse.dCHMsimpl <- function(x, ...) {
     valInds <- triInds(rowInds, colInds, matSize)
     vals <- as(x, "sparseMatrix")@x
     repSparse(rowInds, colInds, valInds, vals)
-}
-
-##' Convert row and column indices to vector indices, for a triangular
-##' matrix
-##'
-##' @param rowInds,colInds vectors of 1-based row and column indices
-##' @param maxInd maximum index (could be larger than
-##' \code{max(rowInds, colInds)})
-##' @param type type of parameterization (currently only
-##' \code{"distClass"} available)
-##' @export
-##' @examples
-##' n <- 5
-##' set.seed(1)
-##' X <- dist(matrix(rnorm((n + 1) * 2), n + 1, 2))
-##' rowInds <- rep(1:n, 1:n)
-##' colInds <- sequence(1:n)
-##' X[triInds(rowInds, colInds, n)]
-##' X
-triInds <- function(rowInds, colInds, maxInd,
-                    type = c("distClass")) {
-    stopifnot(type == "distClass")
-    rowInds + (colInds - 1) * maxInd - choose(colInds, 2)
 }
 
 
@@ -654,7 +604,6 @@ mkSparseTrans <- function(object) {
 ##' @param x object
 ##' @param ... not yet used
 ##' @rdname getInit
-##' @family repeated sparse matrix topics
 ##' @export
 ##' @examples
 ##' set.seed(1)
@@ -828,7 +777,6 @@ setIs("repSparseKr", "repSparse")
 ##'
 ##' @rdname mkTrans
 ##' @aliases mkTrans
-##' @family repeated sparse matrix topics
 ##' @export
 mkIdentityTrans <- function(init) {
     local({
@@ -1160,17 +1108,18 @@ mkCholCompSymmTrans <- function(init, matSize) {
 }
 
 
-
-
-
 ## ----------------------------------------------------------------------
-## Reset trans functions
+## Special modifications of repeated sparse matrices
 ## ----------------------------------------------------------------------
 
-##' Reset the transformation function of a repeated sparse matrix
+##' Constant repeated sparse matrix
+##'
+##' Convert a parameterized repeated sparse matrix into a constant
+##' repeated sparse matrix (i.e. \code{getInit(object)} has length
+##' zero).
 ##'
 ##' @param object repeated sparse matrix
-##' @rdname resetTrans
+##' @family modifications
 ##' @export
 resetTransConst <- function(object) {
     object$trans <- local({
@@ -1183,6 +1132,61 @@ resetTransConst <- function(object) {
     return(object)
 }
 
+
+##' Simplify repeated sparse matrices
+##'
+##' Simplify repeated sparse matrices by (1) forcing non structural
+##' zeros to be structural zeros, (2) eliminate duplicates in the
+##' repeated values, and (3) resetting the transformation function to
+##' be the identity.
+##'
+##' @param object repeated sparse matrix
+##' @param ... not yet used
+##' @family modifications
+##' @export
+simplifyRepSparse <- function(object, ...) {
+                                        # force non structural zeros
+                                        # to be structural
+    valsToKeep <- which(object$vals != 0L)
+    elementsToKeep <- with(object, valInds %in% valsToKeep)
+    object$vals <- object$vals[valsToKeep]
+    object$rowInds <- object$rowInds[elementsToKeep]
+    object$colInds <- object$colInds[elementsToKeep]
+    object$valInds <- flattenIntVec(object$valInds[elementsToKeep])
+                                        # eliminate duplicates in the
+                                        # repeated values
+    newVals <- with(object, vals[which(!duplicated(vals))])
+    newValInds <- with(object, match(vals[valInds], newVals))
+    object$vals <- newVals
+    object$valInds <- newValInds
+                                        # reset to identity trans
+    object$trans <- mkIdentityTrans(object$vals)
+    return(object)
+}
+
+##' Add scalar multiple to a repeated sparse matrix
+##'
+##' Adjust the \code{trans} function of \code{object} such that a
+##' scalar multiplier parameter is concatenated at the beginning of
+##' the parameter vector.
+##'
+##' @param object repeated sparse matrix
+##' @param mult initial value for the multiplier parameter
+##' @family modifications
+##' @rdname scalarMultAdd
+##' @export
+scalarMult <- function(object, mult) {
+    object$trans <- local({
+        init <- c(mult, getInit(object))
+        unscaledTrans <- object$trans
+        function(matPars) {
+            matPars[1] * unscaledTrans(matPars[-1])
+        }
+    })
+    ans <- update(object)
+    class(ans) <- c("repSparseScalarMult", class(ans))
+    return(ans)
+}
 
 
 ## ----------------------------------------------------------------------
@@ -1397,7 +1401,6 @@ repSparseRowSubset <- function(x, rowInds) {
 ##'
 ##' @param point vector of column pointers
 ##' @rdname changeSparseFormat
-##' @family repeated sparse matrix topics
 ##' @export
 point2ind <- function(point) {
                                         # ?Matrix::sparseMatrix
@@ -1858,13 +1861,11 @@ repSparseCorFactor <- function(object, sig = 1) {
     invList <- mapplyInvList(vecList, lens)
     upperInds <- lapply(invList, upper.tri)
     
-    Lambdat <- .bind(mapply(repSparseTri,
-                            lapply(invList, diag),
-                            mapply("[", invList, upperInds, SIMPLIFY = FALSE),
-                            MoreArgs = list(low = FALSE),
-                            SIMPLIFY = FALSE), "diag")
-
-    Lambdat$vals <- sig * Lambdat$vals
+    ans <- .bind(mapply(repSparseTri,
+                        lapply(invList, diag),
+                        mapply("[", invList, upperInds, SIMPLIFY = FALSE),
+                        MoreArgs = list(low = FALSE),
+                        SIMPLIFY = FALSE), "diag")
 
     diagIndices <- lapply(lens, seq, from = 1, by = 1)
     rowIndices <- mapply(rep, diagIndices, diagIndices, SIMPLIFY = FALSE)
@@ -1872,13 +1873,24 @@ repSparseCorFactor <- function(object, sig = 1) {
     diagIndices <- mapply("==", rowIndices, colIndices, SIMPLIFY = FALSE)
 
     sigExists <- !is.null(sig)
+    coefExists <- length(coef(object)) != 0
     if(sigExists) {
-        init <- c(sig, coef(object))
+        if(coefExists) {
+            init <- c(sig, coef(object))
+            ans$vals <- sig * ans$vals
+        } else {
+            init <- sig
+            ans$vals <- sig * ans$vals
+        }
     } else {
-        init <- coef(object)
-    }   
+        if(coefExists) {
+            init <- coef(object)
+        } else {
+            return(resetTransConst(ans))
+        }
+    }
     
-    transEnv <- environment(Lambdat$trans)
+    transEnv <- environment(ans$trans)
     list4env <- list(object = object,
                      init = init,
                      lens = lens,
@@ -1887,15 +1899,20 @@ repSparseCorFactor <- function(object, sig = 1) {
                      colIndices = colIndices,
                      vecLens = vecLens,
                      upperInds = upperInds,
-                     sigExists = sigExists)
+                     sigExists = sigExists,
+                     coefExists = coefExists)
     list2env(list4env, transEnv)
 
     
-    Lambdat$trans <- local({
+    ans$trans <- local({
         function(matPars) {
             if(sigExists) {
-                coef(object) <- matPars[-1]
-                sig <- matPars[1]
+                if(coefExists) {
+                    coef(object) <- matPars[-1]
+                    sig <- matPars[1]
+                } else {
+                    sig <- matPars[1]
+                }
             } else {
                 coef(object) <- matPars
                 sig <- 1
@@ -1912,8 +1929,8 @@ repSparseCorFactor <- function(object, sig = 1) {
         }
     }, transEnv)
 
-    class(Lambdat) <- c("repSparseCorFactor", class(Lambdat))
-    return(Lambdat)
+    class(ans) <- c("repSparseCorFactor", class(ans))
+    return(ans)
 }
 
 setOldClass("repSparseCorFactor")
@@ -1963,7 +1980,6 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
 ##' \code{\link{repSparse}}
 ##' @param ... passed to subsequent functions
 ##' @rdname chol
-##' @family repeated sparse matrix topics
 ##' @export
 setMethod("chol", signature(x = "repSparse"), {
     function(x, ...) {
@@ -2017,3 +2033,5 @@ setMethod("chol", signature(x = "repSparseCompSymm"), {
         return(ans)
     }
 })
+
+

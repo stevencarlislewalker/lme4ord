@@ -16,4 +16,8 @@ zeros to be structural zeros, (2) eliminate duplicates in the
 repeated values, and (3) resetting the transformation function to
 be the identity.
 }
+\seealso{
+Other modifications: \code{\link{resetTransConst}};
+  \code{\link{scalarMult}}
+}
 
