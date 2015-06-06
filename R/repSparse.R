@@ -1129,6 +1129,7 @@ resetTransConst <- function(object) {
             return(baseline)
         }
     })
+    ## FIXME: return(simplifyRepSparse(object)) ???
     return(object)
 }
 
@@ -1852,12 +1853,15 @@ setIs("repSparseExpChol", "repSparse")
 ##' (xCorFactor <- repSparseCorFactor(Initialize(corAR1(0.5, form = ~ 1 | Subject), data = Orthodont)))
 repSparseCorFactor <- function(object, sig = 1) {
     ## MATNAME: Cholesky from corStruct object
+    sigExists <- !is.null(sig)
+    coefExists <- length(coef(object)) != 0
+    
     corFac <- corFactor(object)
     lens <- Dim(object)$len
     vecLens <- 2 * choose(lens, 2) + lens
-    vecList <- subRagByLens(corFactor(object), vecLens)
+    vecList <- lme4ord:::subRagByLens(corFactor(object), vecLens)
 
-    invList <- mapplyInvList(vecList, lens)
+    invList <- lme4ord:::mapplyInvList(vecList, lens)
     upperInds <- lapply(invList, upper.tri)
     
     ans <- .bind(mapply(repSparseTri,
@@ -1866,68 +1870,47 @@ repSparseCorFactor <- function(object, sig = 1) {
                         MoreArgs = list(low = FALSE),
                         SIMPLIFY = FALSE), "diag")
 
-    diagIndices <- lapply(lens, seq, from = 1, by = 1)
-    rowIndices <- mapply(rep, diagIndices, diagIndices, SIMPLIFY = FALSE)
-    colIndices <- lapply(diagIndices, sequence)
-    diagIndices <- mapply("==", rowIndices, colIndices, SIMPLIFY = FALSE)
-
-    sigExists <- !is.null(sig)
-    coefExists <- length(coef(object)) != 0
-    if(sigExists) {
-        if(coefExists) {
-            init <- c(sig, coef(object))
-            ans$vals <- sig * ans$vals
-        } else {
-            init <- sig
-            ans$vals <- sig * ans$vals
-        }
-    } else {
-        if(coefExists) {
-            init <- coef(object)
-        } else {
-            return(resetTransConst(ans))
+    if(!coefExists) {
+        ans <- resetTransConst(ans)
+        if(!sigExists) {
+            class(ans) <- c("repSparseCorFactor", class(ans))
+            return(ans)
         }
     }
-    
-    transEnv <- environment(ans$trans)
-    list4env <- list(object = object,
-                     init = init,
-                     lens = lens,
-                     diagIndices = diagIndices,
-                     rowIndices = rowIndices,
-                     colIndices = colIndices,
-                     vecLens = vecLens,
-                     upperInds = upperInds,
-                     sigExists = sigExists,
-                     coefExists = coefExists)
-    list2env(list4env, transEnv)
+    if(coefExists) {
+        diagIndices <- lapply(lens, seq, from = 1, by = 1)
+        rowIndices <- mapply(rep, diagIndices, diagIndices, SIMPLIFY = FALSE)
+        colIndices <- lapply(diagIndices, sequence)
+        diagIndices <- mapply("==", rowIndices, colIndices, SIMPLIFY = FALSE)
+        
+        transEnv <- environment(ans$trans)
+        list4env <- list(object = object,
+                         init = coef(object),
+                         lens = lens,
+                         diagIndices = diagIndices,
+                         rowIndices = rowIndices,
+                         colIndices = colIndices,
+                         vecLens = vecLens,
+                         upperInds = upperInds)
+        list2env(list4env, transEnv)
 
-    
-    ans$trans <- local({
-        function(matPars) {
-            if(sigExists) {
-                if(coefExists) {
-                    coef(object) <- matPars[-1]
-                    sig <- matPars[1]
-                } else {
-                    sig <- matPars[1]
-                }
-            } else {
+        ans$trans <- local({
+            function(matPars) {
                 coef(object) <- matPars
-                sig <- 1
+                vecList <- subRagByLens(corFactor(object), vecLens)
+                invList <- mapplyInvList(vecList, lens)
+                diagVals <- lapply(invList, diag)
+                upperVals <- mapply("[", invList, upperInds, SIMPLIFY = FALSE)
+                for(i in seq_along(diagVals)) {
+                    parList[[i]][ diagIndices[[i]]] <-  diagVals[[i]]
+                    parList[[i]][!diagIndices[[i]]] <- upperVals[[i]]
+                }
+                unlist(parList)
             }
-            vecList <- subRagByLens(corFactor(object), vecLens)
-            invList <- mapplyInvList(vecList, lens)
-            diagVals <- lapply(invList, diag)
-            upperVals <- mapply("[", invList, upperInds, SIMPLIFY = FALSE)
-            for(i in seq_along(diagVals)) {
-                parList[[i]][ diagIndices[[i]]] <- sig *  diagVals[[i]]
-                parList[[i]][!diagIndices[[i]]] <- sig * upperVals[[i]]
-            }
-            unlist(parList)
-        }
-    }, transEnv)
+        }, transEnv)
+    }
 
+    if(sigExists) ans <- scalarMult(ans, sig)
     class(ans) <- c("repSparseCorFactor", class(ans))
     return(ans)
 }
