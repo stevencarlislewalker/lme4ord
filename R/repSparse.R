@@ -1863,7 +1863,12 @@ repSparseCorFactor <- function(object, sig = 1) {
 
     invList <- lme4ord:::mapplyInvList(vecList, lens)
     upperInds <- lapply(invList, upper.tri)
-    
+
+    oneBlock <- length(invList) == 1L
+        ## ans <- repSparseTri(diagVals = diag(invList[[1]]),
+        ##                     offDiagVals = invList[[1]][upperInds[[1]]],
+        ##                     low = FALSE))
+
     ans <- .bind(mapply(repSparseTri,
                         lapply(invList, diag),
                         mapply("[", invList, upperInds, SIMPLIFY = FALSE),
@@ -1892,6 +1897,7 @@ repSparseCorFactor <- function(object, sig = 1) {
                          colIndices = colIndices,
                          vecLens = vecLens,
                          upperInds = upperInds)
+        if(oneBlock) list4env$parList <- list(getInit(ans))
         list2env(list4env, transEnv)
 
         ans$trans <- local({

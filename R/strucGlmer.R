@@ -41,6 +41,7 @@ strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
                                  mapToModMat = mkSparseTrans(parsedForm$Zt),
                                  devfunEnv = parsedForm$devfunEnv,
                                  family = family,
+                                 Lind = parsedForm$Lambdat$valInds,
                                  ...)
     if(devfunOnly) return(dfun)
 

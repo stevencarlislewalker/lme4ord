@@ -54,11 +54,11 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                      initPars, weights, offset,
                      family = family, tol = tolPwrss))
     }
-    if(is.null(Lind)) {
+    if(isLind <- !is.null(Lind)) {
+        theta <- initPars[parInds$covar]
+    } else {
         theta <- Lambdat@x
         Lind <- seq_along(Lambdat@x)
-    } else {
-        theta <- initPars[parInds$covar]
     }
 
     family <- fixFamily(family)
@@ -105,6 +105,7 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                        setLoads = !is.null(parInds$loads),
                        setWeigh = !is.null(parInds$weigh),
                        setFixef = !is.null(parInds$fixef),
+                       isLind = isLind,
                        mapToCovFact = mapToCovFact,
                        mapToModMat  = mapToModMat,
                        mapToWeights = mapToWeights,
@@ -113,7 +114,13 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     devfun <- function(pars) {
         resp$setOffset(baseOffset)
         resp$updateMu(lp0)
-        if(setCovar) pp$setTheta(as.double(mapToCovFact(pars[parInds$covar])))
+        if(setCovar) {
+            if(isLind) {
+                pp$setTheta(as.double(environment(mapToCovFact)$trans(pars[parInds$covar])))
+            } else {
+                pp$setTheta(as.double(mapToCovFact(pars[parInds$covar])))
+            }
+        }
         if(setLoads) pp$setZt(as.double(mapToModMat(pars[parInds$loads])))
         if(setWeigh) resp$setWeights(as.double(mapToWeights(pars[parInds$weigh])))
         spars <- as.numeric(pars[parInds$fixef])

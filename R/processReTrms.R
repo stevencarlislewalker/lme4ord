@@ -65,6 +65,19 @@ setReTrm.default <- function(object, addArgsList,
     packReTrm(object, Zt, Lambdat)
 }
 
+##' lme4 emulator
+##' 
+##' @export
+##' @template setReTrm
+##' @templateVar cls lme4
+##' @templateVar form \code{lme4(linForm | grpFac)}
+##' @templateVar arg "grpFac"
+##' @templateVar desc "grouping factor"
+setReTrm.lme4 <- function(object, addArgsList,
+                          devfunEnv = NULL) {
+    setReTrm.default(object, addArgsist, devfunEnv)
+}
+
 ##' Random effects term for factor analysis
 ##'
 ##' @export

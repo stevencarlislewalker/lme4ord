@@ -77,8 +77,8 @@ Other setReTrm: \code{\link{cooccur}},
   \code{\link{setReTrm.expDecay}}; \code{\link{factAnal}},
   \code{\link{setReTrm.factAnal}}; \code{\link{flexvar}},
   \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
-  \code{\link{setReTrm.identity}};
-  \code{\link{nlmeCorStruct}},
+  \code{\link{setReTrm.identity}}; \code{\link{lme4}},
+  \code{\link{setReTrm.lme4}}; \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
   \code{\link{setReTrm.varExp}}, \code{\link{varExp}};
