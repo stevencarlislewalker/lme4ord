@@ -38,6 +38,7 @@ Other setReTrm: \code{\link{cooccur}},
   \code{\link{setReTrm.lme4}}; \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
+  \code{\link{sem}}, \code{\link{setReTrm.sem}};
   \code{\link{setReTrm.varExp}}, \code{\link{varExp}}
 }
 

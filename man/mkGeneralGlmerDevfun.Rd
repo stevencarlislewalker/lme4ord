@@ -5,7 +5,8 @@
 \usage{
 mkGeneralGlmerDevfun(y, X, Zt, Lambdat, weights = NULL, offset = NULL,
   etastart = NULL, mustart = NULL, devfunEnv, initPars, parInds,
-  mapToCovFact = NULL, mapToModMat = NULL, mapToWeights = NULL, family,
+  mapToCovFact = NULL, mapToModMat = NULL, mapToWeights = NULL,
+  penFixef = NULL, penCovar = NULL, penLoads = NULL, family,
   tolPwrss = 1e-06, maxit = 30, verbose = 0L, pureR = FALSE,
   Lind = NULL)
 }
@@ -43,6 +44,10 @@ returning the values of the non-zero elements of \code{Zt}
 (i.e. the \code{x} slot of \code{Zt})}
 
 \item{mapToWeights}{function taking the \code{weigh} parameters}
+
+\item{penFixef,penCovar,penLoads}{optional functions of each
+parameter type, returning a scalar penalty for the deviance
+function}
 
 \item{family}{\code{\link{family}}}
 

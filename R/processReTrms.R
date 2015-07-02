@@ -43,8 +43,8 @@ setReTrm.default <- function(object, addArgsList,
                                         # transposed model matrix (or
                                         # loadings matrix) -- Zt rows
                                         # associated with this term
-    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)),
-                               as.repSparse(object$grpFac)))
+    Zt <- resetTransConst(kr(as.repSparse(object$grpFac),
+                           t(as.repSparse(object$modMat))))
 
                                         # covariance factor -- block
                                         # of Lambdat associated with
@@ -83,20 +83,25 @@ setReTrm.lme4 <- function(object, addArgsList,
 ##' @export
 ##' @template setReTrm
 ##' @templateVar cls factAnal
-##' @templateVar form \code{factAnal(1 | grpFac, nAxes, seed)}
-##' @templateVar arg c("grpFac", "nAxes", "seed")
-##' @templateVar desc c("grouping factor for loadings", "number of axes", "random seed for initial axis values")
+##' @templateVar form \code{factAnal(0 + obsFac | varFac, nAxes, seed)}
+##' @templateVar arg c("obsFac", "varFac", "nAxes", "seed")
+##' @templateVar desc c("grouping factor for multivariate observations", "grouping factor for variables", "number of axes", "random seed for initial axis values")
 setReTrm.factAnal <- function(object, addArgsList,
                               devfunEnv = NULL) {
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
     nl <- nlevels(grpFac <- object$grpFac)
     nc <- addArgs$nAxes
     set.seed(addArgs$seed)
-    modMat <- subset(rRepSparse(nl,  nc,
-                                nl * nc,
-                                nl * nc), as.numeric(grpFac))
-    
-    Zt <- kr(t(modMat), resetTransConst(as.repSparse(addArgs$obsFac)))
+    loadMat <- rRepSparse(nl, nc, nl * nc, nl * nc)
+    expandedLoadMat <- subset(loadMat, as.numeric(grpFac))
+    modMat <- simplifyRepSparse(as.repSparse(object$modMat))
+    ## indMat <- resetTransConst(as.repSparse(addArgs$obsFac))
+
+    ## check equivalence of subset versus matrix multiplication
+    ## plot(t(t(as.matrix(loadMat)) %*% as.matrix(as.repSparse(grpFac))),
+    ##      as.matrix(modMat))
+
+    Zt <- kr(t(expandedLoadMat), t(modMat)) ## FIXME: obsFac before modMod??
     Lambdat <- resetTransConst(repSparseIdent(nrow(Zt)))
     
     lowerLoads <- rep(-Inf, length(getInit(Zt)))
@@ -106,6 +111,40 @@ setReTrm.factAnal <- function(object, addArgsList,
               lowerLoads = lowerLoads,
               upperLoads = upperLoads)
 }
+
+##' Random effects term for structural equation model
+##'
+##' @export
+##' @template setReTrm
+##' @templateVar cls sem
+##' @templateVar form \code{sem(1 | grpFac, loadMat)}
+##' @templateVar arg c("grpFac", "nAxes", "seed")
+##' @templateVar desc c("grouping factor for loadings", "number of axes", "random seed for initial axis values")
+setReTrm.sem <- function(object, addArgsList,
+                         devfunEnv = NULL) {
+    addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
+    nl <- nlevels(grpFac <- object$grpFac)
+    nc <- addArgs$nAxes
+    set.seed(addArgs$seed)
+    ## loadMat <- rRepSparse(nl, nc, nl * nc, nl * nc)
+    modMat <- subset(loadMat, as.numeric(grpFac))
+    indMat <- resetTransConst(as.repSparse(addArgs$obsFac))
+
+    ## check equivalence of subset versus matrix multiplication
+    ## plot(t(t(as.matrix(loadMat)) %*% as.matrix(as.repSparse(grpFac))),
+    ##      as.matrix(modMat))
+
+    Zt <- kr(t(modMat), indMat) ## FIXME: obsFac before modMod??
+    Lambdat <- resetTransConst(repSparseIdent(nrow(Zt)))
+    
+    lowerLoads <- rep(-Inf, length(getInit(Zt)))
+    upperLoads <- rep( Inf, length(getInit(Zt)))
+
+    packReTrm(object, Zt, Lambdat,
+              lowerLoads = lowerLoads,
+              upperLoads = upperLoads)
+}
+
 
 
 ##' Random effects term for covariance proportional to identity matrix
@@ -119,8 +158,8 @@ setReTrm.factAnal <- function(object, addArgsList,
 setReTrm.identity <- function(object, addArgsList, devfunEnv = NULL) {
 
                                         # Zt
-    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)),
-                             as.repSparse(object$grpFac)))
+    Zt <- resetTransConst(kr(as.repSparse(object$grpFac),
+                           t(as.repSparse(object$modMat))))
 
                                         # Lambdat
     nl <- nlevels(object$grpFac)
@@ -184,7 +223,7 @@ setReTrm.expDecay <- function(object, addArgsList, devfunEnv = NULL) {
     edgeDists <- sparseMat@x[inds]
     Jgrp <- as(object$grpFac, "sparseMatrix")
     Jt <- as.repSparse(Jedge %*% Jgrp)
-    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)), Jt))
+    Zt <- resetTransConst(kr(Jt, t(as.repSparse(object$modMat))))
     transFun <- local({
         init <- c(0.01)
         edgeDists <- edgeDists
@@ -217,7 +256,7 @@ setReTrm.edge <- function(object, addArgsList, devfunEnv = NULL) {
     Jedge <- as(edgeTipIndicator(addArgs$phy), "sparseMatrix")
     Jspp <- as(object$grpFac, "sparseMatrix")
     Jt <- resetTransConst(as.repSparse(Jedge %*% Jspp))
-    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)), Jt))
+    Zt <- resetTransConst(kr(Jt, t(as.repSparse(object$modMat))))
 
                                         # Lambdat
     nl <- nrow(Jedge)
@@ -240,7 +279,7 @@ setReTrm.cooccur <- function(object, addArgsList, devfunEnv = NULL) {
 
                                         # Zt
     Jt <- as.repSparse(as(object$grpFac, "sparseMatrix"))
-    Zt <- resetTransConst(kr(t(as.repSparse(object$modMat)), Jt))
+    Zt <- resetTransConst(kr(Jt, t(as.repSparse(object$modMat))))
 
                                         # Lambdat
     nCovPars <- choose(ncol(object$modMat), 2)
@@ -355,8 +394,8 @@ setReTrm.nlmeCorStruct <- function(object, addArgsList,
         grpFac <- object$grpFac
     }
     Lambdat <- repSparseCorFactor(corObj, sig = sig)
-    Zt <- resetTransConst(kr(t(as.repSparse(modMat)),
-                               as.repSparse(grpFac)))
+    Zt <- resetTransConst(kr(as.repSparse(grpFac),
+                           t(as.repSparse(modMat))))
     packReTrm(object, Zt, Lambdat)
 }
 

@@ -21,6 +21,9 @@
 ##' returning the values of the non-zero elements of \code{Zt}
 ##' (i.e. the \code{x} slot of \code{Zt})
 ##' @param mapToWeights function taking the \code{weigh} parameters
+##' @param penFixef,penCovar,penLoads optional functions of each
+##' parameter type, returning a scalar penalty for the deviance
+##' function
 ##' @param family \code{\link{family}}
 ##' @param tolPwrss tolerance for penalized weighted residual sum of
 ##' squares
@@ -42,6 +45,9 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                                  mapToCovFact = NULL,
                                  mapToModMat = NULL,
                                  mapToWeights = NULL,
+                                 penFixef = NULL,
+                                 penCovar = NULL,
+                                 penLoads = NULL,
                                  family,
                                  tolPwrss = 1e-6,
                                  maxit = 30,
@@ -55,7 +61,7 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                      family = family, tol = tolPwrss))
     }
     if(isLind <- !is.null(Lind)) {
-        theta <- initPars[parInds$covar]
+        theta <- environment(mapToCovFact)$trans(initPars[parInds$covar])
     } else {
         theta <- Lambdat@x
         Lind <- seq_along(Lambdat@x)
@@ -111,6 +117,7 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                        mapToWeights = mapToWeights,
                        parInds = parInds)
 
+
     devfun <- function(pars) {
         resp$setOffset(baseOffset)
         resp$updateMu(lp0)
@@ -127,19 +134,25 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
         offset <- if (length(spars)==0) baseOffset else baseOffset + pp$X %*% spars
         resp$setOffset(offset)
         ## pp, resp, nAGQ, tol, maxit, verbose
-        p <- lme4::glmerLaplaceHandle(pp$ptr(), resp$ptr(), 1, tolPwrss, maxit, verbose)
-        #p <- lme4:::glmerPwrssUpdate(pp, resp, tolPwrss, GQmat,
-        #                             compDev, fac, verbose)
+        #p <- lme4::glmerLaplaceHandle(pp$ptr(), resp$ptr(), 1, tolPwrss, maxit, verbose)
+        p <- lme4:::glmerPwrssUpdate(pp, resp, tolPwrss, GQmat,
+                                     compDev, fac, maxit, verbose)
         resp$updateWts()
         p
     }
-    
+
+    penFun <- mkPenaltyFun(penCovar, penFixef, penLoads, devfunEnv)
+    if(!is.null(penFun)) {
+        devfunList$penFun <- penFun
+        body(devfun)[[12]] <- quote(p + penFun(pars, parInds))
+    }
     environment(devfun) <- list2env(devfunList, envir = devfunEnv)
 
                                         # initialize weights etc ...
     devfunEnv$resp$updateMu(etastart)
     devfunEnv$resp$updateWts()
     devfun(initPars)
+    environment(devfun)$lp0 <- environment(devfun)$pp$linPred(1)
 
     return(devfun)
 }
@@ -213,3 +226,40 @@ fixFamily <- function(family) {
     return(family)
 }
 
+##' Make penalty function
+##'
+##' @param penCovar,penFixef,penLoads Penalty functions for
+##' covariance, fixed effects, and loadings parameters.  Can be
+##' \code{NULL}.
+##' @param env Environment in which to evaluate the resulting
+##' function.
+##' @return A function with two arguments: 
+##' \item{pars}{Parameter vector}
+##' \item{parInds}{Named list of indices pointing to the elements of
+##' \code{pars} corresponding to one of the three parameter types. The
+##' names of this list must include \code{covar}, \code{fixef}, and/or
+##' \code{loads} if the correponding type has a supplied
+##' (i.e. non-null) penalty function.}
+##' @export
+##' @examples
+##' penCovar <- function(x) x^2
+##' penFixef <- NULL
+##' penLoads <- function(gg) abs(gg) + 10
+##' mkPenaltyFun(penCovar, penFixef, penLoads)(1:10, list(covar = 1:5, loads = 6:10))
+mkPenaltyFun <- function(penCovar, penFixef, penLoads, env = environment()) {
+    penFuncs <- list(penCovar, penFixef, penLoads)
+    keepers <- !sapply(penFuncs, is.null)
+    if(!any(keepers)) return(NULL)
+    parTypes <- c("Covar", "Fixef", "Loads")
+    parTypesName <- paste("pen", parTypes, sep = "")
+    indsChar <- lapply(lapply(tolower(parTypes), c, list("$", "parInds")),
+                       "[", c(2, 3, 1))
+    parTypeCall <- lapply(lapply(rapply(indsChar, as.name, how = "list"), as.call),
+                          function(inds) {
+                              as.call(list(as.name("["), as.name("pars"), inds))})
+    penSumCall <- c(list(quote(sum)),
+                    mapply(call, parTypesName[keepers], parTypeCall[keepers]))
+    env <- list2env(setNames(penFuncs, parTypesName), env)
+    eval(call("function", as.pairlist(alist(pars = , parInds = )),
+              as.call(unname(penSumCall))), env)
+}

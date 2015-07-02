@@ -19,9 +19,9 @@ Random effects term for factor analysis
 }
 \section{Mixed model formula usage}{
 
-\code{factAnal(1 | grpFac, nAxes, seed)}
+\code{factAnal(0 + obsFac | varFac, nAxes, seed)}
 \describe{
-\item{grpFac}{grouping factor for loadings} \item{nAxes}{number of axes} \item{seed}{random seed for initial axis values}
+\item{obsFac}{grouping factor for multivariate observations} \item{varFac}{grouping factor for variables} \item{nAxes}{number of axes} \item{seed}{random seed for initial axis values}
 }
 }
 \seealso{
@@ -37,6 +37,7 @@ Other setReTrm: \code{\link{cooccur}},
   \code{\link{setReTrm.lme4}}; \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
+  \code{\link{sem}}, \code{\link{setReTrm.sem}};
   \code{\link{setReTrm.varExp}}, \code{\link{varExp}};
   \code{\link{setReTrm.varIdent}}, \code{\link{varIdent}}
 }
