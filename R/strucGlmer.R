@@ -17,7 +17,8 @@
 ##' @param optVerb verbose
 ##' @param ... further arguments to \code{\link{mkGeneralGlmerDevfun}}
 ##' @export
-strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
+strucGlmer <- function(formula, data, family, addArgs = list(),
+                       optVerb = 0L, optMaxit = 10000,
                        weights = NULL, offset = NULL, etastart = NULL,
                        devfunOnly = FALSE,
                          ...) {
@@ -44,13 +45,14 @@ strucGlmer <- function(formula, data, family, addArgs = list(), optVerb = 0L,
                                  Lind = parsedForm$Lambdat$valInds,
                                  ...)
     if(devfunOnly) return(dfun)
-
+    
     cat("\nOptimizing deviance function...\n")
     opt <- minqa::bobyqa(parsedForm$initPars, dfun,
                          lower = parsedForm$lower,
                          upper = parsedForm$upper,
                          control =
                          list(iprint = optVerb,
+                              maxfun = optMaxit,
                               rhobeg = 0.0002,
                               rhoend = 2e-7))
     

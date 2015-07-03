@@ -1492,6 +1492,30 @@ setOldClass("repSparseDiag")
 setIs("repSparseDiag", "repSparse")
 
 
+
+##' Full repeated sparse matrix
+##' 
+##' @param nrow,ncol numbers of rows and columns
+##' @param vals vector of values
+##' @family repSparseSpecial
+##' @export
+##' @examples
+##' set.seed(1)
+##' (xFull <- repSparseFull(5, 5, rnorm(25)))
+repSparseFull <- function(nrow, ncol, vals) {
+    ## MATNAME: Full
+    ans <- repSparse(rep(1:nrow, ncol),
+                     rep(1:ncol, each = nrow),
+                     1:(nrow * ncol),
+                     vals)
+    class(ans) <- c("repSparseFull", class(ans))
+    return(ans)       
+}
+
+setOldClass("repSparseFull")
+setIs("repSparseFull", "repSparse")
+
+
 ##' Column vector as repeated sparse matrix
 ##'
 ##' @param vals vector of values

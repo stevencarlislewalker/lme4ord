@@ -4,8 +4,8 @@
 \title{Generalized linear mixed model with structured (co)variance terms}
 \usage{
 strucGlmer(formula, data, family, addArgs = list(), optVerb = 0L,
-  weights = NULL, offset = NULL, etastart = NULL, devfunOnly = FALSE,
-  ...)
+  optMaxit = 10000, weights = NULL, offset = NULL, etastart = NULL,
+  devfunOnly = FALSE, ...)
 }
 \arguments{
 \item{formula}{extended mixed model formula}

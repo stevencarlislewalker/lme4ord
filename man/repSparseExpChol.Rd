@@ -25,7 +25,7 @@ Other repSparseSpecial: \code{\link{repSparseBlank}};
   \code{\link{repSparseConstVarChol}};
   \code{\link{repSparseCorFactor}};
   \code{\link{repSparseCorMatChol}};
-  \code{\link{repSparseDiag}};
+  \code{\link{repSparseDiag}}; \code{\link{repSparseFull}};
   \code{\link{repSparseIdent}}; \code{\link{repSparseInd}};
   \code{\link{repSparseOneOffDiag}};
   \code{\link{repSparseOnes}}; \code{\link{repSparseSymm}};

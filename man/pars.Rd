@@ -7,6 +7,8 @@
 \alias{getStrucGlmerPar}
 \alias{loadings.strucGlmer}
 \alias{loads}
+\alias{loads.default}
+\alias{loads.strucGlmer}
 \alias{loadsPerTerm}
 \alias{mkParInds}
 \alias{parPerTerm}
@@ -31,6 +33,10 @@ covar(object, ...)
 \method{covar}{strucGlmer}(object, ...)
 
 loads(object, ...)
+
+\method{loads}{default}(object, ...)
+
+\method{loads}{strucGlmer}(object, ...)
 
 loadings.strucGlmer(object, ...)
 

@@ -377,7 +377,17 @@ covar.strucGlmer <- function(object, ...) {
 
 ##' @rdname pars
 ##' @export
-loads <- function(object, ...) loadings(object)
+loads <- function(object, ...) UseMethod("loads")
+
+##' @rdname pars
+##' @export
+loads.default <- function(object, ...) loadings(object)
+
+##' @rdname pars
+##' @export
+loads.strucGlmer <- function(object, ...) {
+    loadings.strucGlmer(object, ...)
+}
 
 ##' @importFrom stats loadings
 ##' @rdname pars

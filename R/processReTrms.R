@@ -89,19 +89,30 @@ setReTrm.lme4 <- function(object, addArgsList,
 setReTrm.factAnal <- function(object, addArgsList,
                               devfunEnv = NULL) {
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
-    nl <- nlevels(grpFac <- object$grpFac)
-    nc <- addArgs$nAxes
+    nlGrp <- nlevels(grpFac <- object$grpFac)
+    nObs <- nrow(modMat <- object$modMat)/nlGrp
+    nAxes <- addArgs$nAxes
+    
     set.seed(addArgs$seed)
-    loadMat <- rRepSparse(nl, nc, nl * nc, nl * nc)
-    expandedLoadMat <- subset(loadMat, as.numeric(grpFac))
-    modMat <- simplifyRepSparse(as.repSparse(object$modMat))
+    #loadMat <- rRepSparse(nlGrp, nAxes, nlGrp * nAxes, nlGrp * nAxes)
+    loadMat <- repSparseFull(nlGrp, nAxes, rnorm(nlGrp * nAxes))
+    Zt <- simplifyRepSparse(t(kron(loadMat, repSparseIdent(nObs))))
+
+    ## Zt <- update(Zt, scale(getInit(Zt)))
+    #Zt$trans <- local({
+    #    init <- getInit(Zt)[-1]
+    #    function(matPars) c(0, matPars)
+    #})
+
+    #expandedLoadMat <- subset(loadMat, as.numeric(grpFac))
+    #modMat <- simplifyRepSparse(as.repSparse(object$modMat))
     ## indMat <- resetTransConst(as.repSparse(addArgs$obsFac))
 
     ## check equivalence of subset versus matrix multiplication
     ## plot(t(t(as.matrix(loadMat)) %*% as.matrix(as.repSparse(grpFac))),
     ##      as.matrix(modMat))
 
-    Zt <- kr(t(expandedLoadMat), t(modMat)) ## FIXME: obsFac before modMod??
+    #Zt <- simplifyRepSparse(kr(t(expandedLoadMat), t(modMat))) ## FIXME: obsFac before modMod??
     Lambdat <- resetTransConst(repSparseIdent(nrow(Zt)))
     
     lowerLoads <- rep(-Inf, length(getInit(Zt)))
