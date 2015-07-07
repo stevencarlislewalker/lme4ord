@@ -72,28 +72,28 @@
 	<p class="lead">
 	Factor models and model-based ordination
 	</p>
-	<pre><code class="r"> strucGlmer(respVar ~ factAnal(1 | species, nAxes = 2),
-            family = binomial(), data = dataFrame)</code></pre>
+	<pre><code class="r">formula <- respVar ~ factAnal(0 + sites | species, nAxes = 2)
+strucGlmer(formula, family = binomial(), data = dataFrame)</code></pre>
         <p class="lead">
 	Heterogeneous variance
 	</p>
-	<pre><code class="r"> strucGlmer(respVar ~ explVar + (explVar | grpFac) + hetVarExp(explVar),
-            family = poisson(), data = dataFrame)</code></pre>
+	<pre><code class="r">formula <- respVar ~ explVar + (explVar | grpFac) + hetVarExp(explVar)
+strucGlmer(formula, family = poisson(), data = dataFrame)</code></pre>
 	<p class="lead">
 	Phylogenetic covariance
 	</p>
-	<pre><code class="r"> strucGlmer(respVar ~ explVar + (explVar | species) + pagelLambda(1 | species, phylo = tree),
-            family = binomial(), data = dataFrame)</code></pre>
+	<pre><code class="r">formula <- respVar ~ explVar + (explVar | species) + pagelLambda(1 | species, phylo = tree)
+strucGlmer(formula, family = binomial(), data = dataFrame)</code></pre>
 	<p class="lead">
 	Spatial autocorrelation
 	</p>
-	<pre><code class="r"> strucGlmer(respVar ~ explVar + distCorExp(1 | sites, distMat = dists),
-            family = poisson(), data = dataFrame)</code></pre>
+	<pre><code class="r">formula <- respVar ~ explVar + distCorExp(1 | sites, distMat = dists)
+strucGlmer(formula, family = poisson(), data = dataFrame)</code></pre>
 	<p class="lead">
 	Network models
 	</p>
-	<pre><code class="r"> strucGlmer(respVar ~ explVar + edgeIdent(1 | subjects, edgeMat = adjacencyMat),
-            family = poisson(), data = dataFrame)</code></pre>
+	<pre><code class="r">formula <- respVar ~ explVar + edgeIdent(1 | subjects, edgeMat = adjacencyMat)
+strucGlmer(formula, family = poisson(), data = dataFrame)</code></pre>
         <p><a class="btn btn-primary btn-lg" href="https://github.com/stevencarlislewalker/lme4ord/blob/master/R/strucGlmer.R" role="button">source &raquo;</a></p>
       </div>
     </div>
