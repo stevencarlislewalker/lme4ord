@@ -457,9 +457,6 @@ VarCorr.reTrmStruct <- function(x, sigma = 1, rdig = 3) {
 
 ##' @export
 VarCorr.factAnal <- function(x, sigma = 1, rdig = 3) {
-    ##Lambdat <- as.matrix(x$Lambdat, sparse = TRUE)
-    ##Zt <- as.matrix(x$Zt, sparse = TRUE)
-    ##crossprod(Lambdat %*% Zt)
     tcrossprod(loadings.factAnal(x))
 }
 

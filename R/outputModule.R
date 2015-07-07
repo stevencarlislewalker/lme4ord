@@ -454,6 +454,35 @@ loadsPerTerm <- function(object) {
 }
 
 
+##' Get random effects structures from a strucGlmer object
+##'
+##' @param object \code{\link{strucGlmer}} object
+##' @param name Names of the random effects structures (if missing, a
+##' list of the names are returned).  The naming convention for
+##' \code{reTrmStruct} objects is
+##' \code{grpFacName.reTrmStructClass}. Partial matching of names is
+##' allowed.
+##' @return a fitted random effects structure
+##' @export
+getReTrmStruct <- function(object, name) {
+    structs <- object$parsedForm$random
+    if(missing(name)) {
+        message("available reTrmStruct objects:\n",
+                paste(names(structs), collapse = ", "))
+        return(invisible())
+    }
+    nameInd <- which(!is.na(sapply(names(structs), pmatch,
+                                   x = name)))
+    ##nameInd <- pmatch(name, names(structs))
+    if(length(nameInd) == 0L) {
+        stop("could not find matching struct. ",
+             "please try one of the following:\n",
+             paste(names(structs), collapse = ", "))
+    }
+    return(structs[nameInd])
+}
+
+
 ## ##' Get components from a structured glmer model
 ## ##'
 ## ##' @param object a \code{\link{strucGlmer}} object
