@@ -89,34 +89,42 @@ setReTrm.lme4 <- function(object, addArgsList,
 setReTrm.factAnal <- function(object, addArgsList,
                               devfunEnv = NULL) {
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
-    nlGrp <- nlevels(grpFac <- object$grpFac)
-    nObs <- nrow(modMat <- object$modMat)/nlGrp
-    nAxes <- addArgs$nAxes
+
+    nVar <- nlevels(varFac <- object$grpFac) # number of variables
+    nObs <- ncol(obsMat <- object$modMat) # number of _multivariate_
+                                          # observations
+    nAxes <- addArgs$nAxes # number of axes or (latent dimensions)
+    trmDims <- c(nVar = nVar, nObs = nObs, nAxes = nAxes)
     
     set.seed(addArgs$seed)
-    #loadMat <- rRepSparse(nlGrp, nAxes, nlGrp * nAxes, nlGrp * nAxes)
-    loadMat <- repSparseFull(nlGrp, nAxes, rnorm(nlGrp * nAxes))
-    Zt <- simplifyRepSparse(t(kron(loadMat, repSparseIdent(nObs))))
-
-    ## Zt <- update(Zt, scale(getInit(Zt)))
-    #Zt$trans <- local({
-    #    init <- getInit(Zt)[-1]
-    #    function(matPars) c(0, matPars)
-    #})
-
-    #expandedLoadMat <- subset(loadMat, as.numeric(grpFac))
-    #modMat <- simplifyRepSparse(as.repSparse(object$modMat))
-    ## indMat <- resetTransConst(as.repSparse(addArgs$obsFac))
+    loadMat <- repSparseFull(nVar, nAxes, rnorm(nVar * nAxes))
+    initLoadMat <- as.matrix(loadMat)
+    ut <- upper.tri(initLoadMat, diag = FALSE)
+    initLoadMat[ut] <- 0
+    loadMat$trans <- local({
+        trmDims <- trmDims
+        initLoadMat <- initLoadMat
+        lt <- lower.tri(initLoadMat, diag = TRUE)
+        init <- initLoadMat[lt]
+        function(matPars) {
+            initLoadMat[lt] <- matPars
+            as.numeric(initLoadMat)
+        }
+    })
+    loadMat <- update(loadMat)
+    
+    Zt <- kr(t(subset(loadMat, as.numeric(varFac))),
+             t(resetTransConst(simplifyRepSparse(as.repSparse(obsMat)))))
 
     ## check equivalence of subset versus matrix multiplication
-    ## plot(t(t(as.matrix(loadMat)) %*% as.matrix(as.repSparse(grpFac))),
-    ##      as.matrix(modMat))
+    ## plot(t(t(as.matrix(loadMat)) %*% as.matrix(as.repSparse(obsMat))),
+    ##      as.matrix(obsMat))
 
-    #Zt <- simplifyRepSparse(kr(t(expandedLoadMat), t(modMat))) ## FIXME: obsFac before modMod??
     Lambdat <- resetTransConst(repSparseIdent(nrow(Zt)))
     
     lowerLoads <- rep(-Inf, length(getInit(Zt)))
     upperLoads <- rep( Inf, length(getInit(Zt)))
+    #lowerLoads[toBound] <- 0
 
     packReTrm(object, Zt, Lambdat,
               lowerLoads = lowerLoads,
@@ -447,6 +455,14 @@ VarCorr.reTrmStruct <- function(x, sigma = 1, rdig = 3) {
     return(vc)
 }
 
+##' @export
+VarCorr.factAnal <- function(x, sigma = 1, rdig = 3) {
+    ##Lambdat <- as.matrix(x$Lambdat, sparse = TRUE)
+    ##Zt <- as.matrix(x$Zt, sparse = TRUE)
+    ##crossprod(Lambdat %*% Zt)
+    tcrossprod(loadings.factAnal(x))
+}
+
 ##' Update a random effects term structure with new parameters
 ##'
 ##' @param object a \code{reTrmStruct} object
@@ -555,7 +571,29 @@ printReTrm.default <- function(object, forSummary = FALSE, ...) {
     .printVC  (vcd, vc)
 }
 
-## FIXME: write specific printReTrm methods for different classes
+##' @rdname printReTrm
+##' @export
+printReTrm.factAnal <- function(object, forSummary = FALSE, ...) {
+    .title <- paste("Random effects term (class: ", class(object)[1], "):", sep = "")
+    cat (.title, "\n")
+    trans <- environment(object$Zt$trans)$Btrans
+    trmDims <- environment(trans)$trmDims
+    loadMat <- matrix(trans(getInit(object$Zt)),
+                      trmDims["nVar"], trmDims["nAxes"])
+    
+    .trmDims <- format(trmDims)
+    cat ("",
+         .trmDims["nObs"],  " multivariate observations\n",
+         .trmDims["nVar"],  " variables\n",
+         .trmDims["nAxes"], " latent axes\n")
+
+    loadSums <- cbind(mean   = format(apply(loadMat, 2, mean)),
+                      stdDev = format(apply(loadMat, 2, sd)))
+    rownames(loadSums) <- paste("axis", format(1:trmDims["nAxes"]))
+    print(as.table(loadSums))
+}
+
+## FIXME: write more specific printReTrm methods for different classes
 
 
 ##' Simulate additional arguments
@@ -624,3 +662,16 @@ simReTrm <- function(object) {
         as.numeric(rnorm(nrow(Lambdat)) %*% as.matrix(Lambdat) %*% as.matrix(Zt))
     })
 }
+
+
+
+##' @param x \code{factAnal} \code{reTrmStruct} object.
+##' @rdname setReTrm.factAnal
+##' @export
+loadings.factAnal <- function(x, ...) {
+    trans <- environment(x$Zt$trans)$Btrans
+    trmDims <- environment(trans)$trmDims
+    matrix(trans(getInit(x$Zt)),
+           trmDims["nVar"], trmDims["nAxes"])
+}
+

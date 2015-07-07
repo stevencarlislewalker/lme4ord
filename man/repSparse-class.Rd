@@ -70,7 +70,7 @@ matrices such as \code{\link{repSparseTri}}.  This is a more
 explicit approach and can therefore be more convenient than having
 to figure out what order the parameters should appear in
 \code{newPars}.  For example, \code{update(., diagVals = c(1, 1),
-offDiagVals = -0.2)} is more explicit than \code{update(. c(1,
+offDiagVals = -0.2)} is more explicit than \code{update(., c(1,
 -0.2, 1))}.
 }
 \examples{

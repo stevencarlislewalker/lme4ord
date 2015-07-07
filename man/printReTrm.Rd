@@ -2,11 +2,14 @@
 \name{printReTrm}
 \alias{printReTrm}
 \alias{printReTrm.default}
+\alias{printReTrm.factAnal}
 \title{Print random effects term}
 \usage{
 printReTrm(object, forSummary = FALSE, ...)
 
 \method{printReTrm}{default}(object, forSummary = FALSE, ...)
+
+\method{printReTrm}{factAnal}(object, forSummary = FALSE, ...)
 }
 \arguments{
 \item{object}{\code{\link{repSparse}} object}

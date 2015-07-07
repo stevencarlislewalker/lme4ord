@@ -32,6 +32,7 @@ Other repSparseSpecial: \code{\link{repSparseBlank}};
   \code{\link{repSparseDiag}};
   \code{\link{repSparseExpChol}};
   \code{\link{repSparseFull}};
+  \code{\link{repSparseGenFullTri}};
   \code{\link{repSparseIdent}}; \code{\link{repSparseInd}};
   \code{\link{repSparseOnes}}; \code{\link{repSparseSymm}};
   \code{\link{repSparseTri}};

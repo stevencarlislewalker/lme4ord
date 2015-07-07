@@ -103,7 +103,7 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim,
 ##' explicit approach and can therefore be more convenient than having
 ##' to figure out what order the parameters should appear in
 ##' \code{newPars}.  For example, \code{update(., diagVals = c(1, 1),
-##' offDiagVals = -0.2)} is more explicit than \code{update(. c(1,
+##' offDiagVals = -0.2)} is more explicit than \code{update(., c(1,
 ##' -0.2, 1))}.
 ##'
 ##' @name repSparse-class
@@ -1142,26 +1142,38 @@ resetTransConst <- function(object) {
 ##' be the identity.
 ##'
 ##' @param object repeated sparse matrix
+##' @param force force non structural zeros to be structural zeros?
+##' @param eliminate eliminate duplicates in the repeated values?
+##' @param reset reset the transformation function to be the identity?
 ##' @param ... not yet used
 ##' @family modifications
 ##' @export
-simplifyRepSparse <- function(object, ...) {
+simplifyRepSparse <- function(object,
+                              force = TRUE,
+                              eliminate = TRUE,
+                              reset = TRUE, ...) {
                                         # force non structural zeros
                                         # to be structural
-    valsToKeep <- which(object$vals != 0L)
-    elementsToKeep <- with(object, valInds %in% valsToKeep)
-    object$vals <- object$vals[valsToKeep]
-    object$rowInds <- object$rowInds[elementsToKeep]
-    object$colInds <- object$colInds[elementsToKeep]
-    object$valInds <- flattenIntVec(object$valInds[elementsToKeep])
+    if(force) {
+        valsToKeep <- which(object$vals != 0L)
+        elementsToKeep <- with(object, valInds %in% valsToKeep)
+        object$vals <- object$vals[valsToKeep]
+        object$rowInds <- object$rowInds[elementsToKeep]
+        object$colInds <- object$colInds[elementsToKeep]
+        object$valInds <- flattenIntVec(object$valInds[elementsToKeep])
+    }
                                         # eliminate duplicates in the
                                         # repeated values
-    newVals <- with(object, vals[which(!duplicated(vals))])
-    newValInds <- with(object, match(vals[valInds], newVals))
-    object$vals <- newVals
-    object$valInds <- newValInds
+    if(eliminate) {
+        newVals <- with(object, vals[which(!duplicated(vals))])
+        newValInds <- with(object, match(vals[valInds], newVals))
+        object$vals <- newVals
+        object$valInds <- newValInds
+    }
                                         # reset to identity trans
-    object$trans <- mkIdentityTrans(object$vals)
+    if(reset) {
+        object$trans <- mkIdentityTrans(object$vals)
+    }
     return(object)
 }
 
@@ -1593,6 +1605,29 @@ repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
 
 setOldClass("repSparseTri")
 setIs("repSparseTri", "repSparse")
+
+##' General and full triangular repeated sparse matrix
+##'
+##' @param nrow,ncol
+##' @param vals values for the nonzero values
+##' @param diag include diagonal?
+##' @param low lower triangular?
+##' @family repSparseSpecial
+##' @export
+##' @examples
+##' set.seed(1)
+##' (xTri <- repSparseGenFullTri(rnorm(5), rnorm(choose(5, 2))))
+repSparseGenFullTri <- function(nrow, ncol, vals, diag = TRUE, low = TRUE) {
+    ## MATNAME: General full triangular
+    rowIndices <- rev(nrow - sequence(nrow - (ncol:1) + 1)) + 1
+    colIndices <- rep(0:(ncol - 1), nrow:(nrow - ncol + 1)) + 1
+    ans <- repSparse(rowIndices, colIndices, seq_along(vals), vals)
+    class(ans) <- c("repSparseGenFullTri", class(ans))
+    return(ans)
+}
+
+setOldClass("repSparseGenFullTri")
+setIs("repSparseGenFullTri", "repSparse")
 
 
 ##' Repeated sparse matrix of ones

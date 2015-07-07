@@ -1,0 +1,80 @@
+\documentclass{article}
+\usepackage{amsmath}
+
+\newcommand{\trans}{^\top}
+\newcommand{\link}{\ensuremath{\mathrm{link}}}
+\newcommand{\mc}{\mathcal}
+\newcommand{\vc}{\ensuremath{\mathrm{vec}}}
+
+\title{Random effects term for factor analysis: factAnal}
+\author{Steve Walker}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\begin{equation}
+  \label{eq:6}
+  \mathtt{(linForm | varFac)}
+\end{equation}
+
+Let $\bm B$ be an $l$ by $d$ matrix of loadings over $l$ variables
+(often species) characterized by $d$ latent axes. All elements above
+the diagonal of this loadings matrix are constrained to be zero, all
+other elements are free parameters.
+
+Let $\bm
+J_{\text{var}}$ and $\bm J_{\text{obs}}$ be an $l$ The random effects
+model matrix for the factor analysis term is then given by the
+following expression.
+\begin{equation}
+  \label{eq:5}
+  \bm Z\trans = (\bm B\trans\bm J_{\text{var}}\trans) * J_{\text{obs}}\trans
+\end{equation}
+
+\newpage
+
+\begin{equation}
+  \label{eq:2}
+  \link\left(\mc M\right) = 
+  \bm X \bm B
+\end{equation}
+\begin{equation}
+  \label{eq:3}
+  x_{ij} \sim \mc N(0, 1)
+\end{equation}
+where $\mc M$ is an $n$ by $m$ matrix giving the mean of the response
+matrix, $\bm Y$; $\bm X$ is an $n$ by $d$ matrix of latent factors,
+$\bm B$ is a $d$ by $m$ matrix of loadings.  This equation can be
+vectorized as,
+\begin{equation}
+  \label{eq:4}
+  \link\left(\vc(\mc M)\right) = 
+  \left(\bm B\trans \otimes \bm I_n\right)
+  \vc(\bm X)
+\end{equation}
+
+\section{Random effects model matrix and relative covariance factor}
+
+Let $\bm X$ be an $l$ by $d$ matrix of loadings over $l$ objects
+(often species) characterized by $d$ latent dimensions. Let $\bm J$ be
+an $l$ The random
+effects model matrix for the factor analysis term is then given by the
+following expression.
+\begin{equation}
+  \label{eq:1}
+  \bm Z\trans = 
+  \left(
+    \bm X\trans \bm J\trans_{\text{obj}}
+  \right) * 
+  \left(
+    \bm J\trans_{\text{var}}
+  \right)
+\end{equation}
+The relative covariance factor is simply an $m$ by $m$ identity
+matrix, where $m$ is the number of multivariate observations.
+
+The parameters of $\bm Z\trans$ are in the matrix $\bm X$.  
+
+\end{document}

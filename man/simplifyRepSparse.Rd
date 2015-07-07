@@ -3,10 +3,17 @@
 \alias{simplifyRepSparse}
 \title{Simplify repeated sparse matrices}
 \usage{
-simplifyRepSparse(object, ...)
+simplifyRepSparse(object, force = TRUE, eliminate = TRUE, reset = TRUE,
+  ...)
 }
 \arguments{
 \item{object}{repeated sparse matrix}
+
+\item{force}{force non structural zeros to be structural zeros?}
+
+\item{eliminate}{eliminate duplicates in the repeated values?}
+
+\item{reset}{reset the transformation function to be the identity?}
 
 \item{...}{not yet used}
 }
