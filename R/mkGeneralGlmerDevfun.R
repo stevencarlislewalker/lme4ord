@@ -263,3 +263,19 @@ mkPenaltyFun <- function(penCovar, penFixef, penLoads, env = environment()) {
     eval(call("function", as.pairlist(alist(pars = , parInds = )),
               as.call(unname(penSumCall))), env)
 }
+
+
+##' @param p exponent of the L-p norm
+##' @param lambda multiplier for the penalty term
+##' @rdname mkPenaltyFun
+##' @export
+mkPenLpNorm <- function(p = 2, lambda = 1) {
+    if(p < 1) stop("p must be greater than or equal to 1")
+    if(!(lambda > 0)) stop("lambda must be greater than 0")
+    local({
+        p <- p
+        lambda <- lambda
+        function(pars) lambda * sum(abs(pars^p))
+    })
+}
+

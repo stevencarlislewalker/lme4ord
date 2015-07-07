@@ -9,13 +9,6 @@ dataList <- dims_to_vars(data.list(respVar = as.matrix(fish),
                                    dimids = c("lakes", "species")))
 dataFrame <- as.data.frame(dataList)
 
-all.equal(simplifyRepSparse(as.repSparse(model.matrix(~ 0 + dataFrame$lakes))),
-          t(as.repSparse(dataFrame$lakes)))
-
-targLoadMat <- svd(scale(dataList$respVar))$v[,1:2]
-
-##plot(gm1$parsedForm$devfunEnv$resp$mu, gm2$parsedForm$devfunEnv$resp$mu)
-
 gm1 <- strucGlmer(respVar ~ 
                   (1 | lakes) +
                   1 + (1 | species) +
@@ -23,7 +16,7 @@ gm1 <- strucGlmer(respVar ~
                   family = binomial(), data = dataFrame,
                   devfunOnly = FALSE,
                   optMaxit = 20000, optVerb = 0L,
-                  penLoads = function(xx) sum(abs(xx^2)))
+                  penLoads = mkPenLpNorm())
 
 gm2 <- strucGlmer(respVar ~ 
                   (1 | lakes) +
@@ -32,7 +25,7 @@ gm2 <- strucGlmer(respVar ~
                   family = binomial(), data = dataFrame,
                   devfunOnly = FALSE,
                   optMaxit = 20000, optVerb = 0L,
-                  penLoads = function(xx) sum(abs(xx^2)))
+                  penLoads = mkPenLpNorm())
 
 image(as(VarCorr(gm1)$species.factAnal +
          diag(VarCorr(gm1)$species.unstruc[,], 30, 30),
