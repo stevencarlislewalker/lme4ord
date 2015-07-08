@@ -95,9 +95,18 @@ setReTrm.factAnal <- function(object, addArgsList,
                                           # observations
     nAxes <- addArgs$nAxes # number of axes or (latent dimensions)
     trmDims <- c(nVar = nVar, nObs = nObs, nAxes = nAxes)
+
+    if(is.null(addArgs$seed)) {
+        stop("sorry but you need to set the seed for factAnal initialization")
+        obsInds <- apply(obsMat == 1, 1, which)
+        obsFac <- as.factor(colnames(obsMat)[obsInds])
+        xtabs(devfunEnv$respVar ~ obsFac + varFac)
+        ## loadMat <- repSparseFull(nVar, nAxes)
+    } else {
+        set.seed(addArgs$seed)
+        loadMat <- repSparseFull(nVar, nAxes, rnorm(nVar * nAxes))
+    }
     
-    set.seed(addArgs$seed)
-    loadMat <- repSparseFull(nVar, nAxes, rnorm(nVar * nAxes))
     initLoadMat <- as.matrix(loadMat)
     ut <- upper.tri(initLoadMat, diag = FALSE)
     initLoadMat[ut] <- 0
@@ -209,7 +218,7 @@ setReTrm.flexvar <- function(object, addArgsList, devfunEnv = NULL) {
                                         # Lambdat
     inds <- seq_len(n); baselineVars <- rep(1, n)
     if(is.null(init <- addArgs$init)) init <- rep(0, addArgs$nBasis)
-    Lambdat       <- repSparseDiag  (baselineVars, inds)
+    Lambdat       <- repSparseDiag  (      baselineVars, inds     )
     Lambdat$trans <- mkFlexDiagTrans(init, baselineVars, devfunEnv)
 
                                         # pack
@@ -492,6 +501,19 @@ update.flexvar <- function(object, newCovar, newLoads, ...) {
     transEnv <- environment(object$Lambdat$trans)
     assignWith(expr  = indsForClass("flexvar", reTrmClasses, nRePerTrm),
                name  = "indsObsLevel",
+               data  = transEnv$devfunEnv,
+               envir = transEnv)
+    return(object)
+}
+
+##' @rdname update.reTrmStruct
+##' @method update factAnal
+##' @export
+update.factAnal <- function(object, newCovar, newLoads, ...) {
+    object <- update.reTrmStruct(object, newCovar, newLoads)
+    transEnv <- environment(object$Lambdat$trans)
+    assignWith(expr  = resp$y,
+               name  = "respVar",
                data  = transEnv$devfunEnv,
                envir = transEnv)
     return(object)

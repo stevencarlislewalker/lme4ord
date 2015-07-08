@@ -9,14 +9,16 @@ dataList <- dims_to_vars(data.list(respVar = as.matrix(fish),
                                    dimids = c("lakes", "species")))
 dataFrame <- as.data.frame(dataList)
 
-gm1 <- strucGlmer(respVar ~ 
+gm1 <- strucGlmer(respVar ~ 1 + 
                   (1 | lakes) +
-                  1 + (1 | species) +
+                  (1 | species) +
                   factAnal(0 + lakes | species, nAxes = 2, seed = 1),
                   family = binomial(), data = dataFrame,
                   devfunOnly = FALSE,
                   optMaxit = 20000, optVerb = 0L,
                   penLoads = mkPenLpNorm())
+
+debug(lme4ord:::setReTrm.factAnal)
 
 gm2 <- strucGlmer(respVar ~ 
                   (1 | lakes) +

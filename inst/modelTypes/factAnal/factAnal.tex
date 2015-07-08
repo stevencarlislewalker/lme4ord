@@ -49,11 +49,13 @@
 
 \usepackage{alltt}
 \usepackage{amsmath}
+\usepackage{bm}
 
 \newcommand{\trans}{^\top}
 \newcommand{\link}{\ensuremath{\mathrm{link}}}
 \newcommand{\mc}{\mathcal}
 \newcommand{\vc}{\ensuremath{\mathrm{vec}}}
+\newcommand{\code}[1]{\texttt{#1}}
 
 \title{Random effects term for factor analysis: factAnal}
 \author{Steve Walker}
@@ -63,10 +65,18 @@
 
 \maketitle
 
+To fit a (possibly unbalanced) factor analysis random effects term
+using \code{lme4ord}, one uses the following \code{R} \code{formula}.
 \begin{equation}
   \label{eq:6}
-  \mathtt{(linForm | varFac)}
+  \mathtt{respVar \sim factAnal(0 + obsFac\, | \,varFac)}
 \end{equation}
+where \code{respVar} is the response vector and \code{obsFac} and
+\code{varFac} are \code{R} factors indicating the multivariate
+observation and variable associated with each row in the data set.
+For example, in ecology \code{codeFac} would normally indicate the
+site and \code{varFac} the species associated with each abundance
+observation in \code{respVar}.
 
 Let $\bm B$ be an $l$ by $d$ matrix of loadings over $l$ variables
 (often species) characterized by $d$ latent axes. All elements above
