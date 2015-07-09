@@ -6,8 +6,8 @@ nms <- c("structured\nGLMM",
          "deviance\nfunction\noptimization",
          "output and\ninference",
          "random-effects\nstructures", "repeated\nsparse\nmatrices")
-A <- sparseMatrix(i = c(2, 3, 4, 5, 6, 6, 7, 7),
-                  j = c(1, 1, 1, 1, 2, 5, 5, 6),
+A <- sparseMatrix(i = c(2, 3, 4, 5, 6, 7),
+                  j = c(1, 1, 1, 1, 2, 6),
                   x = 1,
                   dims = c(7, 7))
 A <- as.matrix(A)
