@@ -1,3 +1,51 @@
+##' Construct random effects structures
+##'
+##' Construct random effects structures from a formula and data.
+##'
+##' @param splitFormula results of \code{\link{splitForm}} (or a
+##' \code{formula} itself)
+##' @param data data
+##' @seealso \code{\link{setReTrm}} for initializing the structures as
+##' is required for model fitting, and \code{\link{splitForm}} for
+##' breaking the formula up into terms.
+##' @return A list of random effects structures, each associated with
+##' the terms in a generalized mixed model formula of roughly the
+##' following form: \code{(linForm1 | grpFac1) + (linForm2 | grpFac2)
+##' + ... + specialStruc(linForm3 | grpFac3) + ...}.  Each such
+##' structure may be unstructured with class `unstruc` (indicating
+##' standard `lme4` structures, e.g. the first two terms above) or
+##' class of same name as the function in the formula
+##' (e.g. \code{specialStruc}).  Each structure also contains (at a
+##' minimum) the following elements (although \code{\link{setReTrm}}
+##' adds further structure):
+##' 
+##' \item{modMat}{A raw model matrix for which the structure is
+##' defined.  This matrix is obtained by evaluating
+##' \code{model.matrix(linForm, data)}, where \code{linForm | grpFac}
+##' is the random effects formula defining the term.}
+##'
+##' \item{grpFac}{If present, the grouping factor associated with the
+##' structure, \code{NA} otherwise.}
+##'
+##' \item{grpName}{If present, the name of the grouping factor,
+##' \code{NA} otherwise.}  \item{addArgs}{If present, any additional
+##' arguments passed to the special function in the formula.}
+##' @export
+mkReTrmStructs <- function(splitFormula, data) {
+    if(inherits(splitFormula, "formula")) splitFormula <- splitForm(splitFormula)
+    reTrmsList <- lapply(splitFormula$reTrmFormulas,
+                         getModMatAndGrpFac, fr = data)
+    names(reTrmsList) <- paste(sapply(reTrmsList, "[[", "grpName"),
+                               splitFormula$reTrmClasses, sep = ".")
+    nUnStr <- sum(splitFormula$reTrmClasses == "unstruc")
+    for(i in seq_along(reTrmsList)) {
+        clsi <- splitFormula$reTrmClasses[[i]]
+        if(clsi != "unstruc") reTrmsList[[i]]$addArgs <- splitFormula$reTrmAddArgs[[i - nUnStr]]
+        class(reTrmsList[[i]]) <- c(clsi, "reTrmStruct")
+    }
+    return(reTrmsList)
+}
+
 ##' Set model matrix slice and relative covariance factor block for a
 ##' random effects term
 ##' 
