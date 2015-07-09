@@ -1,3 +1,11 @@
+## ----------------------------------------------------------------------
+## Formula parsing
+##
+## used by:  strucGlmer.R
+## uses:  
+## ----------------------------------------------------------------------
+
+
 ##' Parse a mixed model formula
 ##'
 ##' @param formula mixed model formula

@@ -1,3 +1,9 @@
+## ----------------------------------------------------------------------
+## Structured GLMM
+##
+## uses:  strucParseFormula.R, mkGeneralGlmerDevfun.R, outputModule.R
+## ----------------------------------------------------------------------
+
 ##' Generalized linear mixed model with structured (co)variance terms
 ##'
 ##' Fits a generalized linear mixed model with structured (co)variance

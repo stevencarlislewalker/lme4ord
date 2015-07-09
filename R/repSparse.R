@@ -1,3 +1,10 @@
+## ----------------------------------------------------------------------
+## Repeated sparse matrices
+##
+## used by: strucParseFormula.R, reTrmStructs.R, outputModule.R
+## ----------------------------------------------------------------------
+
+
 ## TOC:  grep -A 1 "## \-\-\-" * | grep "\-##" | grep repSparse
 
 ##' Repeated sparse matrices

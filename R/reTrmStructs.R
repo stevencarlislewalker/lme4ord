@@ -1,3 +1,11 @@
+## ----------------------------------------------------------------------
+## Random-effects structures
+##
+## used by:  strucParseFormula.R, outputModule.R
+## uses:  repSparse.R
+## ----------------------------------------------------------------------
+
+
 ##' Construct random effects structures
 ##'
 ##' Construct random effects structures from a formula and data.

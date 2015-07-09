@@ -1,3 +1,11 @@
+## ----------------------------------------------------------------------
+## Output module
+##
+## used by:  strucGlmer.R
+## uses:  reTrmStructs.R, repSparse.R
+## ----------------------------------------------------------------------
+
+
 ##' Structured GLMM class
 ##'
 ##' An \code{S3} class for generalized linear mixed models with

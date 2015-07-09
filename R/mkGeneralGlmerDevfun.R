@@ -1,3 +1,10 @@
+## ----------------------------------------------------------------------
+## Deviance function construction
+##
+## used by:  strucGlmer.R
+## ----------------------------------------------------------------------
+
+
 ##' Make a general (Laplace) glmer deviance function
 ##'
 ##' @param y response vector
