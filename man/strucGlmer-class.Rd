@@ -40,13 +40,13 @@ mkStrucGlmer(opt, parsedForm, dfun, mc)
 
 \method{df.residual}{strucGlmer}(object, ...)
 
-nobs(object, ...)
-
 \method{deviance}{strucGlmer}(object, ...)
 
 \method{logLik}{strucGlmer}(object, ...)
 
 \method{formula}{strucGlmer}(x, ...)
+
+nobs(object, ...)
 }
 \arguments{
 \item{opt,parsedForm,dfun,mc}{See desciption of \code{strucGlmer}
