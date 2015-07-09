@@ -1,10 +1,10 @@
 library(diagram)
 library(Matrix)
-nms <- c("strucGlmer",
+nms <- c("structured\nGLMM",
          "formula\nparsing",
          "deviance\nfunction\nconstruction",
-         "optimization",
-         "output",
+         "deviance\nfunction\noptimization",
+         "output and\ninference",
          "random-effects\nstructures", "repeated\nsparse\nmatrices")
 A <- sparseMatrix(i = c(2, 3, 4, 5, 6, 6, 7, 7, 7),
                   j = c(1, 1, 1, 1, 2, 5, 2, 5, 6),
