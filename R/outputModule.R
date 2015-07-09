@@ -361,6 +361,74 @@ simStrucParsedForm <- function(parsedForm, family = binomial,
     })
 }
 
+## ----------------------------------------------------------------------
+## print random effects terms
+## ----------------------------------------------------------------------
+
+##' Print random effects term
+##' 
+##' @param object \code{\link{repSparse}} object
+##' @param forSummary print for \code{\link{summary}} instead of
+##' \code{\link{print}}?
+##' @param ... additional arguments
+##' @export
+printReTrm <- function(object, forSummary = FALSE, ...) {
+    UseMethod("printReTrm")
+}
+
+.printPars <- function(description = "parameters: ", value) {
+    if((length(value) > 0L) && (!is.na(value)) && (!is.null(value))) {
+        cat(description, value, "\n")
+    }
+}
+
+.printVC <- function(description = "variance-correlation: ", value) {
+    if((nrow(value[[1]]) < 6) && (!is.null(rownames(value[[1]])))) {
+        cat(description, "\n")
+        print(lme4:::formatVC(value), quote = FALSE, digits = 3)
+    }
+}
+
+##' @rdname printReTrm
+##' @export
+printReTrm.default <- function(object, forSummary = FALSE, ...) {
+    .title <- paste("Random effects term (class: ", class(object)[1], "):", sep = "")
+    cat (.title, "\n")
+    cpd <- if(length(cp <- getInit(object$Lambdat)) > 1L) {
+        "  covariance parameters: " } else "  covariance parameter:  "
+    lpd <- if(length(lp <- getInit(object$Zt)) > 1L) {
+        "  loadings parameters:   " } else "  loadings parameter:    "
+    vc <- structure(list(VarCorr(object)), names = object$grpName, useSc = FALSE)
+    vcd <- "  variance-correlation:  "
+    .printPars(cpd, cp)
+    .printPars(lpd, lp)
+    .printVC  (vcd, vc)
+}
+
+##' @rdname printReTrm
+##' @export
+printReTrm.factAnal <- function(object, forSummary = FALSE, ...) {
+    .title <- paste("Random effects term (class: ", class(object)[1], "):", sep = "")
+    cat (.title, "\n")
+    trans <- environment(object$Zt$trans)$Btrans
+    trmDims <- environment(trans)$trmDims
+    loadMat <- matrix(trans(getInit(object$Zt)),
+                      trmDims["nVar"], trmDims["nAxes"])
+    
+    .trmDims <- format(trmDims)
+    cat ("",
+         .trmDims["nObs"],  " multivariate observations\n",
+         .trmDims["nVar"],  " variables\n",
+         .trmDims["nAxes"], " latent axes\n")
+
+    loadSums <- cbind(mean   = format(apply(loadMat, 2, mean)),
+                      stdDev = format(apply(loadMat, 2, sd)))
+    rownames(loadSums) <- paste("axis", format(1:trmDims["nAxes"]))
+    print(as.table(loadSums))
+}
+
+## FIXME: write more specific printReTrm methods for different classes
+
 
 ## ----------------------------------------------------------------------
 ## retrieval

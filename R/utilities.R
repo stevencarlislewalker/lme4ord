@@ -151,6 +151,82 @@ mkParInds <- function(parList) {
 }
 
 
+## ----------------------------------------------------------------------
+## Initial values -- get and set init parameter vectors for repeated
+## sparse matrices
+## ----------------------------------------------------------------------
+
+##' Get and set initial parameter values for repeated sparse matrices
+##'
+##' @param x object
+##' @param ... not yet used
+##' @rdname getInit
+##' @export
+##' @examples
+##' set.seed(1)
+##' m1 <- as.repSparse(matrix(rnorm(6), 2, 3))
+##' m2 <- repSparseCompSymm(1.2, -0.2, 5)
+##' getInit(m1)
+##' getInit(m2)
+getInit <- function(x, ...) UseMethod("getInit")
+
+##' @rdname getInit
+##' @export
+getInit.default <- function(x, ...) x$init
+
+##' @rdname getInit
+##' @export
+getInit.repSparse <- function(x, ...) environment(x$trans)$init
+
+##' @rdname getInit
+##' @export
+getInit.function <- function(x, ...) environment(x)$init
+
+##' @rdname getInit
+##' @export
+getInit.reTrmStruct <- function(x, ...) {
+    list(initCovar = getInit(x$Lambdat),
+         initLoads = getInit(x$Zt))
+}
+
+##' @rdname getInit
+##' @export
+setInit <- function(x, ...) UseMethod("setInit")
+
+##' @param init initial value for the parameter vector
+##' @rdname getInit
+##' @export
+setInit.default <- function(x, init, ...) assign("init", init, envir = as.environment(x))
+
+##' @rdname getInit
+##' @export
+setInit.repSparse <- function(x, init, ...) assign("init", init, envir = environment(x$trans))
+
+##' @rdname getInit
+##' @export
+setInit.function <- function(x, init, ...) assign("init", init, envir = environment(x))
+
+##' @param initCovar initial value for the covariance parameter vector
+##' @param initLoads initial value for the loadings parameter vector
+##' @rdname getInit
+##' @export
+setInit.reTrmStruct <- function(x, initCovar, initLoads, ...) {
+    setInit(x$Lambdat, initCovar)
+    setInit(x$Zt,      initLoads)
+}
+
+##' @param ll length of parameter vector
+##' @rdname getInit
+##' @export
+parLength <- function(ll) {
+    initll <- getInit(ll)
+    if(is.null(initll) || all(is.na(initll))) return(0L)
+    return(length(initll))
+}
+
+
+
+
 
 ## ----------------------------------------------------------------------
 ## Phylogenetic 

@@ -2,7 +2,7 @@
 ## Formula parsing
 ##
 ## used by:  strucGlmer.R
-## uses:  
+## uses:  reTrmSruct.R, repSparse.R
 ## ----------------------------------------------------------------------
 
 
@@ -71,15 +71,13 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
     ZtList      <- lapply(random, "[[",      "Zt")
     LambdatList <- lapply(random, "[[", "Lambdat")
 
-                                        # bind the lists together
-    ZtBind      <- .bind(     ZtList,  "row")
-    LambdatBind <- .bind(LambdatList, "diag")
-
-                                        # ensure that the order is
-                                        # appropriate for coercing to
-                                        # dgCMatrix objects
-    Zt      <- standardSort(     ZtBind)
-    Lambdat <- standardSort(LambdatBind)
+                                        # bind the lists together,
+                                        # while ensuring that the
+                                        # order is appropriate for
+                                        # coercing to dgCMatrix
+                                        # objects
+    Zt      <- sortedBind(     ZtList, type = "row" )
+    Lambdat <- sortedBind(LambdatList, type = "diag")
 
                                         # get initial values for model
                                         # parameters
