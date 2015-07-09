@@ -574,7 +574,8 @@ getRepPattern <- function(object) {
 }
 
 
-##' Make transformation function for column-compressed sparse matrix
+##' Make transformation function to be used with a column-compressed
+##' sparse matrix
 ##'
 ##' @param object repeated sparse matrix object
 ##' @export

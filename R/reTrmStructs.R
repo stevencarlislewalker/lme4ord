@@ -46,6 +46,46 @@ mkReTrmStructs <- function(splitFormula, data) {
     return(reTrmsList)
 }
 
+##' Get model matrix and grouping factor
+##'
+##' This is kind of like \code{\link{model.matrix}} but for random
+##' effects terms.
+##' 
+##' @param bar random effect language object (e.g. \code{x | g})
+##' @param fr model frame
+##' @return list with model matrix and grouping factor
+##' @export
+getModMatAndGrpFac <- function(bar, fr) {
+    ## based on mkBlist
+
+    noGrpFac <- is.null(lme4::findbars(bar))
+
+    if(!noGrpFac) {
+        linFormLang <- bar[[2]] # language object specifying linear model
+            grpLang <- bar[[3]] # language object specifying grouping factor
+
+        fr <- lme4::factorize(bar, fr)
+        nm <- deparse(grpLang)
+        ## try to evaluate grouping factor within model frame ...
+        if (is.null(ff <- tryCatch(eval(substitute(lme4:::makeFac(fac),
+                                                   list(fac = grpLang)), fr),
+                                   error = function(e) NULL)))
+            stop("couldn't evaluate grouping factor ",
+                 nm, " within model frame:",
+                 " try adding grouping factor to data ",
+                 "frame explicitly if possible", call. = FALSE)
+        if (all(is.na(ff)))
+            stop("Invalid grouping factor specification, ",
+                 nm, call. = FALSE)
+    } else { # noGrpFac
+        linFormLang <- bar
+        ff <- nm <- NA
+    }
+    mm <- model.matrix(eval(substitute( ~ foo, list(foo = linFormLang))), fr)
+    return(list(modMat = mm, grpFac = ff, grpName = nm))
+}
+
+
 ##' Set model matrix slice and relative covariance factor block for a
 ##' random effects term
 ##' 

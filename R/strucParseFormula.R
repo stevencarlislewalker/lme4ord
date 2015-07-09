@@ -16,6 +16,12 @@
 ##' class \code{dgCMatrix}.}
 ##' \item{Lambdat}{The sparse transposed relative covariance factor,
 ##' of class \code{dgCMatrix}}
+##' \item{mapToModMat}{function taking the \code{loads} parameters and
+##' returning the values of the non-zero elements of \code{Zt}
+##' (i.e. the \code{x} slot of \code{Zt})}
+##' \item{mapToCovFact}{function taking the \code{covar} parameters
+##' and returning the values of the non-zero elements of
+##' \code{Lambdat} (i.e. the \code{x} slot of \code{Lambdat})}
 ##' \item{initPars}{The initial parameter vector}
 ##' \item{parInds}{List of indices to the different types of
 ##' parameters.}
@@ -110,35 +116,13 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
 
     return(list(response = response, fixed = fixed, random = random,
                 Zt = Zt, Lambdat = Lambdat,
+                mapToModMat = mkSparseTrans(Zt),
+                mapToCovFact = mkSparseTrans(Lambdat),
                 initPars = initPars, parInds = parInds,
                 lower = lower, upper = upper,
                 devfunEnv = devfunEnv,
                 formula = formula))
 }
-
-
-
-##' @param nsim number of simulations (FIXME: inconsistent between
-##' binomial and poisson)
-##' @param parsedForm result of \code{strucParseFormula}
-##' @param family family object
-##' @param weights optional weights
-##' @rdname strucParseFormula
-##' @export
-simStrucParsedForm <- function(parsedForm, family = binomial,
-                               weights, nsim) {
-                               ## ranefTrms, fixef = TRUE) {
-    if(missing(weights)) weights <- rep(1, length(parsedForm$response))
-    with(parsedForm, {
-        reMM <- t(as(Zt, "dgCMatrix")) %*% t(as(Lambdat, "dgCMatrix"))
-        feMM <- fixed
-        fe <- as.numeric(feMM %*% initPars[parInds$fixef])
-        re <- as.numeric(reMM %*% rnorm(ncol(reMM)))
-        simFun <- simfunList[[family()$family]]
-        return(simFun(weights, nsim, family()$linkinv(fe + re)))
-    })
-}
-
 
 ##' Split a formula
 ##'

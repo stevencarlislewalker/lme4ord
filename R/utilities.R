@@ -1,3 +1,159 @@
+## ----------------------------------------------------------------------
+## Definition of an lme4ord utility:
+##
+## "A function that does _not_ make use of functions from any other
+## file in the package."
+##
+## The purpose of this definition is to preserve modularity.
+## ----------------------------------------------------------------------
+
+## ----------------------------------------------------------------------
+## strucGlmer object extraction function
+## ----------------------------------------------------------------------
+
+##' @rdname strucGlmer-class
+##' @export
+nobs <- function(object, ...) nrow(object$parsedForm$fixed)
+
+##' @rdname pars
+##' @export
+pars <- function(object, ...) UseMethod("pars")
+
+##' Parameter retrieval for structured generalized linear mixed models
+##'
+##' @param object a \code{strucGlmer} fitted model object
+##' @rdname pars
+##' @export
+pars.strucGlmer <- function(object, ...) object$opt$par
+
+##' @rdname pars
+##' @export
+pars.glmerMod <- function(object, ...) unlist(getME(object, c("theta", "beta")))
+
+.covar <- function(pars, ind) pars[ind$covar]
+.fixef <- function(pars, ind) pars[ind$fixef]
+.loads <- function(pars, ind) pars[ind$loads]
+
+##' @param type character string giving the type of parameter
+##' (e.g. \code{"fixef", "covar"})
+##' @rdname pars
+##' @export
+getStrucGlmerPar <- function(object, type, ...) {
+    parInds <- environment(object$dfun)$parInds
+    optPar <- object$opt$par
+    optPar[unlist(parInds[type])]
+}
+
+##' @rdname pars
+##' @export
+covar <- function(object, ...) UseMethod("covar")
+
+##' @param ... not used
+##' @rdname pars
+##' @export
+covar.strucGlmer <- function(object, ...) {
+    unname(getStrucGlmerPar(object, "covar"))
+}
+
+##' @rdname pars
+##' @export
+loads <- function(object, ...) UseMethod("loads")
+
+##' @rdname pars
+##' @export
+loads.default <- function(object, ...) loadings(object)
+
+##' @rdname pars
+##' @export
+loads.strucGlmer <- function(object, ...) {
+    loadings.strucGlmer(object, ...)
+}
+
+##' @importFrom stats loadings
+##' @rdname pars
+##' @export
+loadings.strucGlmer <- function(object, ...) {
+    getStrucGlmerPar(object, "loads")
+}
+
+##' @importFrom nlme fixef 
+##' @rdname pars
+##' @export
+fixef.strucGlmer <- function(object, ...) {
+    setNames(getStrucGlmerPar(object, "fixef"),
+             colnames(object$parsedForm$fixed))
+}
+
+##' @importFrom nlme ranef
+##' @rdname pars
+##' @export
+ranef.strucGlmer <- function(object, type = c("u", "Lu", "ZLu"), ...) {
+    type <- type[1]
+    pp <- object$parsedForm$devfunEnv$pp
+    structs <- object$parsedForm$random
+    nms <- names(nRePerTrm <- environment(object$dfun)$nRePerTrm)
+    if(type ==   "u") {
+        re <- pp$u(1)
+    } else {
+        re <- pp$b(1)
+        if(type == "ZLu") {
+            b <- subRagByLens(re, nRePerTrm)
+            multFn <- function(struc, re) as.numeric(as.matrix(t(struc$Zt), sparse = TRUE) %*% re)
+            return(setNames(mapply(multFn, structs, b, SIMPLIFY = FALSE), nms))
+        }
+    }
+    setNames(subRagByLens(re, nRePerTrm), nms)
+}
+
+##' @param nParPerTrm vector of the number of parameters per term
+##' @param pars parameter vector (e.g. result of \code{covar} or
+##' \code{loads}
+##' @rdname pars
+##' @export
+parPerTerm <- function(nParPerTrm, pars) {
+    if(is.null(pars)) pars <- numeric(0)
+    whichThere <- (nParPerTrm > 0) & (!is.na(nParPerTrm))
+    ans <- vector("list", length(whichThere))
+    ans[whichThere] <- subRagByLens(pars, nParPerTrm[whichThere])
+    names(ans) <- names(nParPerTrm)
+    return(ans)
+}
+
+##' @rdname pars
+##' @export
+covarPerTerm <- function(object) {
+    parPerTerm(environment(object$dfun)$nLambdatParPerTrm,
+               covar(object))
+}
+
+##' @rdname pars
+##' @export
+loadsPerTerm <- function(object) {
+    parPerTerm(environment(object$dfun)$nZtParPerTrm,
+               loads(object))
+}
+
+##' @param parList named list of parameters with possible names:
+##' (\code{covar}, \code{fixef}, \code{weigh}, \code{loads})
+##' @rdname pars
+##' @export
+mkParInds <- function(parList) {
+    if(!is.recursive(parList)) stop("parList must be a list")
+    if(length(parList) == 1L) return(lapply(parList, seq_along))
+    parInds <- mapply(`+`,
+                      lapply(parList, seq_along),
+                      c(0, cumsum(lapply(parList, length))[-length(parList)]),
+                      SIMPLIFY = FALSE)
+    names(parInds) <- names(parList) ## too paranoid?
+    keepers <- sapply(parInds, length) > 0
+    parInds[keepers]
+}
+
+
+
+## ----------------------------------------------------------------------
+## Phylogenetic 
+
 ##' Standardize covariance matrix to determinant one
 ##'
 ##' @param covMat covariance matrix
@@ -6,62 +162,6 @@ stanCov <- function(covMat) {
     covMat / (det(covMat)^(1/nrow(covMat)))
 }
 
-##' Get model matrix and grouping factor
-##'
-##' This is kind of like \code{\link{model.matrix}} but for random
-##' effects terms.
-##' 
-##' @param bar random effect language object (e.g. \code{x | g})
-##' @param fr model frame
-##' @return list with model matrix and grouping factor
-##' @export
-getModMatAndGrpFac <- function(bar, fr) {
-    ## based on mkBlist
-
-    noGrpFac <- is.null(lme4::findbars(bar))
-
-    if(!noGrpFac) {
-        linFormLang <- bar[[2]] # language object specifying linear model
-            grpLang <- bar[[3]] # language object specifying grouping factor
-
-        fr <- lme4::factorize(bar, fr)
-        nm <- deparse(grpLang)
-        ## try to evaluate grouping factor within model frame ...
-        if (is.null(ff <- tryCatch(eval(substitute(lme4:::makeFac(fac),
-                                                   list(fac = grpLang)), fr),
-                                   error = function(e) NULL)))
-            stop("couldn't evaluate grouping factor ",
-                 nm, " within model frame:",
-                 " try adding grouping factor to data ",
-                 "frame explicitly if possible", call. = FALSE)
-        if (all(is.na(ff)))
-            stop("Invalid grouping factor specification, ",
-                 nm, call. = FALSE)
-    } else { # noGrpFac
-        linFormLang <- bar
-        ff <- nm <- NA
-    }
-    mm <- model.matrix(eval(substitute( ~ foo, list(foo = linFormLang))), fr)
-    return(list(modMat = mm, grpFac = ff, grpName = nm))
-}
-
-##' Simplify factor list over random effects terms
-##'
-##' @param facList list of grouping factors over random effects terms
-##' @return collapse repeated factors and add an \code{assign}
-##' attribute for indicating which factors relate to which terms
-##' @export
-simplifyFacList <- function(facList) {
-    fnms <- names(facList)
-    if (length(fnms) > length(ufn <- unique(fnms))) {
-        facList <- facList[match(ufn, fnms)]
-        asgn <- match(fnms, ufn)
-    } else asgn <- seq_along(facList)
-    names(facList) <- ufn
-    facList <- do.call(data.frame, c(facList, check.names = FALSE))
-    attr(facList, "assign") <- asgn
-    return(facList)
-}
 
 ##' Generate phylogenetic test data
 ##'
@@ -469,4 +569,23 @@ reorderPhylo <- function(object, ...) {
 orthProcrustesRotMat <- function(X, Z) {
     sol <- svd(crossprod(Z, X))
     return(sol$v %*% t(sol$u))
+}
+
+
+##' Simplify factor list over random effects terms (not currently
+##' used)
+##'
+##' @param facList list of grouping factors over random effects terms
+##' @return collapse repeated factors and add an \code{assign}
+##' attribute for indicating which factors relate to which terms
+simplifyFacList <- function(facList) {
+    fnms <- names(facList)
+    if (length(fnms) > length(ufn <- unique(fnms))) {
+        facList <- facList[match(ufn, fnms)]
+        asgn <- match(fnms, ufn)
+    } else asgn <- seq_along(facList)
+    names(facList) <- ufn
+    facList <- do.call(data.frame, c(facList, check.names = FALSE))
+    attr(facList, "assign") <- asgn
+    return(facList)
 }

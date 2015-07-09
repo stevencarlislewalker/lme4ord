@@ -306,10 +306,6 @@ df.residual.strucGlmer <- function(object, ...) {
     nobs(object) - length(pars(object))
 }
 
-##' @rdname strucGlmer-class
-##' @export
-nobs <- function(object, ...) nrow(object$parsedForm$fixed)
-
 ##' @importFrom stats deviance
 ##' @rdname strucGlmer-class
 ##' @export
@@ -332,127 +328,35 @@ formula.strucGlmer <- function(x, ...) x$parsedForm$formula
 
 
 ## ----------------------------------------------------------------------
-## parameter retrieval
+## simulations
 ## ----------------------------------------------------------------------
 
-##' @rdname pars
+##' Simulate from a parsed formula
+##' 
+##' @param nsim number of simulations (FIXME: inconsistent between
+##' binomial and poisson)
+##' @param parsedForm result of \code{strucParseFormula}
+##' @param family family object
+##' @param weights optional weights
 ##' @export
-pars <- function(object, ...) UseMethod("pars")
-
-##' Parameter retrieval for structured generalized linear mixed models
-##'
-##' @param object a \code{strucGlmer} fitted model object
-##' @rdname pars
-##' @export
-pars.strucGlmer <- function(object, ...) object$opt$par
-
-##' @rdname pars
-##' @export
-pars.glmerMod <- function(object, ...) unlist(getME(object, c("theta", "beta")))
-
-.covar <- function(pars, ind) pars[ind$covar]
-.fixef <- function(pars, ind) pars[ind$fixef]
-.loads <- function(pars, ind) pars[ind$loads]
-
-##' @param type character string giving the type of parameter
-##' (e.g. \code{"fixef", "covar"})
-##' @rdname pars
-##' @export
-getStrucGlmerPar <- function(object, type, ...) {
-    parInds <- environment(object$dfun)$parInds
-    optPar <- object$opt$par
-    optPar[unlist(parInds[type])]
+simStrucParsedForm <- function(parsedForm, family = binomial,
+                               weights, nsim) {
+                               ## ranefTrms, fixef = TRUE) {
+    if(missing(weights)) weights <- rep(1, length(parsedForm$response))
+    with(parsedForm, {
+        reMM <- t(as(Zt, "dgCMatrix")) %*% t(as(Lambdat, "dgCMatrix"))
+        feMM <- fixed
+        fe <- as.numeric(feMM %*% initPars[parInds$fixef])
+        re <- as.numeric(reMM %*% rnorm(ncol(reMM)))
+        simFun <- simfunList[[family()$family]]
+        return(simFun(weights, nsim, family()$linkinv(fe + re)))
+    })
 }
 
-##' @rdname pars
-##' @export
-covar <- function(object, ...) UseMethod("covar")
 
-##' @param ... not used
-##' @rdname pars
-##' @export
-covar.strucGlmer <- function(object, ...) {
-    unname(getStrucGlmerPar(object, "covar"))
-}
-
-##' @rdname pars
-##' @export
-loads <- function(object, ...) UseMethod("loads")
-
-##' @rdname pars
-##' @export
-loads.default <- function(object, ...) loadings(object)
-
-##' @rdname pars
-##' @export
-loads.strucGlmer <- function(object, ...) {
-    loadings.strucGlmer(object, ...)
-}
-
-##' @importFrom stats loadings
-##' @rdname pars
-##' @export
-loadings.strucGlmer <- function(object, ...) {
-    getStrucGlmerPar(object, "loads")
-}
-
-##' @importFrom nlme fixef 
-##' @rdname pars
-##' @export
-fixef.strucGlmer <- function(object, ...) {
-    setNames(getStrucGlmerPar(object, "fixef"),
-             colnames(object$parsedForm$fixed))
-}
-
-##' @importFrom nlme ranef
-##' @rdname pars
-##' @export
-ranef.strucGlmer <- function(object, type = c("u", "Lu", "ZLu"), ...) {
-    type <- type[1]
-    pp <- object$parsedForm$devfunEnv$pp
-    structs <- object$parsedForm$random
-    nms <- names(nRePerTrm <- environment(object$dfun)$nRePerTrm)
-    if(type ==   "u") {
-        re <- pp$u(1)
-    } else {
-        re <- pp$b(1)
-        if(type == "ZLu") {
-            b <- subRagByLens(re, nRePerTrm)
-            multFn <- function(struc, re) as.numeric(as.matrix(t(struc$Zt), sparse = TRUE) %*% re)
-            return(setNames(mapply(multFn, structs, b, SIMPLIFY = FALSE), nms))
-        }
-    }
-    setNames(subRagByLens(re, nRePerTrm), nms)
-}
-
-##' @param nParPerTrm vector of the number of parameters per term
-##' @param pars parameter vector (e.g. result of \code{covar} or
-##' \code{loads}
-##' @rdname pars
-##' @export
-parPerTerm <- function(nParPerTrm, pars) {
-    if(is.null(pars)) pars <- numeric(0)
-    whichThere <- (nParPerTrm > 0) & (!is.na(nParPerTrm))
-    ans <- vector("list", length(whichThere))
-    ans[whichThere] <- subRagByLens(pars, nParPerTrm[whichThere])
-    names(ans) <- names(nParPerTrm)
-    return(ans)
-}
-
-##' @rdname pars
-##' @export
-covarPerTerm <- function(object) {
-    parPerTerm(environment(object$dfun)$nLambdatParPerTrm,
-               covar(object))
-}
-
-##' @rdname pars
-##' @export
-loadsPerTerm <- function(object) {
-    parPerTerm(environment(object$dfun)$nZtParPerTrm,
-               loads(object))
-}
-
+## ----------------------------------------------------------------------
+## retrieval
+## ----------------------------------------------------------------------
 
 ##' Get random effects structures from a strucGlmer object
 ##'

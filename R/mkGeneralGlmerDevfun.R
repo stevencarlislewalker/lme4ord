@@ -158,21 +158,6 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
 }
 
 
-##' @param parList named list of parameters with possible names:
-##' (\code{covar}, \code{fixef}, \code{weigh}, \code{loads})
-##' @rdname pars
-##' @export
-mkParInds <- function(parList) {
-    if(!is.recursive(parList)) stop("parList must be a list")
-    if(length(parList) == 1L) return(lapply(parList, seq_along))
-    parInds <- mapply(`+`,
-                      lapply(parList, seq_along),
-                      c(0, cumsum(lapply(parList, length))[-length(parList)]),
-                      SIMPLIFY = FALSE)
-    names(parInds) <- names(parList) ## too paranoid?
-    keepers <- sapply(parInds, length) > 0
-    parInds[keepers]
-}
 
 
 initializeResp <- function(y, etastart = NULL, mustart = NULL,
