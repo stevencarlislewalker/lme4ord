@@ -60,6 +60,11 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                                  maxit = 30,
                                  verbose = 0L, pureR = FALSE,
                                  Lind = NULL) {
+
+    if(is.matrix(y)) stop("Only vector-valued responses allowed.\n",
+                          "If you are trying to specify a binomial model,\n",
+                          "please use weights to specify the total number\n",
+                          "of Bernoulli trials.")
     
     if(pureR) {
         stop("pure R implementation not currently working")
