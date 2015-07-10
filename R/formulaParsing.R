@@ -141,7 +141,8 @@ splitForm <- function(formula) {
                                         # ignore any specials not in
                                         # formula
     specialsToKeep <- sapply(lapply(specials, grep,
-                                    x = as.character(formula[[length(formula)]])), length) > 0L
+                                    x = as.character(formula[[length(formula)]])),
+                             length) > 0L
     specials <- specials[specialsToKeep]
 
     ## Recursive function: (f)ind (b)ars (a)nd (s)pecials
@@ -201,8 +202,9 @@ splitForm <- function(formula) {
                  "or use findReTrmClasses() for available structures.")
 
 
-    fixedFormula <- formula(paste(formula[[2]], "~",
-                                  as.character(noSpecials(nobars(formula)))[[3]]))
+    ## fixedFormula <- formula(paste(formula[[2]], "~",
+    ##                               as.character(noSpecials(nobars(formula)))[[3]]))
+    fixedFormula <- noSpecials(nobars(formula))
     reTrmFormulas <- c(lapply(formSplitStan, "[[", 2),
                        lapply(formSplitSpec, "[[", 2))
     reTrmClasses <- c(rep("unstruc", length(formSplitStan)),
