@@ -24,8 +24,6 @@ pars(object, ...)
 
 \method{pars}{glmerMod}(object, ...)
 
-getStrucGlmerPar(object, type, ...)
-
 covar(object, ...)
 
 \method{covar}{strucGlmer}(object, ...)
@@ -42,6 +40,8 @@ loadings.strucGlmer(object, ...)
 
 \method{ranef}{strucGlmer}(object, type = c("u", "Lu", "ZLu"), ...)
 
+getStrucGlmerPar(object, type, ...)
+
 parPerTerm(nParPerTrm, pars)
 
 covarPerTerm(object)
@@ -53,10 +53,10 @@ mkParInds(parList)
 \arguments{
 \item{object}{a \code{strucGlmer} fitted model object}
 
+\item{...}{not used}
+
 \item{type}{character string giving the type of parameter
 (e.g. \code{"fixef", "covar"})}
-
-\item{...}{not used}
 
 \item{nParPerTrm}{vector of the number of parameters per term}
 

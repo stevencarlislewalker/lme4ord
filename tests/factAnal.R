@@ -12,26 +12,20 @@ dataFrame <- as.data.frame(dataList)
 gm1 <- strucGlmer(respVar ~ 1 + 
                   (1 | lakes) +
                   (1 | species) +
+                  factAnal(0 + lakes | species, nAxes = 2),
+                  family = binomial(), data = dataFrame,
+                  devfunOnly = FALSE,
+                  optMaxit = 20000, optVerb = 0L,
+                  penLoads = mkPenLpNorm(p = 2))
+
+gm2 <- strucGlmer(respVar ~ 1 + 
+                  (1 | lakes) +
+                  (1 | species) +
                   factAnal(0 + lakes | species, nAxes = 2, seed = 1),
                   family = binomial(), data = dataFrame,
                   devfunOnly = FALSE,
                   optMaxit = 20000, optVerb = 0L,
                   penLoads = mkPenLpNorm())
-
-debug(lme4ord:::setReTrm.factAnal)
-
-gm2 <- strucGlmer(respVar ~ 
-                  (1 | lakes) +
-                  scale(pH)  + (scale(pH) | species) +
-                  factAnal(0 + lakes | species, nAxes = 2, seed = 2),
-                  family = binomial(), data = dataFrame,
-                  devfunOnly = FALSE,
-                  optMaxit = 20000, optVerb = 0L,
-                  penLoads = mkPenLpNorm())
-
-image(as(VarCorr(gm1)$species.factAnal +
-         diag(VarCorr(gm1)$species.unstruc[,], 30, 30),
-         "sparseMatrix"))
 
 loadMat1 <- as.matrix(repSparseGenFullTri(30, 2, loads(gm1)))
 loadMat2 <- as.matrix(repSparseGenFullTri(30, 2, loads(gm2)))
@@ -81,32 +75,15 @@ abline(a = 0, b = 1)
 
 ## non-standard models
 gm0 <- strucGlmer(respVar ~ (1 | lakes) + (1 | species) +
-                  factAnal(0 + lakes | species, nAxes = 1, seed = 1),
+                  factAnal(0 + lakes | species, nAxes = 1),
                   family = binomial(), data = dataFrame,
                   devfunOnly = FALSE,
                   optMaxit = 20000, optVerb = 0L,
-                  penLoads = function(xx) sum(abs(xx^2)))
+                  penLoads = mkPenLpNorm())
 
 gm0pH <- strucGlmer(respVar ~ (1 | lakes) + (1 | species) +
-                    factAnal(pH | species, nAxes = 1, seed = 1),
+                    factAnal(pH | species, nAxes = 1),
                     family = binomial(), data = dataFrame,
                     devfunOnly = FALSE,
                     optMaxit = 20000, optVerb = 0L,
-                    penLoads = function(xx) sum(abs(xx^2)))
-
-
-plot(loads(gm0), loads(gm1)[1:30])
-plot(loads(gm0), c(0, loads(gm1)[31:59]))
-abline(a = 0, b = 1)
-plot(loads(gm1)[1:30], c(0, loads(gm1)[31:59]))
-plot(c(0, loads(gm1)[31:59]), ranef(gm1)$species.unstruc)
-
-plot(ranef(gm0)$species.factAnal[1:52],
-     ranef(gm0)$lakes.unstruc)
-
-plot(ranef(gm1)$species.factAnal[1:52],
-     ranef(gm1)$lakes.unstruc)
-
-plot(ranef(gm1)$species.factAnal[53:104],
-     ranef(gm1)$lakes.unstruc)
-
+                    penLoads = mkPenLpNorm())

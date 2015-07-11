@@ -4,13 +4,20 @@
 \alias{setReTrm.expDecay}
 \title{Random effects term with exponential decay in distance-based covariance}
 \usage{
-\method{setReTrm}{expDecay}(object, addArgsList, devfunEnv = NULL)
+\method{setReTrm}{expDecay}(object, addArgsList, auxEnv = NULL,
+  devfunEnv = NULL)
 }
 \arguments{
 \item{object}{a \code{reTrmStruct} object}
 
 \item{addArgsList}{a list of named quantities within which
 \code{addArgsExpr} is evaluated}
+
+\item{auxEnv}{an optional auxilliary environment containing
+objects that are possibly required for the setting of a random
+effects term structure (currently this is almost always the
+environment of a call to \code{\link{strucParseFormula}}, unless
+\code{setReTrm} is called directly)}
 
 \item{devfunEnv}{optional environment of the deviance function}
 }

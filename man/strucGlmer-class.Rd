@@ -27,6 +27,8 @@ mkStrucGlmer(opt, parsedForm, dfun, mc)
   3), correlation = NULL, signif.stars = getOption("show.signif.stars"),
   show.resids = TRUE, ...)
 
+nobs(object, ...)
+
 \method{residuals}{strucGlmer}(object, ...)
 
 \method{fitted}{strucGlmer}(object, ranefTrms, fixef = TRUE, ...)
@@ -45,8 +47,6 @@ mkStrucGlmer(opt, parsedForm, dfun, mc)
 \method{logLik}{strucGlmer}(object, ...)
 
 \method{formula}{strucGlmer}(x, ...)
-
-nobs(object, ...)
 }
 \arguments{
 \item{opt,parsedForm,dfun,mc}{See desciption of \code{strucGlmer}

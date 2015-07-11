@@ -40,7 +40,9 @@
 ##' arguments passed to the special function in the formula.}
 ##' @export
 mkReTrmStructs <- function(splitFormula, data) {
-    if(inherits(splitFormula, "formula")) splitFormula <- splitForm(splitFormula)
+    if(inherits(splitFormula, "formula")) {
+        splitFormula <- splitForm(splitFormula)
+    }
     reTrmsList <- lapply(splitFormula$reTrmFormulas,
                          getModMatAndGrpFac, fr = data)
     names(reTrmsList) <- paste(sapply(reTrmsList, "[[", "grpName"),
@@ -48,7 +50,9 @@ mkReTrmStructs <- function(splitFormula, data) {
     nUnStr <- sum(splitFormula$reTrmClasses == "unstruc")
     for(i in seq_along(reTrmsList)) {
         clsi <- splitFormula$reTrmClasses[[i]]
-        if(clsi != "unstruc") reTrmsList[[i]]$addArgs <- splitFormula$reTrmAddArgs[[i - nUnStr]]
+        if(clsi != "unstruc") {
+            reTrmsList[[i]]$addArgs <- splitFormula$reTrmAddArgs[[i - nUnStr]]
+        }
         class(reTrmsList[[i]]) <- c(clsi, "reTrmStruct")
     }
     return(reTrmsList)
@@ -100,8 +104,15 @@ getModMatAndGrpFac <- function(bar, fr) {
 ##' @param object a \code{reTrmStruct} object
 ##' @param addArgsList a list of named quantities within which
 ##' \code{addArgsExpr} is evaluated
+##' @param auxEnv an optional auxilliary environment containing
+##' objects that are possibly required for the setting of a random
+##' effects term structure (currently this is almost always the
+##' environment of a call to \code{\link{strucParseFormula}}, unless
+##' \code{setReTrm} is called directly)
 ##' @param devfunEnv optional environment of the deviance function
 ##' @rdname setReTrm
+##' @note Almost never called directly, but instead called within
+##' \code{\link{strucParseFormula}}.
 ##' @seealso \code{\link{mkReTrmStructs}} for construction of these objects
 ##' @return \code{object} with the following additional elements:
 ##' 
@@ -127,14 +138,14 @@ getModMatAndGrpFac <- function(bar, fr) {
 ##' @family setReTrm
 ##' @export
 setReTrm <- function(object, addArgsList,
-                     devfunEnv = NULL) {
+                     auxEnv = NULL, devfunEnv = NULL) {
     UseMethod("setReTrm")
 }
 
 ##' @rdname setReTrm
 ##' @export
 setReTrm.default <- function(object, addArgsList,
-                             devfunEnv = NULL) {
+                             auxEnv = NULL, devfunEnv = NULL) {
     
                                         # transposed model matrix (or
                                         # loadings matrix) -- Zt rows
@@ -170,7 +181,7 @@ setReTrm.default <- function(object, addArgsList,
 ##' @templateVar arg "grpFac"
 ##' @templateVar desc "grouping factor"
 setReTrm.lme4 <- function(object, addArgsList,
-                          devfunEnv = NULL) {
+                          auxEnv = NULL, devfunEnv = NULL) {
     setReTrm.default(object, addArgsist, devfunEnv)
 }
 
@@ -183,7 +194,7 @@ setReTrm.lme4 <- function(object, addArgsList,
 ##' @templateVar arg c("obsFac", "varFac", "nAxes", "seed")
 ##' @templateVar desc c("grouping factor for multivariate observations", "grouping factor for variables", "number of axes", "random seed for initial axis values")
 setReTrm.factAnal <- function(object, addArgsList,
-                              devfunEnv = NULL) {
+                              auxEnv = NULL, devfunEnv = NULL) {
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
 
     nVar <- nlevels(varFac <- object$grpFac) # number of variables
@@ -193,10 +204,11 @@ setReTrm.factAnal <- function(object, addArgsList,
     trmDims <- c(nVar = nVar, nObs = nObs, nAxes = nAxes)
 
     if(is.null(addArgs$seed)) {
-        stop("sorry but you need to set the seed for factAnal initialization")
         obsInds <- apply(obsMat == 1, 1, which)
         obsFac <- as.factor(colnames(obsMat)[obsInds])
-        xtabs(devfunEnv$respVar ~ obsFac + varFac)
+        initLoad <- svd(2 * xtabs(auxEnv$response ~ obsFac + varFac) - 1)$v[,1:nAxes]
+        loadMat <- repSparseFull(nVar, nAxes, as.vector(initLoad))
+        ##stop("sorry but you need to set the seed for factAnal initialization")
         ## loadMat <- repSparseFull(nVar, nAxes)
     } else {
         set.seed(addArgs$seed)
@@ -245,7 +257,7 @@ setReTrm.factAnal <- function(object, addArgsList,
 ##' @templateVar arg c("grpFac", "nAxes", "seed")
 ##' @templateVar desc c("grouping factor for loadings", "number of axes", "random seed for initial axis values")
 setReTrm.sem <- function(object, addArgsList,
-                         devfunEnv = NULL) {
+                         auxEnv = NULL, devfunEnv = NULL) {
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
     nl <- nlevels(grpFac <- object$grpFac)
     nc <- addArgs$nAxes
@@ -279,7 +291,8 @@ setReTrm.sem <- function(object, addArgsList,
 ##' @templateVar form \code{identity(linForm | grpFac)}
 ##' @templateVar arg c("linForm", "grpFac")
 ##' @templateVar desc c("linear model formula decribing effects", "grouping factor")
-setReTrm.identity <- function(object, addArgsList, devfunEnv = NULL) {
+setReTrm.identity <- function(object, addArgsList,
+                              auxEnv = NULL, devfunEnv = NULL) {
 
                                         # Zt
     Zt <- resetTransConst(kr(as.repSparse(object$grpFac),
@@ -302,7 +315,8 @@ setReTrm.identity <- function(object, addArgsList, devfunEnv = NULL) {
 ##' @templateVar form \code{flexvar(linForm, init, nBasis)}
 ##' @templateVar arg c("linForm", "init", "nBasis")
 ##' @templateVar desc c("linear model formula decribing effects", "initial values for coefficients for the linear predictor of the variance function", "number of coefficients for the linear predictor")
-setReTrm.flexvar <- function(object, addArgsList, devfunEnv = NULL) {
+setReTrm.flexvar <- function(object, addArgsList,
+                             auxEnv = NULL, devfunEnv = NULL) {
                                         # get additional arguments and
                                         # sample size
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
@@ -331,7 +345,8 @@ setReTrm.flexvar <- function(object, addArgsList, devfunEnv = NULL) {
 ##' @templateVar form \code{expDecay(1 | grpFac, distCutoff, minCov, distmat)}
 ##' @templateVar arg c("grpFac", "distCutoff", "minCov", "distmat")
 ##' @templateVar desc c("grouping factor (e.g. with levels given by geographical sites)", "maximum distance with covariance greater than minCov", "minimum covariance", "distance matrix object over the levels of grpFac")
-setReTrm.expDecay <- function(object, addArgsList, devfunEnv = NULL) {
+setReTrm.expDecay <- function(object, addArgsList,
+                              auxEnv = NULL, devfunEnv = NULL) {
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
     distCutoff         <- addArgs$distCutoff
     minCov             <- addArgs$minCov
@@ -372,7 +387,8 @@ setReTrm.expDecay <- function(object, addArgsList, devfunEnv = NULL) {
 ##' @templateVar form \code{edge(linForm | grpFac, phy)}
 ##' @templateVar arg c("linForm", "grpFac", "phy")
 ##' @templateVar desc c("linear model formula decribing effects", "grouping factor", "phylo object relating the levels of the grouping factor")
-setReTrm.edge <- function(object, addArgsList, devfunEnv = NULL) {
+setReTrm.edge <- function(object, addArgsList,
+                          auxEnv = NULL, devfunEnv = NULL) {
                                         # get additional arguments
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
 
@@ -399,7 +415,8 @@ setReTrm.edge <- function(object, addArgsList, devfunEnv = NULL) {
 ##' @templateVar form \code{cooccur(linForm | grpFac)}
 ##' @templateVar arg c("linForm", "grpFac")
 ##' @templateVar desc c("linear model formula decribing effects", "grouping factor")
-setReTrm.cooccur <- function(object, addArgsList, devfunEnv = NULL) {
+setReTrm.cooccur <- function(object, addArgsList,
+                             auxEnv = NULL, devfunEnv = NULL) {
 
                                         # Zt
     Jt <- as.repSparse(as(object$grpFac, "sparseMatrix"))
@@ -422,7 +439,8 @@ setReTrm.cooccur <- function(object, addArgsList, devfunEnv = NULL) {
 ##' @templateVar form \code{varIdent(1 | grpFac)}
 ##' @templateVar arg c("grpFac")
 ##' @templateVar desc c("grouping factor")
-setReTrm.varIdent <- function(object, addArgsList, devfunEnv = NULL) {
+setReTrm.varIdent <- function(object, addArgsList,
+                              auxEnv = NULL, devfunEnv = NULL) {
                                         # transposed model matrix (or
                                         # loadings matrix) -- Zt rows
                                         # associated with this term
@@ -452,7 +470,8 @@ setReTrm.varIdent <- function(object, addArgsList, devfunEnv = NULL) {
 ##' @templateVar form \code{varExp(linForm | grpFac)} or \code{varExp(linForm)}
 ##' @templateVar arg c("linForm", "grpFac")
 ##' @templateVar desc c("linear model formula decribing effects", "grouping factor")
-setReTrm.varExp <- function(object, addArgsList, devfunEnv = NULL) {
+setReTrm.varExp <- function(object, addArgsList,
+                            auxEnv = NULL, devfunEnv = NULL) {
                                         # transposed model matrix (or
                                         # loadings matrix) -- Zt rows
                                         # associated with this term
@@ -487,7 +506,7 @@ setReTrm.varExp <- function(object, addArgsList, devfunEnv = NULL) {
 ##' @templateVar arg "no arguments"
 ##' @templateVar desc "NULL"
 setReTrm.obslev <- function(object, addArgsList,
-                             devfunEnv = NULL) {
+                             auxEnv = NULL, devfunEnv = NULL) {
 
     n <- nrow(object$modMat)
     Zt <- resetTransConst(repSparseIdent(n))
@@ -505,7 +524,7 @@ setReTrm.obslev <- function(object, addArgsList,
 ##' @templateVar arg c("corObj", "sig")
 ##' @templateVar desc c("corStruct object", "initial standard deviation")
 setReTrm.nlmeCorStruct <- function(object, addArgsList,
-                                   devfunEnv = NULL) {
+                                   auxEnv = NULL, devfunEnv = NULL) {
 
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
     corObj <- addArgs$corObj
@@ -602,18 +621,16 @@ update.flexvar <- function(object, newCovar, newLoads, ...) {
     return(object)
 }
 
-##' @rdname update.reTrmStruct
-##' @method update factAnal
-##' @export
-update.factAnal <- function(object, newCovar, newLoads, ...) {
-    object <- update.reTrmStruct(object, newCovar, newLoads)
-    transEnv <- environment(object$Lambdat$trans)
-    assignWith(expr  = resp$y,
-               name  = "respVar",
-               data  = transEnv$devfunEnv,
-               envir = transEnv)
-    return(object)
-}
+
+## update.factAnal <- function(object, newCovar, newLoads, ...) {
+##     object <- update.reTrmStruct(object, newCovar, newLoads)
+##     transEnv <- environment(object$Lambdat$trans)
+##     assignWith(expr  = resp$y,
+##                name  = "respVar",
+##                data  = transEnv$devfunEnv,
+##                envir = transEnv)
+##     return(object)
+## }
 
 ##' Get defaults choices for lower and/or upper bound of a model
 ##' parameter

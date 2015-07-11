@@ -64,7 +64,9 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
                                         # structures
     response <- model.response(model.frame(sf$fixedFormula, data))
     fixed    <- model.matrix(sf$fixedFormula, data)
-    random   <- lapply(reTrmsList, setReTrm, addArgs = addArgs, devfunEnv = devfunEnv)
+    random   <- lapply(reTrmsList, setReTrm, addArgs = addArgs,
+                       auxEnv = environment(),
+                       devfunEnv = devfunEnv)
 
                                         # lists of repeated sparse
                                         # matrices
