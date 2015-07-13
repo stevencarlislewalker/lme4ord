@@ -80,6 +80,9 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim,
                       Dim = Dim))
 }
 
+setOldClass("repSparse")
+
+
 
 ## ----------------------------------------------------------------------
 ## repSparse-class
@@ -674,6 +677,47 @@ kr <- function(X, Y, trans = "*") {
 setOldClass("repSparseKr")
 setIs("repSparseKr", "repSparse")
 
+##' @rdname matrixOperations
+##' @export
+setMethod("kronecker", signature(X = "repSparse", Y = "repSparse"), {
+    function(X, Y, FUN = "*", make.dimnames = FALSE, ...) kron(X, Y)
+})
+
+##' @param e1,e2 \code{repSparse} objects
+##' @note The \code{*} operator is matrix multiplication, not
+##' element-wise multiplication.
+##' @rdname matrixOperations
+##' @export
+Ops.repSparse <- function(e1, e2) {
+    FUN = .Generic
+    if(FUN == "*") {
+        return(as.matrix(e1, sparse = TRUE) %*% as.matrix(e2, sparse = TRUE))
+    } else {
+        return(getGeneric(FUN)(as.matrix(e1, sparse = TRUE), as.matrix(e2, sparse = TRUE)))
+    }
+}
+
+##' @param x,y \code{\link{repSparse}} matrix objects
+##' @rdname matrixOperations
+##' @importFrom Matrix crossprod
+##' @export
+setMethod("crossprod", signature(x = "repSparse", y = "repSparse"), {
+    function(x, y = NULL, ...) {
+        crossprod(as.matrix(x, sparse = TRUE),
+                  as.matrix(y, sparse = TRUE), ...)
+    }
+})
+
+##' @param x,y \code{\link{repSparse}} matrix objects
+##' @rdname matrixOperations
+##' @importFrom Matrix tcrossprod
+##' @export
+setMethod("tcrossprod", signature(x = "repSparse", y = "repSparse"), {
+    function(x, y = NULL, ...) {
+        tcrossprod(as.matrix(x, sparse = TRUE),
+                   as.matrix(y, sparse = TRUE), ...)
+    }
+})
 
 ## ----------------------------------------------------------------------
 ## Make trans functions

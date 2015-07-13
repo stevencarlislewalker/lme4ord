@@ -54,12 +54,20 @@ Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
 (repCol  <- rep(X, 3, type = "col"))
 }
 \seealso{
-Other matrixCombining: \code{\link{kr}},
-  \code{\link{kron}}; \code{\link{repSparseRowSubset}},
+Other matrixCombining: \code{\link{Ops.repSparse}},
+  \code{\link{crossprod,repSparse,repSparse-method}},
+  \code{\link{kr}}, \code{\link{kron}},
+  \code{\link{kronecker,repSparse,repSparse-method}},
+  \code{\link{tcrossprod,repSparse,repSparse-method}};
+  \code{\link{repSparseRowSubset}},
   \code{\link{subset.repSparse}}
 
-Other matrixCombining: \code{\link{kr}},
-  \code{\link{kron}}; \code{\link{repSparseRowSubset}},
+Other matrixCombining: \code{\link{Ops.repSparse}},
+  \code{\link{crossprod,repSparse,repSparse-method}},
+  \code{\link{kr}}, \code{\link{kron}},
+  \code{\link{kronecker,repSparse,repSparse-method}},
+  \code{\link{tcrossprod,repSparse,repSparse-method}};
+  \code{\link{repSparseRowSubset}},
   \code{\link{subset.repSparse}}
 }
 
