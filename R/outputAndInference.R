@@ -297,6 +297,18 @@ loadsPerTerm <- function(object) {
                loads(object))
 }
 
+##' @rdname pars
+##' @export
+nRePerTrm <- function(object) {
+    object$parsedForm$devfunEnv$nRePerTrm
+}
+
+##' @rdname pars
+##' @export
+reIndsPerTrm <- function(object) {
+    nrpt <- nRePerTrm(object)
+    setNames(subRagByLens(1:sum(nrpt), nrpt), names(nrpt))
+}
 
 ##' @rdname strucGlmer-class
 ##' @export
@@ -556,6 +568,7 @@ printReTrm.factAnal <- function(object, forSummary = FALSE, ...) {
 ## ----------------------------------------------------------------------
 ## retrieval
 ## ----------------------------------------------------------------------
+
 
 ##' Get random effects structures from a strucGlmer object
 ##'

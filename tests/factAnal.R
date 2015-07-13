@@ -7,7 +7,7 @@ data(limn)
 dataList <- dims_to_vars(data.list(respVar = as.matrix(fish),
                                    pH = limn$pH,
                                    dimids = c("lakes", "species")))
-dataFrame <- as.data.frame(dataList)
+dataFrame <- as.data.frame(aperm(dataList, c(2, 1)))
 
 gm1 <- strucGlmer(respVar ~ 1 + 
                   (1 | lakes) +
@@ -17,6 +17,17 @@ gm1 <- strucGlmer(respVar ~ 1 +
                   devfunOnly = FALSE,
                   optMaxit = 20000, optVerb = 0L,
                   penLoads = mkPenLpNorm(p = 2))
+
+inds <- reIndsPerTrm(gm1)
+with(gm1$parsedForm, image(tcrossprod(Lambdat * Zt)[inds[[2]], inds[[3]]]))
+with(gm1$parsedForm, image(tcrossprod(Lambdat * Zt)))
+image(tcrossprod(gm1$parsedForm$devfunEnv$pp$Ut))
+image(tcrossprod(gm1$parsedForm$devfunEnv$pp$Ut)[inds[[1]], inds[[1]]])
+image(tcrossprod(gm1$parsedForm$devfunEnv$pp$Ut)[inds[[1]], inds[[2]]])
+image(tcrossprod(gm1$parsedForm$devfunEnv$pp$Ut)[inds[[1]], inds[[3]]])
+image(tcrossprod(gm1$parsedForm$devfunEnv$pp$Ut)[inds[[2]], inds[[2]]])
+image(tcrossprod(gm1$parsedForm$devfunEnv$pp$Ut)[inds[[2]], inds[[3]]])
+image(tcrossprod(gm1$parsedForm$devfunEnv$pp$Ut)[inds[[3]], inds[[3]]])
 
 gm2 <- strucGlmer(respVar ~ 1 + 
                   (1 | lakes) +

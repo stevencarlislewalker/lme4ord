@@ -11,11 +11,13 @@
 \alias{loads.strucGlmer}
 \alias{loadsPerTerm}
 \alias{mkParInds}
+\alias{nRePerTrm}
 \alias{parPerTerm}
 \alias{pars}
 \alias{pars.glmerMod}
 \alias{pars.strucGlmer}
 \alias{ranef.strucGlmer}
+\alias{reIndsPerTrm}
 \title{Parameter retrieval for structured generalized linear mixed models}
 \usage{
 pars(object, ...)
@@ -47,6 +49,10 @@ parPerTerm(nParPerTrm, pars)
 covarPerTerm(object)
 
 loadsPerTerm(object)
+
+nRePerTrm(object)
+
+reIndsPerTrm(object)
 
 mkParInds(parList)
 }
