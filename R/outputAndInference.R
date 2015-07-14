@@ -578,9 +578,12 @@ printReTrm.factAnal <- function(object, forSummary = FALSE, ...) {
 ##' \code{reTrmStruct} objects is
 ##' \code{grpFacName.reTrmStructClass}. Partial matching of names is
 ##' allowed.
+##' @param drop If only one term is selected, return the
+##' \code{reTrmStruct} objectitself rather than a length-one list with
+##' the object.
 ##' @return a fitted random effects structure
 ##' @export
-getReTrmStruct <- function(object, name) {
+getReTrm <- function(object, name, drop = TRUE) {
     structs <- object$parsedForm$random
     if(missing(name)) {
         message("available reTrmStruct objects:\n",
@@ -595,7 +598,11 @@ getReTrmStruct <- function(object, name) {
              "please try one of the following:\n",
              paste(names(structs), collapse = ", "))
     }
-    return(structs[nameInd])
+    if(drop) {
+        return(structs[[nameInd]])
+    } else {
+        return(structs [nameInd] )
+    }
 }
 
 

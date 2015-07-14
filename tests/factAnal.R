@@ -29,6 +29,8 @@ image(tcrossprod(gm1$parsedForm$devfunEnv$pp$Ut)[inds[[2]], inds[[2]]])
 image(tcrossprod(gm1$parsedForm$devfunEnv$pp$Ut)[inds[[2]], inds[[3]]])
 image(tcrossprod(gm1$parsedForm$devfunEnv$pp$Ut)[inds[[3]], inds[[3]]])
 
+
+
 gm2 <- strucGlmer(respVar ~ 1 + 
                   (1 | lakes) +
                   (1 | species) +
@@ -40,6 +42,8 @@ gm2 <- strucGlmer(respVar ~ 1 +
 
 loadMat1 <- as.matrix(repSparseGenFullTri(30, 2, loads(gm1)))
 loadMat2 <- as.matrix(repSparseGenFullTri(30, 2, loads(gm2)))
+
+getReTrmStruct(gm1, "species.factAnal")[[1]]$Zt
 
 ## correct sign flips
 Q <- orthProcrustesRotMat(loadMat1, loadMat2)

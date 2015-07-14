@@ -1,0 +1,74 @@
+\documentclass{article}
+\usepackage{amsmath}
+\usepackage{bm}
+
+\newcommand{\trans}{^\top}
+\newcommand{\link}{\ensuremath{\mathrm{link}}}
+\newcommand{\mc}{\mathcal}
+\newcommand{\vc}{\ensuremath{\mathrm{vec}}}
+\newcommand{\code}[1]{\texttt{#1}}
+
+\title{Random effects term for exponential decay in covariance: expDecay}
+\author{Steve Walker}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+One may induce covariance among the levels of a grouping factor, such
+that the covariances fall off exponentially with distance among the
+levels.  The distance matrix for the levels can come from many
+sources, including spatial coordinates, phylogenies and other trees,
+and trait space.  Such exponential decay models are specified with the
+following notation.
+\begin{equation}
+  \label{eq:6}
+  \mathtt{
+    respVar \sim expDecay(1\, | \,grpFac, 
+    distMat = distMat, 
+    minCov = 1e-3,
+    distCutoff = 2)}
+\end{equation}
+where \code{distMat} in an \code{R} \code{dist} object giving the
+distances among levels in \code{grpFac}, and \code{minCov} and
+\code{distCutoff} are parameters for trading off accuracy for
+computation speed.  If \code{distCutoff > max(distMat)} and
+\code{minCov == 0}, then there is no approximation but result in the
+slowest speeds.  Reducing \code{distCutoff} below \code{max(distMat)}
+causes all covariances associated with distances larger than
+\code{distCutoff} to be zero.  Finally, \code{minCov} is the
+covariance associated with \code{distCutoff}, and should be chosen to
+be as low as possible.
+
+The model has a single parameter, $\alpha$, specifying the rate of
+decay.  The covariance, $\rho_{ij}$ between level $i$ and $j$ is a
+function of the distance, $\delta_{ij}$, between the levels.
+\begin{equation}
+  \label{eq:1}
+  \rho_{ij} = \exp\left(-\alpha\delta_{ij}\right)
+\end{equation}
+
+<<decayGraph, echo = FALSE, fig.height = 3, fig.width = 6, fig.caption = "Exponential decay model with a decay rate, alpha, of -2.3, minCutoff = 1e-3 and distCutoff given by the vertical dotted lines.">>=
+xx <- seq(0, 4, length = 100)
+fn <- function(edgeDists, minCov = 1e-3, distCutoff = 2) {
+    q1 <- (minCov - 1)/(exp(-2.3 * distCutoff) - 1)
+    q2 <- 1 - q1
+    ans <- (q2 + q1 * exp(-2.3 * edgeDists))
+    ans[ans < minCov] <- 0
+    return(ans)
+}
+par(mfrow = c(1, 2), mar = c(4, 4, 1, 1))
+plot(xx, fn(xx), type = "l", las = 1,
+     xlab = "Distance",
+     ylab = "Covariance")
+abline(v = 2, lty = 2, lwd = 0.5)
+plot(xx, fn(xx, distCutoff = 1), type = "l", las = 1,
+     xlab = "Distance",
+     ylab = "Covariance")
+abline(v = 1, lty = 2, lwd = 0.5)
+@ %
+
+
+
+\end{document}

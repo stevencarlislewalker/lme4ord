@@ -208,8 +208,6 @@ setReTrm.factAnal <- function(object, addArgsList,
         obsFac <- as.factor(colnames(obsMat)[obsInds])
         initLoad <- svd(2 * xtabs(auxEnv$response ~ obsFac + varFac) - 1)$v[,1:nAxes]
         loadMat <- repSparseFull(nVar, nAxes, as.vector(initLoad))
-        ##stop("sorry but you need to set the seed for factAnal initialization")
-        ## loadMat <- repSparseFull(nVar, nAxes)
     } else {
         set.seed(addArgs$seed)
         loadMat <- repSparseFull(nVar, nAxes, rnorm(nVar * nAxes))
@@ -241,7 +239,6 @@ setReTrm.factAnal <- function(object, addArgsList,
     
     lowerLoads <- rep(-Inf, length(getInit(Zt)))
     upperLoads <- rep( Inf, length(getInit(Zt)))
-    #lowerLoads[toBound] <- 0
 
     packReTrm(object, Zt, Lambdat,
               lowerLoads = lowerLoads,
@@ -342,8 +339,8 @@ setReTrm.flexvar <- function(object, addArgsList,
 ##' @export
 ##' @template setReTrm
 ##' @templateVar cls expDecay
-##' @templateVar form \code{expDecay(1 | grpFac, distCutoff, minCov, distmat)}
-##' @templateVar arg c("grpFac", "distCutoff", "minCov", "distmat")
+##' @templateVar form \code{expDecay(1 | grpFac, distCutoff, minCov, distMat)}
+##' @templateVar arg c("grpFac", "distCutoff", "minCov", "distMat")
 ##' @templateVar desc c("grouping factor (e.g. with levels given by geographical sites)", "maximum distance with covariance greater than minCov", "minimum covariance", "distance matrix object over the levels of grpFac")
 setReTrm.expDecay <- function(object, addArgsList,
                               auxEnv = NULL, devfunEnv = NULL) {
@@ -351,7 +348,15 @@ setReTrm.expDecay <- function(object, addArgsList,
     distCutoff         <- addArgs$distCutoff
     minCov             <- addArgs$minCov
     distMat <- edgeMat <- addArgs$distMat
-    
+    init               <- addArgs$init
+
+    if(is.null(init)) init <- c(0.01, 1)
+
+                                        # approximate exponential
+                                        # decay model by an edge-based
+                                        # model, with edges between
+                                        # levels that are less than
+                                        # distCutoff from each other
     edgeMat[] <- 1 * (distMat[] < distCutoff)
     sparseMat <- as(as.matrix(distMat), "TsparseMatrix")
     inds <- (sparseMat@x < distCutoff) & (sparseMat@i > sparseMat@j)
@@ -360,18 +365,20 @@ setReTrm.expDecay <- function(object, addArgsList,
                           x = rep(1, 2 * sum(inds)))
     colnames(Jedge) <- attr(distMat, "Labels")
     edgeDists <- sparseMat@x[inds]
+    
     Jgrp <- as(object$grpFac, "sparseMatrix")
     Jt <- as.repSparse(Jedge %*% Jgrp)
     Zt <- resetTransConst(kr(Jt, t(as.repSparse(object$modMat))))
+    
     transFun <- local({
-        init <- c(0.01)
+        init <- init
         edgeDists <- edgeDists
         distCutoff <- distCutoff
         minCov <- minCov
         function(matPars) {
             q1 <- (minCov - 1)/(exp(-(matPars[1]) * distCutoff) - 1)
             q2 <- 1 - q1
-            (q2 + q1 * exp(-(matPars[1]) * edgeDists))
+            matPars[2] * (q2 + q1 * exp(-(matPars[1]) * edgeDists))
         }
     })
     Lambdat <- repSparseDiag(transFun(1))
@@ -654,7 +661,6 @@ setUpperDefault <- function(init, ...) {
     rep(Inf, length(init))
 }
 
-
 indsForClass <- function(reTrmClass, reTrmClasses, nValuesPerTrm) {
     ## FIXME: not efficient -- computes indices for all classes first
     whichClass <- which(reTrmClasses == reTrmClass)
@@ -662,8 +668,6 @@ indsForClass <- function(reTrmClass, reTrmClasses, nValuesPerTrm) {
     ends <- starts + nValuesPerTrm - 1L
     unlist(mapply(":", starts[whichClass], ends[whichClass], SIMPLIFY = FALSE))
 }
-
-
 
 ##' Simulate additional arguments
 ##'

@@ -515,6 +515,27 @@ reorderPhylo <- function(object, ...) {
     }), class = class(object))
 }
 
+##' Exponentially decaying covariances
+##'
+##' Compute the exponential decay associated with an
+##' \code{\link{expDecay}} term.
+##'
+##' @param matPars parameters of an \code{\link{expDecay}} term.
+##' @param minCov,distCutoff see \code{\link{expDecay}}.
+##' @param nPoints number of points at which to evaluate the curve.
+##' @export
+covExpDecay <- function(matPars, minCov = 1e-3, distCutoff = 2, nPoints = 100) {
+    edgeDists <- seq(0, distCutoff, length = nPoints)
+    q1 <- (minCov - 1)/(exp(-(matPars[1]) * distCutoff) - 1)
+    q2 <- 1 - q1
+    edgeCovs <- matPars[2] * (q2 + q1 * exp(-(matPars[1]) * edgeDists))
+    return(data.frame(edgeDists = edgeDists, edgeCovs = edgeCovs))
+}
+
+##----------------------------------------------------------------------
+## factor analysis tools
+##----------------------------------------------------------------------
+
 ##' Orthogonal procrustean rotation matrix
 ##' 
 ##' @param X input matrix
@@ -526,6 +547,9 @@ orthProcrustesRotMat <- function(X, Z) {
     return(sol$v %*% t(sol$u))
 }
 
+## ----------------------------------------------------------------------
+## formula parsing tools
+## ----------------------------------------------------------------------
 
 ##' Simplify factor list over random effects terms (not currently
 ##' used)

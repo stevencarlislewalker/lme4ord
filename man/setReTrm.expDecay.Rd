@@ -26,9 +26,9 @@ Random effects term with exponential decay in distance-based covariance
 }
 \section{Mixed model formula usage}{
 
-\code{expDecay(1 | grpFac, distCutoff, minCov, distmat)}
+\code{expDecay(1 | grpFac, distCutoff, minCov, distMat)}
 \describe{
-\item{grpFac}{grouping factor (e.g. with levels given by geographical sites)} \item{distCutoff}{maximum distance with covariance greater than minCov} \item{minCov}{minimum covariance} \item{distmat}{distance matrix object over the levels of grpFac}
+\item{grpFac}{grouping factor (e.g. with levels given by geographical sites)} \item{distCutoff}{maximum distance with covariance greater than minCov} \item{minCov}{minimum covariance} \item{distMat}{distance matrix object over the levels of grpFac}
 }
 }
 \seealso{
