@@ -19,7 +19,8 @@ Depends:
     reshape2,
     minqa,
     MASS,
-    lattice
+    lattice,
+    multitable
 Imports:
     stats,
     Matrix,

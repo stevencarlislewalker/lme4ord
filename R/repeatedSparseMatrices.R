@@ -674,7 +674,7 @@ kr <- function(X, Y, trans = "*") {
               Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
 }
 
-setOldClass("repSparseKr")
+setOldClass(c("repSparseKr", "repSparse"))
 setIs("repSparseKr", "repSparse")
 
 ##' @rdname matrixOperations
@@ -697,7 +697,27 @@ Ops.repSparse <- function(e1, e2) {
     }
 }
 
+
 ##' @param x,y \code{\link{repSparse}} matrix objects
+##' @rdname matrixOperations
+##' @importFrom Matrix crossprod
+##' @export
+setMethod("crossprod", signature(x = "repSparse", y = "missing"), {
+    function(x, y = NULL, ...) {
+        crossprod(as.matrix(x, sparse = TRUE), ...)
+    }
+})
+
+##' @rdname matrixOperations
+##' @importFrom Matrix tcrossprod
+##' @export
+setMethod("tcrossprod", signature(x = "repSparse", y = "missing"), {
+    function(x, y = NULL, ...) {
+        tcrossprod(as.matrix(x, sparse = TRUE), ...)
+    }
+})
+
+
 ##' @rdname matrixOperations
 ##' @importFrom Matrix crossprod
 ##' @export
@@ -708,7 +728,6 @@ setMethod("crossprod", signature(x = "repSparse", y = "repSparse"), {
     }
 })
 
-##' @param x,y \code{\link{repSparse}} matrix objects
 ##' @rdname matrixOperations
 ##' @importFrom Matrix tcrossprod
 ##' @export

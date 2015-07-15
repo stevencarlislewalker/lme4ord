@@ -350,7 +350,7 @@ setReTrm.expDecay <- function(object, addArgsList,
     distMat <- edgeMat <- addArgs$distMat
     init               <- addArgs$init
 
-    if(is.null(init)) init <- c(0.01, 1)
+    if(is.null(init)) init <- c(1, 1)
 
                                         # approximate exponential
                                         # decay model by an edge-based

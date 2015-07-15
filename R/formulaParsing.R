@@ -275,3 +275,6 @@ anySpecial <- function(term) {
     any(findReTrmClasses() %in% all.names(term))
 }
 
+simStruc <- function(formula, data, addArgs, family, ...) {
+    parsedForm <- strucParseFormula(form, data = data, addArgs = addArgs, ...)
+}

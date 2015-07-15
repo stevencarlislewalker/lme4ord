@@ -144,23 +144,22 @@ simTestPhyloDat <- function(seed = 1, n = 10, m = 30,
     df <- as.data.frame(dl)
     phy <- ape::rtree(n = m)
     phy <- ape::compute.brlen(phy, method = "Grafen", power = power)
-    Vphy <- stanCov(ape::vcv(phy))
-    dimnames(Vphy) <- rep(list(1:m), 2)
-    covList <- list(species = Vphy)
-    parsedForm <- glmercFormula(form, df, covList = covList, strList = list())
-    parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim))
+    #Vphy <- stanCov(ape::vcv(phy))
+    #dimnames(Vphy) <- rep(list(1:m), 2)
+    covList <- list(phy = phy)
+    parsedForm <- strucParseFormula(form, data = df, addArgs = covList)
+    ##parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim))
     X <- model.matrix(nobars(form), df) # fixed effects design matrix
-    Z <- t(parsedForm$Lambdat %*% parsedForm$Zt) # random effects design
-                                        # matrix with
-                                        # phylogenetic
-                                        # covariances
+    Z <- t(parsedForm$Lambdat * parsedForm$Zt) # random effects design
+                                               # matrix with
+                                               # phylogenetic
+                                               # covariances
     u <- rnorm(ncol(Z)) # whitened random effects
     if(missing(fixefSim)) fixefSim <- rnorm(ncol(X))
     p <- plogis(as.numeric(X %*% fixefSim + Z %*% u)) # probability of observation
     dl$y <- rbinom(nrow(df), 1, p) # presence-absence data
     dimnames(dl)[[2]] <- phy$tip.label
     return(list(dl = dims_to_vars(dl),
-                cv = Vphy,
                 ph = phy))
 }
 

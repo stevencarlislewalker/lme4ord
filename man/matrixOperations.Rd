@@ -2,10 +2,12 @@
 \docType{methods}
 \name{kron}
 \alias{Ops.repSparse}
+\alias{crossprod,repSparse,missing-method}
 \alias{crossprod,repSparse,repSparse-method}
 \alias{kr}
 \alias{kron}
 \alias{kronecker,repSparse,repSparse-method}
+\alias{tcrossprod,repSparse,missing-method}
 \alias{tcrossprod,repSparse,repSparse-method}
 \title{Kronecker and Khatri-Rao products for repeated sparse matrices}
 \usage{
@@ -17,6 +19,10 @@ kr(X, Y, trans = "*")
   make.dimnames = FALSE, ...)
 
 \method{Ops}{repSparse}(e1, e2)
+
+\S4method{crossprod}{repSparse,missing}(x, y = NULL, ...)
+
+\S4method{tcrossprod}{repSparse,missing}(x, y = NULL, ...)
 
 \S4method{crossprod}{repSparse,repSparse}(x, y = NULL, ...)
 
@@ -32,8 +38,6 @@ kr(X, Y, trans = "*")
 \item{...}{ignored}
 
 \item{e1,e2}{\code{repSparse} objects}
-
-\item{x,y}{\code{\link{repSparse}} matrix objects}
 
 \item{x,y}{\code{\link{repSparse}} matrix objects}
 
