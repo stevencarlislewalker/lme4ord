@@ -625,7 +625,7 @@ kron <- function(X, Y, trans = "*",
               Dim = dim(X) * dim(Y))
 }
 
-setOldClass("repSparseKron")
+setOldClass(c("repSparseKron", "repSparse"))
 setIs("repSparseKron", "repSparse")
 
 
@@ -1233,7 +1233,7 @@ bind <- function(..., type = c("row", "col", "diag")) {
     })
 }
 
-setOldClass("repSparseBind")
+setOldClass(c("repSparseBind", "repSparse"))
 setIs("repSparseBind", "repSparse")
 
 
@@ -1307,7 +1307,7 @@ rep.repSparse <- function(x, times,
     return(ans)
 }
 
-setOldClass("repSparseRep")
+setOldClass(c("repSparseRep", "repSparse"))
 setIs("repSparseRep", "repSparse")
 
 
@@ -1436,7 +1436,7 @@ repSparseBlank <- function(nrow, ncol) {
     return(ans)
 }
 
-setOldClass("repSparseBlank")
+setOldClass(c("repSparseBlank", "repSparse"))
 setIs("repSparseBlank", "repSparse")
 
 
@@ -1454,7 +1454,7 @@ repSparseIdent <- function(matSize) {
     return(ans)
 }
 
-setOldClass("repSparseIdent")
+setOldClass(c("repSparseIdent", "repSparse"))
 setIs("repSparseIdent", "repSparse")
 
 
@@ -1476,7 +1476,7 @@ repSparseDiag <- function(vals, valInds) {
     return(ans)
 }
 
-setOldClass("repSparseDiag")
+setOldClass(c("repSparseDiag", "repSparse"))
 setIs("repSparseDiag", "repSparse")
 
 
@@ -1500,7 +1500,7 @@ repSparseFull <- function(nrow, ncol, vals) {
     return(ans)       
 }
 
-setOldClass("repSparseFull")
+setOldClass(c("repSparseFull", "repSparse"))
 setIs("repSparseFull", "repSparse")
 
 
@@ -1522,7 +1522,7 @@ repSparseCol <- function(vals, valInds) {
     return(ans)
 }
 
-setOldClass("repSparseCol")
+setOldClass(c("repSparseCol", "repSparse"))
 setIs("repSparseCol", "repSparse")
 
 
@@ -1540,7 +1540,7 @@ repSparseInd <- function(fac) {
     return(ans)
 }
 
-setOldClass("repSparseInd")
+setOldClass(c("repSparseInd", "repSparse"))
 setIs("repSparseInd", "repSparse")
 
 
@@ -1579,7 +1579,7 @@ repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
     return(ans)
 }
 
-setOldClass("repSparseTri")
+setOldClass(c("repSparseTri", "repSparse"))
 setIs("repSparseTri", "repSparse")
 
 ##' General and full triangular repeated sparse matrix
@@ -1602,7 +1602,7 @@ repSparseGenFullTri <- function(nrow, ncol, vals, diag = TRUE, low = TRUE) {
     return(ans)
 }
 
-setOldClass("repSparseGenFullTri")
+setOldClass(c("repSparseGenFullTri", "repSparse"))
 setIs("repSparseGenFullTri", "repSparse")
 
 
@@ -1622,7 +1622,7 @@ repSparseOnes <- function(nrow, ncol) {
     return(ans)
 }
 
-setOldClass("repSparseOnes")
+setOldClass(c("repSparseOnes", "repSparse"))
 setIs("repSparseOnes", "repSparse")
 
 
@@ -1658,7 +1658,7 @@ repSparseSymm <- function(diagVals, offDiagVals) {
     return(ans)
 }
 
-setOldClass("repSparseSymm")
+setOldClass(c("repSparseSymm", "repSparse"))
 setIs("repSparseSymm", "repSparse")
 
 
@@ -1687,7 +1687,7 @@ repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
     return(ans)
 }
 
-setOldClass("repSparseCompSymm")
+setOldClass(c("repSparseCompSymm", "repSparse"))
 setIs("repSparseCompSymm", "repSparse")
 
 
@@ -1717,7 +1717,7 @@ repSparseOneOffDiag <- function(diagVal, offDiagVal, offDiagInds, matSize) {
     return(ans)
 }
 
-setOldClass("repSparseOneOffDiag")
+setOldClass(c("repSparseOneOffDiag", "repSparse"))
 setIs("repSparseOneOffDiag", "repSparse")
 
 
@@ -1753,7 +1753,7 @@ repSparseConstVarChol <- function(sdVal, offDiagVals) {
     return(ans)
 }
 
-setOldClass("repSparseConstVarChol")
+setOldClass(c("repSparseConstVarChol", "repSparse"))
 setIs("repSparseConstVarChol", "repSparse")
 
 
@@ -1793,7 +1793,7 @@ repSparseCorMatChol <- function(offDiagPars) {
     return(ans)
 }
 
-setOldClass("repSparseCorMatChol")
+setOldClass(c("repSparseCorMatChol", "repSparse"))
 setIs("repSparseCorMatChol", "repSparse")
 
 
@@ -1828,7 +1828,7 @@ repSparseVarWithCovariate <- function(varPars, covariate, grpFac,
     return(ans)
 }
 
-setOldClass("repSparseVarWithCovariate")
+setOldClass(c("repSparseVarWithCovariate", "repSparse"))
 setIs("repSparseVarWithCovariate", "repSparse")
 
 
@@ -1874,7 +1874,7 @@ repSparseExpChol <- function(distObj, cutOffDist = Inf) {
     return(ans)
 }
 
-setOldClass("repSparseExpChol")
+setOldClass(c("repSparseExpChol", "repSparse"))
 setIs("repSparseExpChol", "repSparse")
 
 ##' Construct a repeated sparse upper Cholesky factor from an
@@ -1956,7 +1956,7 @@ repSparseCorFactor <- function(object, sig = 1) {
     return(ans)
 }
 
-setOldClass("repSparseCorFactor")
+setOldClass(c("repSparseCorFactor", "repSparse"))
 setIs("repSparseCorFactor", "repSparse")
 
 ## ----------------------------------------------------------------------
