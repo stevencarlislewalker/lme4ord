@@ -134,7 +134,8 @@ getModMatAndGrpFac <- function(bar, fr) {
 ##' \item{linForm}{linear model formula}
 ##' \item{grpFac}{grouping factor}
 ##' }
-##' 
+##'
+##' @seealso getReTrm
 ##' @family setReTrm
 ##' @export
 setReTrm <- function(object, addArgsList,
@@ -726,7 +727,7 @@ getAddArgs <- function(addArgsExpr, addArgsList) {
               names(addArgsExpr))
 }
 
-##' Simulate from a random effects term (experimental)
+##' Simulate from a random effects term
 ##'
 ##' @param object \code{reTrmStruct} object
 ##' @export
@@ -741,7 +742,7 @@ simReTrm <- function(object) {
 ##' @param x \code{factAnal} \code{reTrmStruct} object.
 ##' @rdname setReTrm.factAnal
 ##' @export
-loadings.factAnal <- function(x, ...) {
+loads.factAnal <- function(x, ...) {
     trans <- environment(x$Zt$trans)$Btrans
     trmDims <- environment(trans)$trmDims
     matrix(trans(getInit(x$Zt)),

@@ -9,6 +9,16 @@ dataList <- dims_to_vars(data.list(respVar = as.matrix(fish),
                                    dimids = c("lakes", "species")))
 dataFrame <- as.data.frame(aperm(dataList, c(2, 1)))
 
+form <- respVar ~ 1 + 
+    (1 | lakes) +
+    (1 | species) +
+    factAnal(0 + lakes | species, nAxes = 2)
+
+
+
+strucParseFormula(form, dataFrame)
+
+
 gm1 <- strucGlmer(respVar ~ 1 + 
                   (1 | lakes) +
                   (1 | species) +
@@ -17,6 +27,19 @@ gm1 <- strucGlmer(respVar ~ 1 +
                   devfunOnly = FALSE,
                   optMaxit = 20000, optVerb = 0L,
                   penLoads = mkPenLpNorm(p = 2))
+
+
+etaSim <- getOffset(gm1) +
+    fitted(gm1, ranefTrms = NULL) +
+    Reduce("+", lapply(getReTrm(gm1), simReTrm))    
+familySimFun(family(gm1))(weights(gm1), nobs(gm1), family(gm1)$linkinv(etaSim))
+
+
+
+gm1$parsedForm$devfunEnv$resp$family$simulate
+
+
+
 
 inds <- reIndsPerTrm(gm1)
 with(gm1$parsedForm, image(tcrossprod(Lambdat * Zt)[inds[[2]], inds[[3]]]))

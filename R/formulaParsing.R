@@ -122,14 +122,29 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
                                         # terms
     random <- lapply(random, update)
 
-    return(list(response = response, fixed = fixed, random = random,
+    ans <- list(response = response, fixed = fixed, random = random,
                 Zt = Zt, Lambdat = Lambdat,
                 mapToModMat = mkSparseTrans(Zt),
                 mapToCovFact = mkSparseTrans(Lambdat),
                 initPars = initPars, parInds = parInds,
                 lower = lower, upper = upper,
                 devfunEnv = devfunEnv,
-                formula = formula))
+                formula = formula)
+    structure(ans, class = "strucParseFormula")
+}
+
+##' @rdname strucParseFormula
+##' @export
+print.strucParseFormula <- function(x, ...) {
+    cat("Structured parsed formula\n")
+    cat("=========================\n")
+    print(x$formula)
+    cat("\nInitial fixed effect coefficients\n")
+    cat(  "---------------------------------\n")
+    print(with(x, initPars[parInds$fixef]))
+    cat("\nInitial random effect terms\n")
+    cat(  "---------------------------\n")
+    print(x$random)
 }
 
 ##' Split a formula

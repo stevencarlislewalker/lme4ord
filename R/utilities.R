@@ -173,37 +173,76 @@ simTestPhyloDat <- function(seed = 1, n = 10, m = 30,
 nChoose2Inv <- function(m) as.integer((sqrt(1 + 8 * as.integer(m)) + 1)/2)
 
 
-
-
+## ----------------------------------------------------------------------
 ## Modified from lme4's modification of stats simulate() functions
 
-gaussian_simfun <- function(wts, nsim, ftd) {
-    if (any(wts != 1)) warning("ignoring prior weights")
-    rnorm(nsim*length(ftd), ftd, sd=sigma(object))
+##' Family simulation functions
+##'
+##' @param object typically a \code{\link{family}} object
+##' @return a simulation function taking three arguments: \code{wts},
+##' \code{nsim}, and \code{ftd}.
+##' @export
+familySimFun <- function(object, ...) {
+    UseMethod("familySimFun")
 }
 
-binomial_simfun <- function(wts, nsim, ftd=fitted(object)) {
-    rbinom(nsim, size = wts, prob = ftd)/wts
+##' @rdname familySimFun
+##' @export
+familySimFun.family <- function(object, ...) {
+    dummyClass <- paste(object$family, "Family", sep = "")
+    familySimFun(structure(list(), class = dummyClass))
 }
 
-poisson_simfun <- function(wts, nsim, ftd) {
+##' @rdname familySimFun
+##' @export
+familySimFun.character <- function(object, ...) {
+    dummyClass <- paste(object, "Family", sep = "")
+    familySimFun(structure(list(), class = dummyClass))
+}
+
+##' @rdname familySimFun
+##' @export
+familySimFun.gaussianFamily <- function(object, ...) {
+    function(wts, nsim, ftd) {
+        if (any(wts != 1)) warning("ignoring prior weights")
+        rnorm(nsim*length(ftd), ftd, sd=sigma(object))
+    }
+}
+
+##' @rdname familySimFun
+##' @export
+familySimFun.binomialFamily <- function(object, ...) {
+    function(wts, nsim, ftd=fitted(object)) {
+        rbinom(nsim, size = wts, prob = ftd)/wts
+    }
+}
+
+##' @rdname familySimFun
+##' @export
+familySimFun.poissonFamily <- function(object, ...) {
+    function(wts, nsim, ftd) {
         ## A Poisson GLM has dispersion fixed at 1, so prior weights
         ## do not have a simple unambiguous interpretation:
         ## they might be frequency weights or indicate averages.
         if (any(wts != 1)) warning("ignoring prior weights")
         rpois(nsim*length(ftd), ftd)
     }
-
+}
 
 ## FIXME: need a gamma.shape.merMod method in order for this to work.
 ##        (see initial shot at gamma.shape.merMod below)
-Gamma_simfun <- function(object, nsim, ftd=fitted(object)) {
-    stop("not implemented")
-    wts <- weights(object)
-    if (any(wts != 1)) message("using weights as shape parameters")
-    ## ftd <- fitted(object)
-    shape <- MASS::gamma.shape(object)$alpha * wts
-    rgamma(nsim*length(ftd), shape = shape, rate = shape/ftd)
+
+##' @rdname familySimFun
+##' @export
+familySimFun.GammaFamily <- function(object, ...) {
+    function(object, nsim, ftd=fitted(object)) {
+        stop("not implemented")
+        wts <- weights(object)
+        if (any(wts != 1)) message("using weights as shape parameters")
+        ## ftd <- fitted(object)
+        shape <- MASS::gamma.shape(object)$alpha * wts
+        rgamma(nsim*length(ftd), shape = shape, rate = shape/ftd)
+    }
 }
 
 gamma.shape.merMod <- function(object, ...) {
@@ -238,17 +277,17 @@ gamma.shape.merMod <- function(object, ...) {
 
 ## in the original MASS version, .Theta is assigned into the environment
 ## (triggers a NOTE in R CMD check)
-negative.binomial_simfun <- function (object, nsim, ftd=fitted(object))
-{
-    stop("not implemented yet")
-    ## val <- rnbinom(nsim * length(ftd), mu=ftd, size=.Theta)
-}
+## negative.binomial_simfun <- function (object, nsim, ftd=fitted(object))
+## {
+##     stop("not implemented yet")
+##     ## val <- rnbinom(nsim * length(ftd), mu=ftd, size=.Theta)
+## }
 
-simfunList <- list(gaussian = gaussian_simfun,
-		   binomial = binomial_simfun,
-		   poisson  = poisson_simfun,
-		   Gamma    = Gamma_simfun,
-		   negative.binomial = negative.binomial_simfun)
+## simfunList <- list(gaussian = gaussian_simfun,
+## 		   binomial = binomial_simfun,
+## 		   poisson  = poisson_simfun,
+## 		   Gamma    = Gamma_simfun,
+## 		   negative.binomial = negative.binomial_simfun)
 
 
 ##' Convert row and column indices to vector indices, for a triangular

@@ -3,18 +3,23 @@
 \alias{VarCorr.strucGlmer}
 \alias{deviance.strucGlmer}
 \alias{df.residual.strucGlmer}
+\alias{family.strucGlmer}
 \alias{fitted.strucGlmer}
 \alias{formula.strucGlmer}
+\alias{getOffset}
 \alias{isREML.strucGlmer}
 \alias{logLik.strucGlmer}
 \alias{mkStrucGlmer}
+\alias{model.matrix.strucGlmer}
 \alias{nobs}
 \alias{print.strucGlmer}
 \alias{print.summary.strucGlmer}
 \alias{residuals.strucGlmer}
+\alias{simulate.strucGlmer}
 \alias{strucGlmer-class}
 \alias{summary.strucGlmer}
 \alias{vcov.strucGlmer}
+\alias{weights.strucGlmer}
 \title{Structured GLMM class}
 \usage{
 mkStrucGlmer(opt, parsedForm, dfun, mc)
@@ -47,6 +52,16 @@ nobs(object, ...)
 \method{logLik}{strucGlmer}(object, ...)
 
 \method{formula}{strucGlmer}(x, ...)
+
+\method{family}{strucGlmer}(object, ...)
+
+\method{weights}{strucGlmer}(object, ...)
+
+getOffset(object)
+
+\method{model.matrix}{strucGlmer}(object, ...)
+
+\method{simulate}{strucGlmer}(object, nsim = 1, seed = NULL, ...)
 }
 \arguments{
 \item{opt,parsedForm,dfun,mc}{See desciption of \code{strucGlmer}
@@ -68,7 +83,7 @@ calculations if available}
 \item{show.resids}{show residuals?}
 
 \item{ranefTrms}{character vector naming random effects terms to
-be used}
+be used (if \code{NULL} no terms are used)}
 
 \item{fixef}{should fixed effects be used?}
 

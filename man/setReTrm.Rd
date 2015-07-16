@@ -82,11 +82,13 @@ The default method is identical to a standard \code{lme4} random effects term.
 \seealso{
 \code{\link{mkReTrmStructs}} for construction of these objects
 
+getReTrm
+
 Other setReTrm: \code{\link{cooccur}},
   \code{\link{setReTrm.cooccur}}; \code{\link{edge}},
   \code{\link{setReTrm.edge}}; \code{\link{expDecay}},
   \code{\link{setReTrm.expDecay}}; \code{\link{factAnal}},
-  \code{\link{loadings.factAnal}},
+  \code{\link{loads.factAnal}},
   \code{\link{setReTrm.factAnal}}; \code{\link{flexvar}},
   \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
   \code{\link{setReTrm.identity}}; \code{\link{lme4}},

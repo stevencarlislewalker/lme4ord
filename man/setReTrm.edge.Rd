@@ -35,7 +35,7 @@ Random effects term for edge-based model of tree-induced covariance
 Other setReTrm: \code{\link{cooccur}},
   \code{\link{setReTrm.cooccur}}; \code{\link{expDecay}},
   \code{\link{setReTrm.expDecay}}; \code{\link{factAnal}},
-  \code{\link{loadings.factAnal}},
+  \code{\link{loads.factAnal}},
   \code{\link{setReTrm.factAnal}};
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
   \code{\link{packReTrm}}, \code{\link{setReTrm}},

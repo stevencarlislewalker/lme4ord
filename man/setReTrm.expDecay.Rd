@@ -35,7 +35,7 @@ Random effects term with exponential decay in distance-based covariance
 Other setReTrm: \code{\link{cooccur}},
   \code{\link{setReTrm.cooccur}}; \code{\link{edge}},
   \code{\link{setReTrm.edge}}; \code{\link{factAnal}},
-  \code{\link{loadings.factAnal}},
+  \code{\link{loads.factAnal}},
   \code{\link{setReTrm.factAnal}};
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
   \code{\link{packReTrm}}, \code{\link{setReTrm}},

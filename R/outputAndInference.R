@@ -180,7 +180,7 @@ print.summary.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3)
 }
 
 ## ----------------------------------------------------------------------
-## extraction
+## parameter extraction
 ## ----------------------------------------------------------------------
 
 ##' @rdname pars
@@ -329,7 +329,7 @@ residuals.strucGlmer <- function(object, ...) {
 }
 
 ##' @param ranefTrms character vector naming random effects terms to
-##' be used
+##' be used (if \code{NULL} no terms are used)
 ##' @param fixef should fixed effects be used?
 ##' @rdname strucGlmer-class
 ##' @export
@@ -469,10 +469,42 @@ logLik.strucGlmer <- function(object, ...) {
 ##' @export
 formula.strucGlmer <- function(x, ...) x$parsedForm$formula
 
+##' @importFrom stats family
+##' @rdname strucGlmer-class
+##' @export
+family.strucGlmer <- function(object, ...) object$parsedForm$devfunEnv$resp$family
+
+##' @importFrom stats weights
+##' @rdname strucGlmer-class
+##' @export
+weights.strucGlmer <- function(object, ...) object$parsedForm$devfunEnv$resp$weights
+
+##' @rdname strucGlmer-class
+##' @export
+getOffset <- function(object) object$parsedForm$devfunEnv$baseOffset
+
+##' @importFrom stats model.matrix
+##' @rdname strucGlmer-class
+##' @export
+model.matrix.strucGlmer <- function(object, ...) object$parsedForm$fixed
 
 ## ----------------------------------------------------------------------
 ## simulations
 ## ----------------------------------------------------------------------
+
+##' @importFrom stats simulate
+##' @rdname strucGlmer-class
+##' @export
+simulate.strucGlmer <- function(object, nsim = 1, seed = NULL, ...) {
+    replicate(nsim, {
+        fe <- getOffset(object) + fitted(object, ranefTrms = NULL)
+        re <- Reduce("+", lapply(getReTrm(object), simReTrm))
+        fam <- family(object)
+        familySimFun(fam)(weights(object),
+                          nobs(object),
+                          fam$linkinv(fe + re))
+    })
+}
 
 ##' Simulate from a parsed formula
 ##' 
@@ -500,6 +532,8 @@ simStrucParsedForm <- function(parsedForm, family = binomial,
 ## print random effects terms
 ## ----------------------------------------------------------------------
 
+
+
 ##' Print random effects term
 ##' 
 ##' @param object \code{\link{repSparse}} object
@@ -509,6 +543,13 @@ simStrucParsedForm <- function(parsedForm, family = binomial,
 ##' @export
 printReTrm <- function(object, forSummary = FALSE, ...) {
     UseMethod("printReTrm")
+}
+
+##' @rdname printReTrm
+##' @aliases print.reTrmStruct
+##' @export
+print.reTrmStruct <- function(x, ...) {
+    printReTrm(x, ...)
 }
 
 .printPars <- function(description = "parameters: ", value) {
@@ -582,23 +623,23 @@ printReTrm.factAnal <- function(object, forSummary = FALSE, ...) {
 ##' \code{reTrmStruct} objectitself rather than a length-one list with
 ##' the object.
 ##' @return a fitted random effects structure
+##' @seealso \code{\link{setReTrm}}
 ##' @export
 getReTrm <- function(object, name, drop = TRUE) {
     structs <- object$parsedForm$random
     if(missing(name)) {
-        message("available reTrmStruct objects:\n",
-                paste(names(structs), collapse = ", "))
-        return(invisible())
+        #message("available reTrmStruct objects:\n",
+        #        paste(names(structs), collapse = ", "))
+        #return(invisible())
+        return(structs)
     }
-    nameInd <- which(!is.na(sapply(names(structs), pmatch,
-                                   x = name)))
-    ##nameInd <- pmatch(name, names(structs))
+    nameInd <- which(sapply(lapply(names(structs), "==", name), any))
     if(length(nameInd) == 0L) {
         stop("could not find matching struct. ",
              "please try one of the following:\n",
              paste(names(structs), collapse = ", "))
     }
-    if(drop) {
+    if(drop & (length(nameInd) == 1L)) {
         return(structs[[nameInd]])
     } else {
         return(structs [nameInd] )

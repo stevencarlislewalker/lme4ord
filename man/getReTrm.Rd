@@ -24,4 +24,7 @@ a fitted random effects structure
 \description{
 Get random effects structures from a strucGlmer object
 }
+\seealso{
+\code{\link{setReTrm}}
+}
 
