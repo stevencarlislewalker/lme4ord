@@ -1,14 +1,10 @@
 library(lme4ord)
 library(multitable)
-library(reo)
 
-data(fish)
-data(limn)
-dataList <- dims_to_vars(data.list(respVar = as.matrix(fish),
-                                   pH = limn$pH,
-                                   dimids = c("lakes", "species")))
-dataFrame <- as.data.frame(aperm(dataList, c(2, 1)))
-
+nLakes <- 50
+nSpecies <- 30
+dataFrame <- expand.grid(lakes   = paste("lake",    1:nLakes,   sep = ""),
+                         species = paste("species", 1:nSpecies, sep = ""))
 form <- respVar ~ 1 + 
     (1 | lakes) +
     (1 | species) +
@@ -20,7 +16,11 @@ dataFrame$respVar <- as.numeric(simulate(pform, nsim = 1, seed = NULL,
                                          weights = rep(1, nrow(dataFrame)),
                                          family = binomial()))
 
+gm <- strucGlmer(form, dataFrame, binomial, optMaxit = 50000,
+                 penLoads = mkPenLpNorm(p = 2, lambda = 1))
 
+
+biplot(getReTrm(gm, "species.factAnal"))
 
 setInit(pform$random$lakes.unstruc$Lambdat, 2)
 setInit(pform$random$species.unstruc$Lambdat, 0.1)
