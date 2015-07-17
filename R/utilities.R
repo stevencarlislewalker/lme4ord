@@ -118,52 +118,6 @@ stanCov <- function(covMat) {
 }
 
 
-##' Generate phylogenetic test data
-##'
-##' @param seed random seed
-##' @param n number of sites
-##' @param m number of species
-##' @param form formula with \code{y} (comm dat), \code{x} (env),
-##' \code{z} (trait), \code{species}, or \code{sites}
-##' @param power power for \code{Grafen} method
-##' @param covarSim covariance parameters
-##' @param fixefSim fixed effect parameters
-##' @param perm permute data list?
-##' @importMethodsFrom Matrix t
-##' @export
-simTestPhyloDat <- function(seed = 1, n = 10, m = 30,
-                            form = y ~ 1 + (1 | species),
-                            power = 0.1,
-                            covarSim = 1, fixefSim,
-                            perm = FALSE) {
-    set.seed(seed)
-    dl <- dims_to_vars(data.list(y = 1 * (matrix(rnorm(n * m), n, m) > 0),
-                                 x = rnorm(n), z = rnorm(m),
-                                 dimids = c("sites", "species")))
-    if(perm) dl <- aperm(dl, c(2, 1))
-    df <- as.data.frame(dl)
-    phy <- ape::rtree(n = m)
-    phy <- ape::compute.brlen(phy, method = "Grafen", power = power)
-    #Vphy <- stanCov(ape::vcv(phy))
-    #dimnames(Vphy) <- rep(list(1:m), 2)
-    covList <- list(phy = phy)
-    parsedForm <- strucParseFormula(form, data = df, addArgs = covList)
-    ##parsedForm <- within(parsedForm, Lambdat@x[] <- mapToCovFact(covarSim))
-    X <- model.matrix(nobars(form), df) # fixed effects design matrix
-    Z <- t(parsedForm$Lambdat * parsedForm$Zt) # random effects design
-                                               # matrix with
-                                               # phylogenetic
-                                               # covariances
-    u <- rnorm(ncol(Z)) # whitened random effects
-    if(missing(fixefSim)) fixefSim <- rnorm(ncol(X))
-    p <- plogis(as.numeric(X %*% fixefSim + Z %*% u)) # probability of observation
-    dl$y <- rbinom(nrow(df), 1, p) # presence-absence data
-    dimnames(dl)[[2]] <- phy$tip.label
-    return(list(dl = dims_to_vars(dl),
-                ph = phy))
-}
-
-
 ##' Inverse of the n-choose-2 function
 ##'
 ##' @param m a vector coercible to integer
@@ -206,7 +160,7 @@ familySimFun.character <- function(object, ...) {
 familySimFun.gaussianFamily <- function(object, ...) {
     function(wts, nsim, ftd) {
         if (any(wts != 1)) warning("ignoring prior weights")
-        rnorm(nsim*length(ftd), ftd, sd=sigma(object))
+        rnorm(nsim*length(ftd), ftd, sd = 1) ## FIXME: sd = sigma(object)
     }
 }
 
@@ -248,20 +202,6 @@ familySimFun.GammaFamily <- function(object, ...) {
 
 gamma.shape.merMod <- function(object, ...) {
     stop("not implemented")
-    if(family(object)$family != "Gamma")
-	stop("Can not fit gamma shape parameter because Gamma family not used")
-
-    y <- getME(object, "y")
-    mu <- getME(object, "mu")
-    w <- weights(object)
-                                        # Sec 8.3.2 (MN)
-    L <- w*(log(y/mu)-((y-mu)/mu))
-    dev <- -2*sum(L)
-                                        # Eqs. between 8.2 & 8.3 (MN)
-    Dbar <- dev/length(y)
-    structure(list(alpha = (6+2*Dbar)/(Dbar*(6+Dbar)),
-		   SE = NA), # FIXME: obtain standard error
-	      class = "gamma.shape")
 }
 
 
@@ -663,7 +603,7 @@ getLlikAIC <- function(object, cmp = object@devcomp$cmp) {
 	if(isREML(object)) cmp["REML"] # *no* likelihood stats here
 	else {
 	    c(AIC = AIC(llik), BIC = BIC(llik), logLik = c(llik),
-	      deviance = devCritFun(object),
+	      deviance = lme4:::devCritFun(object),
               df.resid = df.residual(object))
 	}
     }
@@ -685,9 +625,9 @@ getLlikAIC <- function(object, cmp = object@devcomp$cmp) {
 .prt.VC <- function(varcor, digits, comp, formatter = format, ...) {
     cat("Random effects:\n")
     fVC <- if(missing(comp))
-	formatVC(varcor, digits = digits, formatter = formatter)
+	lme4:::formatVC(varcor, digits = digits, formatter = formatter)
     else
-	formatVC(varcor, digits = digits, formatter = formatter, comp = comp)
+	lme4:::formatVC(varcor, digits = digits, formatter = formatter, comp = comp)
     print(fVC, quote = FALSE, digits = digits, ...)
 }
 

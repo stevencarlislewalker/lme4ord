@@ -183,7 +183,8 @@ setReTrm.default <- function(object, addArgsList,
 ##' @templateVar desc "grouping factor"
 setReTrm.lme4 <- function(object, addArgsList,
                           auxEnv = NULL, devfunEnv = NULL) {
-    setReTrm.default(object, addArgsist, devfunEnv)
+    
+    setReTrm.default(object, addArgsList, devfunEnv)
 }
 
 ##' Random effects term for factor analysis
@@ -257,6 +258,10 @@ setReTrm.factAnal <- function(object, addArgsList,
 ##' @templateVar desc c("grouping factor for loadings", "number of axes", "random seed for initial axis values")
 setReTrm.sem <- function(object, addArgsList,
                          auxEnv = NULL, devfunEnv = NULL) {
+    
+    ## silence no visible binding for global variable note
+    loadMat <- NULL
+    
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
     nl <- nlevels(grpFac <- object$grpFac)
     nc <- addArgs$nAxes
@@ -400,6 +405,10 @@ setReTrm.expDecay <- function(object, addArgsList,
 ##' @templateVar desc c("linear model formula decribing effects", "grouping factor", "phylo object relating the levels of the grouping factor")
 setReTrm.phyloEdge <- function(object, addArgsList,
                                auxEnv = NULL, devfunEnv = NULL) {
+
+    ## silence no visible binding for global variable notes
+    rtree <- compute.brlen <- NULL
+    
                                         # get additional arguments
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
 
@@ -533,6 +542,7 @@ setReTrm.obslev <- function(object, addArgsList,
 ##' Random effects term from an \code{nlme}-style \code{corStruct}
 ##' object
 ##'
+##' @importFrom nlme corFactor
 ##' @export
 ##' @template setReTrm
 ##' @templateVar cls nlmeCorStruct
@@ -600,7 +610,7 @@ VarCorr.reTrmStruct <- function(x, sigma = 1, rdig = 3) {
 
 ##' @export
 VarCorr.factAnal <- function(x, sigma = 1, rdig = 3) {
-    tcrossprod(loadings.factAnal(x))
+    tcrossprod(loadings(scores(x)))
 }
 
 ##' Update a random effects term structure with new parameters
@@ -630,6 +640,9 @@ update.flexvar <- function(object, newCovar, newLoads, ...) {
     ## method is required whenever the transformation function depends
     ## on other random effects terms.  Please see `?assignWith` for a
     ## useful technique in this regard
+
+    ## silence no visible binding for global variable note
+    reTrmClasses <- NULL
     
     object <- update.reTrmStruct(object, newCovar, newLoads)
     transEnv <- environment(object$Lambdat$trans)
@@ -708,6 +721,10 @@ simAddArgs.default <- function(object, ...) list()
 ##' @export
 simAddArgs.phyloEdge <- function(object, rtreeArgs = list(),
                                  compute.brlenArgs = list(), ...) {
+
+    ## silence no visible binding for global variable note
+    rtree <- compute.brlen <- NULL
+    
     namePhy <- as.character(object$addArgs$phy)
     phy <- do.call(rtree, c(list(nlevels(object$grpFac)), rtreeArgs))
     phy <- do.call(compute.brlen, c(list(phy), compute.brlenArgs))
@@ -817,6 +834,9 @@ sortedBind <- function(mats, type = c("row", "col", "diag")) {
 ##' slot(Xsparse, "x") <- Xtrans(rnorm(2))
 ##' print(Xsparse)
 mkSparseTrans <- function(object) {
+    ## silence no visible global function definition note
+    inds <- trans <- NULL
+    
     ans <- function(matPars) trans(matPars)[inds]
     environment(ans) <- new.env(parent = environment(object$trans))
     environment(ans)$trans <- object$trans

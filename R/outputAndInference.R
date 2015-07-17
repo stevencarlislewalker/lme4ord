@@ -195,6 +195,7 @@ pars <- function(object, ...) UseMethod("pars")
 ##' @export
 pars.strucGlmer <- function(object, ...) object$opt$par
 
+##' @importFrom lme4 getME
 ##' @rdname pars
 ##' @export
 pars.glmerMod <- function(object, ...) unlist(getME(object, c("theta", "beta")))

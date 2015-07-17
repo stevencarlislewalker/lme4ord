@@ -65,6 +65,10 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                           "If you are trying to specify a binomial model,\n",
                           "please use weights to specify the total number\n",
                           "of Bernoulli trials.")
+
+    ## silence no visible binding for global variable notes
+    resp <- baseOffset <- lp0 <- setCovar <- pp <- setLoads <- setWeigh <-
+        GQmat <- compDev <- fac <- NULL
     
     if(pureR) {
         stop("pure R implementation not currently working")

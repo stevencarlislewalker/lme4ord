@@ -902,6 +902,10 @@ mkExpCholTrans <- function(init, cholObj, symmObj, vecDist) {
 ##' @param devfunEnv environment of the deviance function
 mkFlexDiagTrans <- function(init, defaultOutput,
                             devfunEnv) {
+
+    ## silence no visible binding for global variable notes
+    pp <- resp <- indsObsLevel <- ns <- NULL
+    
     local({
         init <- init
         nBasis <- length(init)
@@ -1008,6 +1012,7 @@ mkVarExpTrans <- function(init, covariate, grpFac) {
     })
 }
 
+##' @importFrom Matrix KhatriRao
 ##' @param modMat model matrix
 ##' @rdname mkTrans
 ##' @export
@@ -1844,6 +1849,7 @@ setIs("repSparseVarWithCovariate", "repSparse")
 ##' Cholesky factor of a repeated sparse covariance matrix obeying
 ##' exponential distance decay in covariance
 ##'
+##' @importFrom Matrix Cholesky
 ##' @param distObj distance matrix object
 ##' @param cutOffDist maximum distance with nonzero correlations
 ##' @family repSparseSpecial
@@ -1888,6 +1894,8 @@ setIs("repSparseExpChol", "repSparse")
 ##' Construct a repeated sparse upper Cholesky factor from an
 ##' \code{nlme}-style \code{corStruct} object
 ##'
+##' @importFrom nlme Dim
+##' @importFrom nlme "coef<-"
 ##' @param object a \code{corStruct} object
 ##' @param sig initial standard deviation
 ##' @family repSparseSpecial

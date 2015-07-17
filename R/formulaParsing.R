@@ -182,6 +182,8 @@ simulate.strucParseFormula <- function(object, nsim = 1, seed = NULL,
 ##' Split a formula
 ##'
 ##' @param formula Generalized mixed model formula
+##' @importFrom lme4 expandDoubleVerts
+##' @importFrom lme4 nobars
 ##' @rdname splitForm
 ##' @export
 splitForm <- function(formula) {
@@ -323,5 +325,5 @@ anySpecial <- function(term) {
 }
 
 simStruc <- function(formula, data, addArgs, family, ...) {
-    parsedForm <- strucParseFormula(form, data = data, addArgs = addArgs, ...)
+    parsedForm <- strucParseFormula(formula, data = data, addArgs = addArgs, ...)
 }
