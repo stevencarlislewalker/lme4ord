@@ -62,7 +62,12 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
                                         # effects model matrix, and
                                         # list of random effects
                                         # structures
-    response <- model.response(model.frame(sf$fixedFormula, data))
+    response <- try(model.response(model.frame(sf$fixedFormula, data)),
+                    silent = TRUE)
+    if(inherits(response, "try-error")) {
+        response <- rep(NA, nrow(data))
+        sf$fixedFormula <- sf$fixedFormula[-2]
+    }
     fixed    <- model.matrix(sf$fixedFormula, data)
     random   <- lapply(reTrmsList, setReTrm, addArgs = addArgs,
                        auxEnv = environment(),
@@ -156,6 +161,7 @@ model.matrix.strucParseFormula <- function(object, ...) object$fixed
 simulate.strucParseFormula <- function(object, nsim = 1, seed = NULL,
                                        weights = NULL,
                                        family = binomial(), ...) {
+    if(!is.null(seed)) set.seed(seed)
     nobs <- length(object$response)
     if(is.null(weights)) weights <- rep(1, nobs)
     replicate(nsim, {

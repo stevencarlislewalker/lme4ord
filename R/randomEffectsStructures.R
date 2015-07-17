@@ -786,7 +786,7 @@ scores.factAnal <- function(x, ...) {
 ##' @export
 biplot.factAnal <- function(x, ...) {
     l... <- list(...)
-    do.call(biplot, c(setNames(scores(x), c("x", "y")), l...))
+    do.call(biplot, c(setNames(scores(x), c("y", "x")), l...))
 }
 
 ##' Bind repeated sparse matrices and sort their indices to be
