@@ -9,8 +9,8 @@ nSites <- 10
 nSpec <- 100
 form <- respVar ~ envVar * trait +        # environment by trait interaction
     (0 + trait | sites) +                 # trait effects vary over sites
-    edge(1     | species, phy = phy) +    # the intercept is phylogenetically correlated
-    edge(0 + envVar | species, phy = phy) # the environment effect is phylogenetically correlated
+    phyloEdge(1     | species, phy = phy) +    # intercept phylogenetically correlated
+    phyloEdge(0 + envVar | species, phy = phy) # environment effect phylogenetically correlated
 dataList <- dims_to_vars(data.list(respVar = 1*(matrix(rnorm(nSites*nSpec), nSites, nSpec) > 0),
                                    envVar = rnorm(nSites), # environmental variable
                                    trait  = rnorm(nSpec),  # trait

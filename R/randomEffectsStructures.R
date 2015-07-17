@@ -394,12 +394,12 @@ setReTrm.expDecay <- function(object, addArgsList,
 ##'
 ##' @export
 ##' @template setReTrm
-##' @templateVar cls edge
+##' @templateVar cls phyloEdge
 ##' @templateVar form \code{edge(linForm | grpFac, phy)}
 ##' @templateVar arg c("linForm", "grpFac", "phy")
 ##' @templateVar desc c("linear model formula decribing effects", "grouping factor", "phylo object relating the levels of the grouping factor")
-setReTrm.edge <- function(object, addArgsList,
-                          auxEnv = NULL, devfunEnv = NULL) {
+setReTrm.phyloEdge <- function(object, addArgsList,
+                               auxEnv = NULL, devfunEnv = NULL) {
                                         # get additional arguments
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
 
@@ -706,8 +706,8 @@ simAddArgs.default <- function(object, ...) list()
 ##' @param compute.brlenArgs arguments for \code{\link{compute.brlen}}
 ##' @rdname simAddArgs
 ##' @export
-simAddArgs.edge <- function(object, rtreeArgs = list(),
-                            compute.brlenArgs = list(), ...) {
+simAddArgs.phyloEdge <- function(object, rtreeArgs = list(),
+                                 compute.brlenArgs = list(), ...) {
     namePhy <- as.character(object$addArgs$phy)
     phy <- do.call(rtree, c(list(nlevels(object$grpFac)), rtreeArgs))
     phy <- do.call(compute.brlen, c(list(phy), compute.brlenArgs))
