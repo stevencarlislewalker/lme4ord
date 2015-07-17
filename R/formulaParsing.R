@@ -147,6 +147,25 @@ print.strucParseFormula <- function(x, ...) {
     print(x$random)
 }
 
+##' @rdname strucParseFormula
+##' @export
+model.matrix.strucParseFormula <- function(object, ...) object$fixed
+
+##' @rdname strucParseFormula
+##' @export
+simulate.strucParseFormula <- function(object, nsim = 1, seed = NULL,
+                                       weights = NULL,
+                                       family = binomial(), ...) {
+    nobs <- length(object$response)
+    if(is.null(weights)) weights <- rep(1, nobs)
+    replicate(nsim, {
+        fe <- as.numeric(model.matrix(object) %*% with(object, initPars[parInds$fixef]))
+        re <- Reduce("+", lapply(getReTrm(object), simReTrm))
+        familySimFun(family)(weights, nobs, family$linkinv(fe + re))
+    })
+}
+
+
 ##' Split a formula
 ##'
 ##' @param formula Generalized mixed model formula

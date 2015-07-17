@@ -32,17 +32,17 @@ lme4 emulator
 }
 }
 \seealso{
-Other setReTrm: \code{\link{cooccur}},
+Other setReTrm: \code{\link{biplot.factAnal}},
+  \code{\link{factAnal}}, \code{\link{scores.factAnal}},
+  \code{\link{setReTrm.factAnal}}; \code{\link{cooccur}},
   \code{\link{setReTrm.cooccur}}; \code{\link{edge}},
   \code{\link{setReTrm.edge}}; \code{\link{expDecay}},
-  \code{\link{setReTrm.expDecay}}; \code{\link{factAnal}},
-  \code{\link{loads.factAnal}},
-  \code{\link{setReTrm.factAnal}};
+  \code{\link{setReTrm.expDecay}};
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
-  \code{\link{packReTrm}}, \code{\link{setReTrm}},
-  \code{\link{setReTrm.default}}; \code{\link{flexvar}},
-  \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
-  \code{\link{setReTrm.identity}};
+  \code{\link{packReTrm}}, \code{\link{ranef.reTrmStruct}},
+  \code{\link{setReTrm}}, \code{\link{setReTrm.default}};
+  \code{\link{flexvar}}, \code{\link{setReTrm.flexvar}};
+  \code{\link{identity}}, \code{\link{setReTrm.identity}};
   \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};

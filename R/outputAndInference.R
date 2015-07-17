@@ -220,15 +220,12 @@ loads.default <- function(object, ...) loadings(object)
 ##' @rdname pars
 ##' @export
 loads.strucGlmer <- function(object, ...) {
-    loadings.strucGlmer(object, ...)
-}
-
-##' @importFrom stats loadings
-##' @rdname pars
-##' @export
-loadings.strucGlmer <- function(object, ...) {
     getStrucGlmerPar(object, "loads")
 }
+
+##' @rdname pars
+##' @export
+factors <- function(x, ...) x$factors
 
 ##' @importFrom nlme fixef 
 ##' @rdname pars
@@ -252,7 +249,9 @@ ranef.strucGlmer <- function(object, type = c("u", "Lu", "ZLu"), ...) {
         re <- pp$b(1)
         if(type == "ZLu") {
             b <- subRagByLens(re, nRePerTrm)
-            multFn <- function(struc, re) as.numeric(as.matrix(t(struc$Zt), sparse = TRUE) %*% re)
+            multFn <- function(struc, re) {
+                as.numeric(as.matrix(t(struc$Zt), sparse = TRUE) %*% re)
+            }
             return(setNames(mapply(multFn, structs, b, SIMPLIFY = FALSE), nms))
         }
     }
@@ -335,7 +334,7 @@ residuals.strucGlmer <- function(object, ...) {
 ##' @export
 fitted.strucGlmer <- function(object, ranefTrms, fixef = TRUE, ...) {
     if(fixef) {
-        fe <- as.numeric(object$parsedForm$fixed %*% fixef(object))
+        fe <- as.numeric(model.matrix(object) %*% fixef(object))
     } else fe <- 0
 
     if(missing(ranefTrms)) ranefTrms <- seq_along(object$parsedForm$random)
@@ -486,7 +485,7 @@ getOffset <- function(object) object$parsedForm$devfunEnv$baseOffset
 ##' @importFrom stats model.matrix
 ##' @rdname strucGlmer-class
 ##' @export
-model.matrix.strucGlmer <- function(object, ...) object$parsedForm$fixed
+model.matrix.strucGlmer <- function(object, ...) model.matrix(object$parsedForm)
 
 ## ----------------------------------------------------------------------
 ## simulations
@@ -498,7 +497,7 @@ model.matrix.strucGlmer <- function(object, ...) object$parsedForm$fixed
 simulate.strucGlmer <- function(object, nsim = 1, seed = NULL, ...) {
     replicate(nsim, {
         fe <- getOffset(object) + fitted(object, ranefTrms = NULL)
-        re <- Reduce("+", lapply(getReTrm(object), simReTrm))
+        re <- Reduce("+", lapply(getReTrm(object), simReTrm)) ## Reduce is safer than sapply
         fam <- family(object)
         familySimFun(fam)(weights(object),
                           nobs(object),
@@ -613,7 +612,8 @@ printReTrm.factAnal <- function(object, forSummary = FALSE, ...) {
 
 ##' Get random effects structures from a strucGlmer object
 ##'
-##' @param object \code{\link{strucGlmer}} object
+##' @param object \code{\link{strucGlmer}} or
+##' \code{\link{strucParseFormula}} object
 ##' @param name Names of the random effects structures (if missing, a
 ##' list of the names are returned).  The naming convention for
 ##' \code{reTrmStruct} objects is
@@ -626,7 +626,8 @@ printReTrm.factAnal <- function(object, forSummary = FALSE, ...) {
 ##' @seealso \code{\link{setReTrm}}
 ##' @export
 getReTrm <- function(object, name, drop = TRUE) {
-    structs <- object$parsedForm$random
+    if(inherits(object, "strucGlmer")) object <- object$parsedForm
+    structs <- object$random
     if(missing(name)) {
         #message("available reTrmStruct objects:\n",
         #        paste(names(structs), collapse = ", "))
@@ -647,14 +648,46 @@ getReTrm <- function(object, name, drop = TRUE) {
 }
 
 
-## ##' Get components from a structured glmer model
-## ##'
-## ##' @param object a \code{\link{strucGlmer}} object
-## ##' @param name a character vector naming the component
-## ##' @export
-## getSME <- function(object,
-##                   name =
-##                   c("y", "X", "Zt", "Lambdat",
-##                     "")) {
-## }
+## ----------------------------------------------------------------------
+## Compression
+## ----------------------------------------------------------------------
+
+##' Compress strucGlmer object
+##'
+##' This feature is not yet written, but is important enough that
+##' current design decisions should reflect it's future possibility.
+##' This proposal will help reduce the costs of keeping redundant
+##' information in \code{\link{strucGlmer}} objects. The idea is to
+##' store various components on disk, and then only retreive them when
+##' necessary. This will require very consistent use of extractor
+##' functions that have versions that can take a filename or
+##' connection and retreive the component that way.
+##'
+##' @section What kind of redundancy are we talking about?:
+##' \code{\link{strucGlmer}} objects contain a
+##' \code{\link{strucParseFormula}} object and a deviance
+##' function. The environment of this deviance function contains many
+##' objects, some of which are essentially replicated in the parsed
+##' formula object. In particular, the matrices in the parsed formula
+##' are \code{\link{repSparse}} objects whereas the matrices in the
+##' environment of the deviance function are \code{Matrix} package
+##' objects linked to \code{C++} objects through external pointers.
+##' 
+##' @section Why do we want redundancy?:
+##' This redundancy makes the output module code easier to maintain,
+##' while retaining a fast optimization module. In partiular, the
+##' \code{\link{repSparse}} objects in the parsed formula make it
+##' easier to write consistent and resuseable code, whereas the
+##' \code{Matrix}/\code{C++} objects in the environment of the
+##' deviance function facilitate relatively faster linear
+##' algebra.
+##'
+##' @param object a \code{\link{strucGlmer}} object.
+##' @param components components to compress.
+##' @return an error message pointing to this help page.
+##' @export
+compressStrucGlmer <- function(object, components, ...) {
+    stop("Compression not yet written.\n",
+         "Please see ?compressStrucGlmer for more info.")
+}
 

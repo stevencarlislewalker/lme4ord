@@ -27,12 +27,7 @@ X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
 \seealso{
 Other matrixCombining: \code{\link{.bind}},
   \code{\link{bind}}, \code{\link{rep.repSparse}};
-  \code{\link{Ops.repSparse}},
-  \code{\link{crossprod,repSparse,missing-method}},
-  \code{\link{crossprod,repSparse,repSparse-method}},
   \code{\link{kr}}, \code{\link{kron}},
-  \code{\link{kronecker,repSparse,repSparse-method}},
-  \code{\link{tcrossprod,repSparse,missing-method}},
-  \code{\link{tcrossprod,repSparse,repSparse-method}}
+  \code{\link{kronecker,repSparse,repSparse-method}}
 }
 

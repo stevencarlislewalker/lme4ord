@@ -3,9 +3,9 @@
 \alias{covar}
 \alias{covar.strucGlmer}
 \alias{covarPerTerm}
+\alias{factors}
 \alias{fixef.strucGlmer}
 \alias{getStrucGlmerPar}
-\alias{loadings.strucGlmer}
 \alias{loads}
 \alias{loads.default}
 \alias{loads.strucGlmer}
@@ -36,7 +36,7 @@ loads(object, ...)
 
 \method{loads}{strucGlmer}(object, ...)
 
-loadings.strucGlmer(object, ...)
+factors(x, ...)
 
 \method{fixef}{strucGlmer}(object, ...)
 

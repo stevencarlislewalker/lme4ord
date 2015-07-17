@@ -597,7 +597,6 @@ getRepPattern <- function(object) {
 ##' @param trans see argument \code{FUN} in \code{\link{outer}}
 ##' @param makedimnames ignored
 ##' @param ... ignored
-##' @rdname matrixOperations
 ##' @family matrixCombining
 ##' @export
 ##' @examples
@@ -629,7 +628,7 @@ setOldClass(c("repSparseKron", "repSparse"))
 setIs("repSparseKron", "repSparse")
 
 
-##' @rdname matrixOperations
+##' @rdname kron
 ##' @family matrixCombining
 ##' @export
 ##' @examples
@@ -677,16 +676,23 @@ kr <- function(X, Y, trans = "*") {
 setOldClass(c("repSparseKr", "repSparse"))
 setIs("repSparseKr", "repSparse")
 
-##' @rdname matrixOperations
+##' @rdname kron
 ##' @export
 setMethod("kronecker", signature(X = "repSparse", Y = "repSparse"), {
     function(X, Y, FUN = "*", make.dimnames = FALSE, ...) kron(X, Y)
 })
 
+##' Repeated sparse matrix multiplication (and other binary operations)
+##'
+##' Because of the marginal summations involved, the results of a
+##' matrix multiplication of \code{\link{repSparse}} objects is not
+##' profitably stored as a \code{repSparse}. Therefore, the output is
+##' a \code{\link{sparseMatrix}}.
+##'
 ##' @param e1,e2 \code{repSparse} objects
 ##' @note The \code{*} operator is matrix multiplication, not
 ##' element-wise multiplication.
-##' @rdname matrixOperations
+##' @rdname Ops.repSparse
 ##' @export
 Ops.repSparse <- function(e1, e2) {
     FUN = .Generic
@@ -699,7 +705,7 @@ Ops.repSparse <- function(e1, e2) {
 
 
 ##' @param x,y \code{\link{repSparse}} matrix objects
-##' @rdname matrixOperations
+##' @rdname Ops.repSparse
 ##' @importFrom Matrix crossprod
 ##' @export
 setMethod("crossprod", signature(x = "repSparse", y = "missing"), {
@@ -708,7 +714,7 @@ setMethod("crossprod", signature(x = "repSparse", y = "missing"), {
     }
 })
 
-##' @rdname matrixOperations
+##' @rdname Ops.repSparse
 ##' @importFrom Matrix tcrossprod
 ##' @export
 setMethod("tcrossprod", signature(x = "repSparse", y = "missing"), {
@@ -717,8 +723,7 @@ setMethod("tcrossprod", signature(x = "repSparse", y = "missing"), {
     }
 })
 
-
-##' @rdname matrixOperations
+##' @rdname Ops.repSparse
 ##' @importFrom Matrix crossprod
 ##' @export
 setMethod("crossprod", signature(x = "repSparse", y = "repSparse"), {
@@ -728,7 +733,7 @@ setMethod("crossprod", signature(x = "repSparse", y = "repSparse"), {
     }
 })
 
-##' @rdname matrixOperations
+##' @rdname Ops.repSparse
 ##' @importFrom Matrix tcrossprod
 ##' @export
 setMethod("tcrossprod", signature(x = "repSparse", y = "repSparse"), {

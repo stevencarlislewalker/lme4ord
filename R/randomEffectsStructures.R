@@ -170,7 +170,7 @@ setReTrm.default <- function(object, addArgsList,
                                         # upper bounds, but these can
                                         # be explicitly set with
                                         # packReTrm)
-    packReTrm(object, Zt, Lambdat)
+    packReTrm(object, Zt, Lambdat, devfunEnv = devfunEnv)
 }
 
 ##' lme4 emulator
@@ -243,7 +243,8 @@ setReTrm.factAnal <- function(object, addArgsList,
 
     packReTrm(object, Zt, Lambdat,
               lowerLoads = lowerLoads,
-              upperLoads = upperLoads)
+              upperLoads = upperLoads,
+              devfunEnv = devfunEnv)
 }
 
 ##' Random effects term for structural equation model
@@ -276,7 +277,8 @@ setReTrm.sem <- function(object, addArgsList,
 
     packReTrm(object, Zt, Lambdat,
               lowerLoads = lowerLoads,
-              upperLoads = upperLoads)
+              upperLoads = upperLoads,
+              devfunEnv = devfunEnv)
 }
 
 
@@ -302,7 +304,7 @@ setReTrm.identity <- function(object, addArgsList,
     Lambdat <- repSparseIdent(nl * nc)
 
                                         # pack
-    packReTrm(object, Zt, Lambdat)
+    packReTrm(object, Zt, Lambdat, devfunEnv = devfunEnv)
 }
 
 ##' Random effects term for a flexible variance function
@@ -331,7 +333,8 @@ setReTrm.flexvar <- function(object, addArgsList,
 
                                         # pack
     packReTrm(object, Zt, Lambdat,
-              lowerCovar = rep(-Inf, length(init)))
+              lowerCovar = rep(-Inf, length(init)),
+              devfunEnv = devfunEnv)
 }
 
 
@@ -384,7 +387,7 @@ setReTrm.expDecay <- function(object, addArgsList,
     })
     Lambdat <- repSparseDiag(transFun(1))
     Lambdat$trans <- transFun
-    packReTrm(object, Zt, update(Lambdat))
+    packReTrm(object, Zt, update(Lambdat), devfunEnv = devfunEnv)
 }
 
 ##' Random effects term for edge-based model of tree-induced covariance
@@ -412,7 +415,8 @@ setReTrm.edge <- function(object, addArgsList,
     Lambdat <- repSparseIdent(nl * nc)
     
                                         # pack
-    packReTrm(object, Zt, Lambdat)
+    packReTrm(object, Zt, Lambdat,
+              devfunEnv = devfunEnv)
 }
 
 ##' Random effects term for cooccurence model (experimental)
@@ -436,7 +440,8 @@ setReTrm.cooccur <- function(object, addArgsList,
     Lambdat <- rep(Tt, nrow(Jt), type = "diag")
     
                                         # pack
-    packReTrm(object, Zt, Lambdat)
+    packReTrm(object, Zt, Lambdat,
+              devfunEnv = devfunEnv)
 }
 
 ##' Random effects term with constant variance within groups
@@ -467,7 +472,8 @@ setReTrm.varIdent <- function(object, addArgsList,
     
                                         # package up object
     packReTrm(object, Zt, Lambdat,
-              lowerCovar = rep(0, nl))
+              lowerCovar = rep(0, nl),
+              devfunEnv = devfunEnv)
 }
 
 ##' Random effects term with exponential variance structure
@@ -502,7 +508,8 @@ setReTrm.varExp <- function(object, addArgsList,
     
                                         # package up object
     packReTrm(object, Zt, Lambdat,
-              lowerCovar = rep(-Inf, length(init)))
+              lowerCovar = rep(-Inf, length(init)),
+              devfunEnv = devfunEnv)
 }
 
 ##' Random effects term with observation level random effects
@@ -519,7 +526,8 @@ setReTrm.obslev <- function(object, addArgsList,
     n <- nrow(object$modMat)
     Zt <- resetTransConst(repSparseIdent(n))
     Lambdat <- repSparseIdent(n)
-    packReTrm(object, Zt, Lambdat)
+    packReTrm(object, Zt, Lambdat,
+              devfunEnv = devfunEnv)
 }
 
 ##' Random effects term from an \code{nlme}-style \code{corStruct}
@@ -547,7 +555,8 @@ setReTrm.nlmeCorStruct <- function(object, addArgsList,
     Lambdat <- repSparseCorFactor(corObj, sig = sig)
     Zt <- resetTransConst(kr(as.repSparse(grpFac),
                            t(as.repSparse(modMat))))
-    packReTrm(object, Zt, Lambdat)
+    packReTrm(object, Zt, Lambdat,
+              devfunEnv = devfunEnv)
 }
 
 ##' @param Zt transposed model matrix
@@ -559,7 +568,8 @@ setReTrm.nlmeCorStruct <- function(object, addArgsList,
 ##' @export
 packReTrm <- function(object, Zt, Lambdat,
                       lowerLoads, upperLoads,
-                      lowerCovar, upperCovar) {
+                      lowerCovar, upperCovar,
+                      devfunEnv = NULL) {
     if(missing(lowerLoads)) lowerLoads <- setLowerDefault(getInit(Zt))
     if(missing(upperLoads)) upperLoads <- setUpperDefault(getInit(Zt))
     if(missing(lowerCovar)) lowerCovar <- setLowerDefault(getInit(Lambdat))
@@ -567,7 +577,8 @@ packReTrm <- function(object, Zt, Lambdat,
     structure(c(object,
                 lme4:::namedList(Zt, Lambdat,
                                  lowerLoads, upperLoads,
-                                 lowerCovar, upperCovar)),
+                                 lowerCovar, upperCovar,
+                                 devfunEnv)),
               class = class(object))
 }
 
@@ -737,18 +748,46 @@ simReTrm <- function(object) {
     })
 }
 
-
-
-##' @param x \code{factAnal} \code{reTrmStruct} object.
-##' @rdname setReTrm.factAnal
+##' @rdname setReTrm
 ##' @export
-loads.factAnal <- function(x, ...) {
-    trans <- environment(x$Zt$trans)$Btrans
-    trmDims <- environment(trans)$trmDims
-    matrix(trans(getInit(x$Zt)),
-           trmDims["nVar"], trmDims["nAxes"])
+ranef.reTrmStruct <- function(object, type = c("u", "Lu", "ZLu"), ...) {
+    type <- type[1]
+    trmName <- paste(object$grpName, class(object)[[1]], sep = ".")
+    pp <- object$devfunEnv$pp
+    nms <- names(nRePerTrm <- object$devfunEnv$nRePerTrm)
+    if (type == "u") {
+        re <- pp$u(1)
+    } else {
+        re <- pp$b(1)
+        if (type == "ZLu") b <- subRagByLens(re, nRePerTrm)[[trmName]]
+        return(as.matrix(t(object$Zt), sparse = TRUE %*% b))
+    }
+    subRagByLens(re, nRePerTrm)[[which(nms == trmName)]]
 }
 
+##' @importFrom vegan scores
+##' @rdname setReTrm.factAnal
+##' @export
+scores.factAnal <- function(x, ...) {
+    trans <- environment(x$Zt$trans)$Btrans
+    trmDims <- environment(trans)$trmDims
+    trmLoads <- matrix(trans(getInit(x$Zt)),
+                       trmDims["nVar"],
+                       trmDims["nAxes"])
+    trmFacts <- matrix(ranef(x),
+                       trmDims["nObs"],
+                       trmDims["nAxes"])
+    colnames(trmLoads) <- colnames(trmFacts) <- paste("axis", 1:trmDims["nAxes"])
+    list(loadings = trmLoads, factors = trmFacts)
+}
+
+##' @importFrom stats biplot
+##' @rdname setReTrm.factAnal
+##' @export
+biplot.factAnal <- function(x, ...) {
+    l... <- list(...)
+    do.call(biplot, c(setNames(scores(x), c("x", "y")), l...))
+}
 
 ##' Bind repeated sparse matrices and sort their indices to be
 ##' compatible with column-compressed sparse matrices

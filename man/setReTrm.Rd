@@ -3,6 +3,7 @@
 \alias{findReTrmClasses}
 \alias{getAddArgs}
 \alias{packReTrm}
+\alias{ranef.reTrmStruct}
 \alias{setReTrm}
 \alias{setReTrm.default}
 \title{Set model matrix slice and relative covariance factor block for a
@@ -13,11 +14,14 @@ setReTrm(object, addArgsList, auxEnv = NULL, devfunEnv = NULL)
 \method{setReTrm}{default}(object, addArgsList, auxEnv = NULL,
   devfunEnv = NULL)
 
-packReTrm(object, Zt, Lambdat, lowerLoads, upperLoads, lowerCovar, upperCovar)
+packReTrm(object, Zt, Lambdat, lowerLoads, upperLoads, lowerCovar, upperCovar,
+  devfunEnv = NULL)
 
 findReTrmClasses(formula = NULL)
 
 getAddArgs(addArgsExpr, addArgsList)
+
+\method{ranef}{reTrmStruct}(object, type = c("u", "Lu", "ZLu"), ...)
 }
 \arguments{
 \item{object}{a \code{reTrmStruct} object}
@@ -84,12 +88,12 @@ The default method is identical to a standard \code{lme4} random effects term.
 
 getReTrm
 
-Other setReTrm: \code{\link{cooccur}},
+Other setReTrm: \code{\link{biplot.factAnal}},
+  \code{\link{factAnal}}, \code{\link{scores.factAnal}},
+  \code{\link{setReTrm.factAnal}}; \code{\link{cooccur}},
   \code{\link{setReTrm.cooccur}}; \code{\link{edge}},
   \code{\link{setReTrm.edge}}; \code{\link{expDecay}},
-  \code{\link{setReTrm.expDecay}}; \code{\link{factAnal}},
-  \code{\link{loads.factAnal}},
-  \code{\link{setReTrm.factAnal}}; \code{\link{flexvar}},
+  \code{\link{setReTrm.expDecay}}; \code{\link{flexvar}},
   \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
   \code{\link{setReTrm.identity}}; \code{\link{lme4}},
   \code{\link{setReTrm.lme4}}; \code{\link{nlmeCorStruct}},

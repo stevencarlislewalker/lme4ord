@@ -6,7 +6,8 @@
 getReTrm(object, name, drop = TRUE)
 }
 \arguments{
-\item{object}{\code{\link{strucGlmer}} object}
+\item{object}{\code{\link{strucGlmer}} or
+\code{\link{strucParseFormula}} object}
 
 \item{name}{Names of the random effects structures (if missing, a
 list of the names are returned).  The naming convention for

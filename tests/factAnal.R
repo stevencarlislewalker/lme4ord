@@ -14,20 +14,50 @@ form <- respVar ~ 1 +
     (1 | species) +
     factAnal(0 + lakes | species, nAxes = 2)
 
+pform <- strucParseFormula(form, dataFrame)
+
+dataFrame$respVar <- as.numeric(simulate(pform, nsim = 1, seed = NULL,
+                                         weights = rep(1, nrow(dataFrame)),
+                                         family = binomial()))
 
 
-strucParseFormula(form, dataFrame)
 
+setInit(pform$random$lakes.unstruc$Lambdat, 2)
+setInit(pform$random$species.unstruc$Lambdat, 0.1)
+lapply(pform$random, update)
+
+pform$initPars[pform$parInds$fixef] <- -3
+
+
+
+
+var(c(rexp(10000, 1.4), -rexp(10000, 1.4)))
 
 gm1 <- strucGlmer(respVar ~ 1 + 
                   (1 | lakes) +
                   (1 | species) +
-                  factAnal(0 + lakes | species, nAxes = 2),
+                  factAnal(0 + lakes | species, nAxes = 2, seed = 1),
                   family = binomial(), data = dataFrame,
                   devfunOnly = FALSE,
-                  optMaxit = 20000, optVerb = 0L,
-                  penLoads = mkPenLpNorm(p = 2))
+                  optMaxit = 50000, optVerb = 0L,
+                  penLoads = mkPenLpNorm(p = 2, lambda = 1))
 
+biplot(getReTrm(gm1, "species.factAnal"), cex = c(0.6, 0.6))
+
+
+getReTrm(gm1, "species.factAnal")$devfunEnv$reTrmClasses
+
+loadMat <- loads(getReTrm(gm1, "species.factAnal"))
+plot(matrix(ranef(gm1)$species.factAnal, 52, 2))
+
+
+
+
+xx <- seq(-2, 2, length = 10000)
+par(mfrow = c(3, 1))
+plot(xx, sapply(xx, mkPenPareto()), type = "l", main = "pareto")
+plot(xx, sapply(xx, mkPenLpNorm(p = 1)), type = "l", main = "laplace")
+plot(xx, sapply(xx, mkPenLpNorm(p = 2)), type = "l", main = "gaussian")
 
 etaSim <- getOffset(gm1) +
     fitted(gm1, ranefTrms = NULL) +
@@ -66,6 +96,9 @@ gm2 <- strucGlmer(respVar ~ 1 +
 loadMat1 <- as.matrix(repSparseGenFullTri(30, 2, loads(gm1)))
 loadMat2 <- as.matrix(repSparseGenFullTri(30, 2, loads(gm2)))
 
+loadMat1 <- sweep(loadMat1, 2, sqrt(1 + colSums(loadMat1^2)), "/")
+loadMat2 <- sweep(loadMat2, 2, sqrt(1 + colSums(loadMat2^2)), "/")
+
 getReTrmStruct(gm1, "species.factAnal")[[1]]$Zt
 
 ## correct sign flips
@@ -93,12 +126,12 @@ apply(loadMat2, 2, sd)
 plot(loads(gm1), gm1$opt$par[-(1:3)])
 plot(loads(gm2), gm2$opt$par[-(1:3)])
 
-axes1 <- matrix(ranef(gm1)[[3]], 52, 2) %*% Q
+axes1 <- matrix(ranef(gm1)[[3]], 52, 2)# %*% Q
 axes2 <- matrix(ranef(gm2)[[3]], 52, 2)
 
 par(mfrow = c(1, 2))
-biplot(axes1[,2:1], loadMat1[,2:1])
-biplot(axes2[,2:1], loadMat2[,2:1])
+biplot(axes1[,2:1], loadMat1[,2:1], cex = c(0.5, 0.5))
+biplot(axes2[,2:1], loadMat2[,2:1], cex = c(0.5, 0.5))
 
 gm1$parsedForm$Zt
 gm2$parsedForm$Zt

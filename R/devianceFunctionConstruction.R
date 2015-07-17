@@ -276,3 +276,15 @@ mkPenLpNorm <- function(p = 2, lambda = 1) {
     })
 }
 
+##' @param alpha,beta parameters of the generalized double Pareto
+##' distribution (defaults from Murray et al 2013, JASA)
+##' @rdname mkPenaltyFun
+##' @export
+mkPenPareto <- function(alpha = 3, beta = 1) {
+    local({
+        alpha <- alpha
+        beta <- beta
+        function(pars) 2 * (alpha + 1) * sum(log(1 + abs(pars)/beta))
+    })
+}
+
