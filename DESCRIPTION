@@ -23,6 +23,6 @@ Imports:
     ape,
     reshape2,
     MASS,
-    lattice,
-    lme4pureR,
+    lattice
+Suggests:
     multitable

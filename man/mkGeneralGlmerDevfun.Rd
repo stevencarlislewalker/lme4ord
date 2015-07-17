@@ -7,8 +7,7 @@ mkGeneralGlmerDevfun(y, X, Zt, Lambdat, weights = NULL, offset = NULL,
   etastart = NULL, mustart = NULL, devfunEnv, initPars, parInds,
   mapToCovFact = NULL, mapToModMat = NULL, mapToWeights = NULL,
   penFixef = NULL, penCovar = NULL, penLoads = NULL, family,
-  tolPwrss = 1e-06, maxit = 30, verbose = 0L, pureR = FALSE,
-  Lind = NULL)
+  tolPwrss = 1e-06, maxit = 30, verbose = 0L, Lind = NULL)
 }
 \arguments{
 \item{y}{response vector}
@@ -57,9 +56,6 @@ squares}
 \item{verbose}{verbose}
 
 \item{maxit}{maximum number of PIRLS iterations}
-
-\item{pureR}{should the PIRLS algorithm be run in
-\code{lme4pureR}?}
 
 \item{Lind}{optional indices mapping covariance parameters to the
 non-zero elements of the relative covariance factor}

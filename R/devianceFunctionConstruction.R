@@ -36,12 +36,9 @@
 ##' squares
 ##' @param verbose verbose
 ##' @param maxit maximum number of PIRLS iterations
-##' @param pureR should the PIRLS algorithm be run in
-##' \code{lme4pureR}?
 ##' @param Lind optional indices mapping covariance parameters to the
 ##' non-zero elements of the relative covariance factor
 ##' @return a deviance function with an environment
-##' @importFrom lme4pureR pirls
 ##' @importFrom lme4 GHrule
 ##' @export
 mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
@@ -58,7 +55,7 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
                                  family,
                                  tolPwrss = 1e-6,
                                  maxit = 30,
-                                 verbose = 0L, pureR = FALSE,
+                                 verbose = 0L,
                                  Lind = NULL) {
 
     if(is.matrix(y)) stop("Only vector-valued responses allowed.\n",
@@ -69,13 +66,9 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     ## silence no visible binding for global variable notes
     resp <- baseOffset <- lp0 <- setCovar <- pp <- setLoads <- setWeigh <-
         GQmat <- compDev <- fac <- NULL
-    
-    if(pureR) {
-        stop("pure R implementation not currently working")
-        return(pirls(X, y, Zt, Lambdat, mapToCovFact,
-                     initPars, weights, offset,
-                     family = family, tol = tolPwrss))
-    }
+
+    ## FIXME: institute lme4pureR possibility
+
     if(isLind <- !is.null(Lind)) {
         theta <- environment(mapToCovFact)$trans(initPars[parInds$covar])
     } else {
