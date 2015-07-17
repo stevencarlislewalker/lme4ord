@@ -6,7 +6,7 @@
 repSparseGenFullTri(nrow, ncol, vals, diag = TRUE, low = TRUE)
 }
 \arguments{
-\item{nrow,ncol}{}
+\item{nrow,ncol}{number of rows and columns}
 
 \item{vals}{values for the nonzero values}
 
@@ -17,9 +17,12 @@ repSparseGenFullTri(nrow, ncol, vals, diag = TRUE, low = TRUE)
 \description{
 General and full triangular repeated sparse matrix
 }
+\note{
+Beware there appear to be bugs here.
+}
 \examples{
 set.seed(1)
-(xTri <- repSparseGenFullTri(rnorm(5), rnorm(choose(5, 2))))
+(xGenTri <- repSparseGenFullTri(5, 5, rnorm(choose(6, 2))))
 }
 \seealso{
 Other repSparseSpecial: \code{\link{repSparseBlank}};

@@ -8,7 +8,7 @@
 \usage{
 strucParseFormula(formula, data, addArgs = list(), reTrmsList = NULL, ...)
 
-print.strucParseFormula(x, ...)
+\method{print}{strucParseFormula}(x, ...)
 
 \method{model.matrix}{strucParseFormula}(object, ...)
 
@@ -26,6 +26,18 @@ print.strucParseFormula(x, ...)
 \item{reTrmsList}{if \code{NULL} \code{\link{mkReTrmStructs}} is used}
 
 \item{...}{additional parameters to \code{\link{as.data.frame}}}
+
+\item{x}{\code{strucParseFormula} objects}
+
+\item{object}{\code{strucParseFormula} objects}
+
+\item{nsim}{number of simulations}
+
+\item{seed}{random seed (see \code{\link{set.seed}})}
+
+\item{weights}{\code{\link{weights}} for each observation}
+
+\item{family}{\code{\link{family}} object}
 }
 \value{
 A list with components:

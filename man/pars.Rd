@@ -59,7 +59,9 @@ mkParInds(parList)
 \arguments{
 \item{object}{a \code{strucGlmer} fitted model object}
 
-\item{...}{not used}
+\item{...}{additional arguments to pass on}
+
+\item{x}{an object with \code{x$factors}}
 
 \item{type}{character string giving the type of parameter
 (e.g. \code{"fixef", "covar"})}

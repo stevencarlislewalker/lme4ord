@@ -35,8 +35,7 @@ Random effects term for covariance proportional to identity matrix
 Other setReTrm: \code{\link{biplot.factAnal}},
   \code{\link{factAnal}}, \code{\link{scores.factAnal}},
   \code{\link{setReTrm.factAnal}}; \code{\link{cooccur}},
-  \code{\link{setReTrm.cooccur}}; \code{\link{edge}},
-  \code{\link{setReTrm.edge}}; \code{\link{expDecay}},
+  \code{\link{setReTrm.cooccur}}; \code{\link{expDecay}},
   \code{\link{setReTrm.expDecay}};
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
   \code{\link{packReTrm}}, \code{\link{ranef.reTrmStruct}},
@@ -46,7 +45,9 @@ Other setReTrm: \code{\link{biplot.factAnal}},
   \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
-  \code{\link{sem}}, \code{\link{setReTrm.sem}};
+  \code{\link{phyloEdge}},
+  \code{\link{setReTrm.phyloEdge}}; \code{\link{sem}},
+  \code{\link{setReTrm.sem}};
   \code{\link{setReTrm.varExp}}, \code{\link{varExp}};
   \code{\link{setReTrm.varIdent}}, \code{\link{varIdent}}
 }

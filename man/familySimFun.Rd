@@ -25,6 +25,8 @@ familySimFun(object, ...)
 }
 \arguments{
 \item{object}{typically a \code{\link{family}} object}
+
+\item{...}{additional objects to pass on (not yet used).}
 }
 \value{
 a simulation function taking three arguments: \code{wts},

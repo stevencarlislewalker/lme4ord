@@ -1,6 +1,6 @@
 Package: lme4ord
 Type: Package
-Title: Generalized linear mixed models with flexible (co)variance structures.
+Title: Generalized linear mixed models with flexible (co)variance structures
 Version: 0.0-1
 Date: 2015-05-16
 Author: Steve Walker
@@ -11,17 +11,19 @@ Description: Generalized linear mixed models with flexible (co)variance
 License: GPL-2
 Roxygen: list(wrap = FALSE)
 Depends:
-    methods,
     lme4,
-    nlme,
     lme4pureR,
-    ape,
-    reshape2,
-    minqa,
-    MASS,
-    lattice,
-    multitable
+    nlme,
+    minqa
 Imports:
     stats,
     Matrix,
-    grid
+    methods,
+    grid,
+    vegan,
+    ape,
+    reshape2,
+    MASS,
+    lattice
+Suggests:
+    multitable

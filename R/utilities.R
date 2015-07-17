@@ -179,6 +179,7 @@ nChoose2Inv <- function(m) as.integer((sqrt(1 + 8 * as.integer(m)) + 1)/2)
 ##' Family simulation functions
 ##'
 ##' @param object typically a \code{\link{family}} object
+##' @param ... additional objects to pass on (not yet used).
 ##' @return a simulation function taking three arguments: \code{wts},
 ##' \code{nsim}, and \code{ftd}.
 ##' @export
@@ -462,13 +463,15 @@ denseUpperInds <- function(n) {
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' phy <- rtree(5)
-##' plot(phy)
-##' edgelabels()
-##' edgeTipIndicator(phy)
-##' (ee <- edgeTipIndicator(phy))
-##' if (require(Matrix)) {
-##'    image(Matrix(ee),sub="",xlab="tips",ylab="branches")
+##' if (require("ape")) {
+##'    phy <- rtree(5)
+##'    plot(phy)
+##'    edgelabels()
+##'    edgeTipIndicator(phy)
+##'    (ee <- edgeTipIndicator(phy))
+##'    if (require("Matrix")) {
+##'        image(Matrix(ee),sub="",xlab="tips",ylab="branches")
+##'    }
 ##' }
 findPathFromNode <- function(node, edge) {
     lastNode <- node[length(node)]
@@ -606,3 +609,124 @@ simplifyFacList <- function(facList) {
     attr(facList, "assign") <- asgn
     return(facList)
 }
+
+
+## ----------------------------------------------------------------------
+## print utilities copied from lme4 (FIXME: export from lme4???)
+## ----------------------------------------------------------------------
+
+.prt.methTit <- function(mtit, class) {
+    if(nchar(mtit) + 5 + nchar(class) > (w <- getOption("width"))) {
+	## wrap around
+	mtit <- strwrap(mtit, width = w - 2, exdent = 2)
+	cat(mtit, " [",class,"]", sep = "", fill = TRUE)
+    } else ## previous: simple one-liner
+	cat(sprintf("%s ['%s']\n", mtit, class))
+}
+
+.prt.family <- function(famL) {
+    if (!is.null(f <- famL$family)) {
+	cat.f(" Family:", f,
+	      if(!is.null(ll <- famL$link)) paste(" (", ll, ")"))
+    }
+}
+
+.prt.resids <- function(resids, digits, title = "Scaled residuals:", ...) {
+    cat(title,"\n")
+    ## FIXME: need testing code
+    rq <- setNames(zapsmall(quantile(resids, na.rm=TRUE), digits + 1L),
+                   c("Min", "1Q", "Median", "3Q", "Max"))
+    print(rq, digits = digits, ...)
+    cat("\n")
+}
+
+.prt.call <- function(call, long = TRUE) {
+    if (!is.null(cc <- call$formula))
+	cat.f("Formula:", deparse(cc))
+    if (!is.null(cc <- call$data))
+	cat.f("   Data:", deparse(cc))
+    if (!is.null(cc <- call$weights))
+        cat.f("Weights:", deparse(cc))
+    if (!is.null(cc <- call$offset))
+        cat.f(" Offset:", deparse(cc))
+    if (long && length(cc <- call$control) &&
+	!identical((dc <- deparse(cc)), "lmerControl()"))
+	## && !identical(eval(cc), lmerControl()))
+	cat.f("Control:", dc)
+    if (!is.null(cc <- call$subset))
+	cat.f(" Subset:", deparse(cc))
+    }
+
+getLlikAIC <- function(object, cmp = object@devcomp$cmp) {
+    llik <- logLik(object)   # returns NA for a REML fit - maybe change?
+    AICstats <- {
+	if(isREML(object)) cmp["REML"] # *no* likelihood stats here
+	else {
+	    c(AIC = AIC(llik), BIC = BIC(llik), logLik = c(llik),
+	      deviance = devCritFun(object),
+              df.resid = df.residual(object))
+	}
+    }
+    list(logLik = llik, AICtab = AICstats)
+}
+
+.prt.aictab <- function(aictab, digits = 1) {
+    t.4 <- round(aictab, digits)
+    if (length(aictab) == 1 && names(aictab) == "REML")
+	cat.f("REML criterion at convergence:", t.4)
+    else {
+        ## slight hack to get residual df formatted as an integer
+        t.4F <- format(t.4)
+        t.4F["df.resid"] <- format(t.4["df.resid"])
+        print(t.4F, quote = FALSE)
+    }
+}
+
+.prt.VC <- function(varcor, digits, comp, formatter = format, ...) {
+    cat("Random effects:\n")
+    fVC <- if(missing(comp))
+	formatVC(varcor, digits = digits, formatter = formatter)
+    else
+	formatVC(varcor, digits = digits, formatter = formatter, comp = comp)
+    print(fVC, quote = FALSE, digits = digits, ...)
+}
+
+.prt.grps <- function(ngrps, nobs) {
+    cat(sprintf("Number of obs: %d, groups: ", nobs),
+        paste(paste(names(ngrps), ngrps, sep = ", "), collapse = "; "),
+        fill = TRUE)
+}
+
+## FIXME: print header ("Warnings:\n") ?
+##  change position in output? comes at the very end, could get lost ...
+.prt.warn <- function(optinfo, summary=FALSE, ...) {
+    ## check all warning slots: print numbers of warnings (if any)
+    cc <- optinfo$conv$opt
+    msgs <- unlist(optinfo$conv$lme4$messages)
+    ## can't put nmsgs/nwarnings compactly into || expression
+    ##   because of short-circuiting
+    nmsgs <- length(msgs)
+    warnings <- optinfo$warnings
+    nwarnings <- length(warnings)
+    if (cc>0 || nmsgs>0 || nwarnings>0) {
+        if (summary) {
+            cat(sprintf("convergence code %d; %d optimizer warnings; %d lme4 warnings",
+                cc,nmsgs,nwarnings),"\n")
+        } else {
+            cat(sprintf("convergence code: %d",cc),
+                msgs,
+                unlist(warnings),
+                sep="\n")
+            cat("\n")
+        }
+    }
+}
+
+cat.f <- function(...) cat(..., fill = TRUE)
+
+famlink <- function(object, resp = object@resp) {
+    if(is(resp, "glmResp"))
+	resp$family[c("family", "link")]
+    else list(family = NULL, link = NULL)
+}
+

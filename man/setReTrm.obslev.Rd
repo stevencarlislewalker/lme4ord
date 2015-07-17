@@ -35,8 +35,7 @@ Random effects term with observation level random effects
 Other setReTrm: \code{\link{biplot.factAnal}},
   \code{\link{factAnal}}, \code{\link{scores.factAnal}},
   \code{\link{setReTrm.factAnal}}; \code{\link{cooccur}},
-  \code{\link{setReTrm.cooccur}}; \code{\link{edge}},
-  \code{\link{setReTrm.edge}}; \code{\link{expDecay}},
+  \code{\link{setReTrm.cooccur}}; \code{\link{expDecay}},
   \code{\link{setReTrm.expDecay}};
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
   \code{\link{packReTrm}}, \code{\link{ranef.reTrmStruct}},
@@ -45,7 +44,9 @@ Other setReTrm: \code{\link{biplot.factAnal}},
   \code{\link{identity}}, \code{\link{setReTrm.identity}};
   \code{\link{lme4}}, \code{\link{setReTrm.lme4}};
   \code{\link{nlmeCorStruct}},
-  \code{\link{setReTrm.nlmeCorStruct}}; \code{\link{sem}},
+  \code{\link{setReTrm.nlmeCorStruct}};
+  \code{\link{phyloEdge}},
+  \code{\link{setReTrm.phyloEdge}}; \code{\link{sem}},
   \code{\link{setReTrm.sem}};
   \code{\link{setReTrm.varExp}}, \code{\link{varExp}};
   \code{\link{setReTrm.varIdent}}, \code{\link{varIdent}}

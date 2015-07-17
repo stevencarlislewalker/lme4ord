@@ -138,7 +138,9 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
     structure(ans, class = "strucParseFormula")
 }
 
+##' @param x \code{strucParseFormula} objects
 ##' @rdname strucParseFormula
+##' @method print strucParseFormula
 ##' @export
 print.strucParseFormula <- function(x, ...) {
     cat("Structured parsed formula\n")
@@ -152,10 +154,15 @@ print.strucParseFormula <- function(x, ...) {
     print(x$random)
 }
 
+##' @param object \code{strucParseFormula} objects
 ##' @rdname strucParseFormula
 ##' @export
 model.matrix.strucParseFormula <- function(object, ...) object$fixed
 
+##' @param nsim number of simulations
+##' @param seed random seed (see \code{\link{set.seed}})
+##' @param weights \code{\link{weights}} for each observation
+##' @param family \code{\link{family}} object
 ##' @rdname strucParseFormula
 ##' @export
 simulate.strucParseFormula <- function(object, nsim = 1, seed = NULL,

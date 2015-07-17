@@ -2,7 +2,7 @@
 \name{simAddArgs}
 \alias{simAddArgs}
 \alias{simAddArgs.default}
-\alias{simAddArgs.edge}
+\alias{simAddArgs.phyloEdge}
 \alias{simAddArgsList}
 \title{Simulate additional arguments}
 \usage{
@@ -12,7 +12,7 @@ simAddArgsList(object, ...)
 
 \method{simAddArgs}{default}(object, ...)
 
-\method{simAddArgs}{edge}(object, rtreeArgs = list(),
+\method{simAddArgs}{phyloEdge}(object, rtreeArgs = list(),
   compute.brlenArgs = list(), ...)
 }
 \arguments{

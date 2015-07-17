@@ -8,7 +8,7 @@
 \usage{
 printReTrm(object, forSummary = FALSE, ...)
 
-print.reTrmStruct(x, ...)
+\method{print}{reTrmStruct}(x, ...)
 
 \method{printReTrm}{default}(object, forSummary = FALSE, ...)
 
@@ -21,6 +21,8 @@ print.reTrmStruct(x, ...)
 \code{\link{print}}?}
 
 \item{...}{additional arguments}
+
+\item{x}{\code{reTrmStruct} object}
 }
 \description{
 Print random effects term

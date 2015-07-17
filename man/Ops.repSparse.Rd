@@ -22,6 +22,8 @@
 \item{e1,e2}{\code{repSparse} objects}
 
 \item{x,y}{\code{\link{repSparse}} matrix objects}
+
+\item{...}{not used (only for consistency with generic)}
 }
 \description{
 Because of the marginal summations involved, the results of a

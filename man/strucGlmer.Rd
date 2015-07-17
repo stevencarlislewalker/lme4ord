@@ -16,6 +16,9 @@ strucGlmer(formula, data, family, addArgs = list(), optVerb = 0L,
 
 \item{optVerb}{verbose}
 
+\item{optMaxit}{maximum number of iterations for the nonlinear
+optimizers}
+
 \item{...}{further arguments to \code{\link{mkGeneralGlmerDevfun}}}
 }
 \description{

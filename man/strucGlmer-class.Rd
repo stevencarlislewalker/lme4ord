@@ -90,6 +90,10 @@ be used (if \code{NULL} no terms are used)}
 \item{justFixef}{should matrices be over fixed effects only?}
 
 \item{sigma,rdig}{for consistency}
+
+\item{nsim}{number of simulations}
+
+\item{seed}{random seed (see \code{\link{set.seed}})}
 }
 \description{
 An \code{S3} class for generalized linear mixed models with

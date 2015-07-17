@@ -705,6 +705,7 @@ Ops.repSparse <- function(e1, e2) {
 
 
 ##' @param x,y \code{\link{repSparse}} matrix objects
+##' @param ... not used (only for consistency with generic)
 ##' @rdname Ops.repSparse
 ##' @importFrom Matrix crossprod
 ##' @export
@@ -1589,7 +1590,9 @@ setIs("repSparseTri", "repSparse")
 
 ##' General and full triangular repeated sparse matrix
 ##'
-##' @param nrow,ncol
+##' @note Beware there appear to be bugs here.
+##'
+##' @param nrow,ncol number of rows and columns
 ##' @param vals values for the nonzero values
 ##' @param diag include diagonal?
 ##' @param low lower triangular?
@@ -1597,7 +1600,7 @@ setIs("repSparseTri", "repSparse")
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' (xTri <- repSparseGenFullTri(rnorm(5), rnorm(choose(5, 2))))
+##' (xGenTri <- repSparseGenFullTri(5, 5, rnorm(choose(6, 2))))
 repSparseGenFullTri <- function(nrow, ncol, vals, diag = TRUE, low = TRUE) {
     ## MATNAME: General full triangular
     rowIndices <- rev(nrow - sequence(nrow - (ncol:1) + 1)) + 1
@@ -1899,9 +1902,9 @@ repSparseCorFactor <- function(object, sig = 1) {
     corFac <- corFactor(object)
     lens <- Dim(object)$len
     vecLens <- 2 * choose(lens, 2) + lens
-    vecList <- lme4ord:::subRagByLens(corFactor(object), vecLens)
+    vecList <- subRagByLens(corFactor(object), vecLens)
 
-    invList <- lme4ord:::mapplyInvList(vecList, lens)
+    invList <- mapplyInvList(vecList, lens)
     upperInds <- lapply(invList, upper.tri)
 
     oneBlock <- length(invList) == 1L

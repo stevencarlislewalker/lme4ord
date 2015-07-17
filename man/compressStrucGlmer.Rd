@@ -9,6 +9,8 @@ compressStrucGlmer(object, components, ...)
 \item{object}{a \code{\link{strucGlmer}} object.}
 
 \item{components}{components to compress.}
+
+\item{...}{not used yet.}
 }
 \value{
 an error message pointing to this help page.

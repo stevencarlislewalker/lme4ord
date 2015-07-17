@@ -69,12 +69,12 @@ strucGlmerMethTitle <- function() {
 ##' @method print strucGlmer
 ##' @export
 print.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3),  ...) {
-    lme4:::.prt.methTit(strucGlmerMethTitle(), class(x))
-    lme4:::.prt.family(lme4:::famlink(x, resp = x$parsedForm$devfunEnv$resp))
-    lme4:::.prt.call(x$mc)
+    .prt.methTit(strucGlmerMethTitle(), class(x))
+    .prt.family(famlink(x, resp = x$parsedForm$devfunEnv$resp))
+    .prt.call(x$mc)
     
     llAIC <- getStrucLlikAIC(x)
-    lme4:::.prt.aictab(llAIC$AICtab, 4)
+    .prt.aictab(llAIC$AICtab, 4)
 
     lapply(x$parsedForm$random, printReTrm)
 
@@ -95,7 +95,7 @@ print.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3),  ...) 
 summary.strucGlmer <- function(object, use.hessian = TRUE, ...) {
     vc <- vcov(object, use.hessian = use.hessian)
     resp <- object$parsedForm$devfunEnv$resp
-    famL <- lme4:::famlink(resp = resp)
+    famL <- famlink(resp = resp)
     p <- length(coefs <- fixef(object))
     coefs <- cbind("Estimate" = coefs ,
                    "Std. Error" = sqrt(Matrix::diag(vc)))
@@ -132,12 +132,12 @@ print.summary.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3)
                                      show.resids = TRUE, ...) {
     ## basically just stolen from lme4
     
-    lme4:::.prt.methTit(x$methTitle, x$objClass)
-    lme4:::.prt.family(x)
-    lme4:::.prt.call(x$call); cat("\n")
-    lme4:::.prt.aictab(x$AICtab); cat("\n")
+    .prt.methTit(x$methTitle, x$objClass)
+    .prt.family(x)
+    .prt.call(x$call); cat("\n")
+    .prt.aictab(x$AICtab); cat("\n")
     if(show.resids) {
-        lme4:::.prt.resids(x$residuals, digits = digits)
+        .prt.resids(x$residuals, digits = digits)
     }
     lapply(x$parsedForm$random, printReTrm)
     p <- nrow(x$coefficients)
@@ -190,6 +190,7 @@ pars <- function(object, ...) UseMethod("pars")
 ##' Parameter retrieval for structured generalized linear mixed models
 ##'
 ##' @param object a \code{strucGlmer} fitted model object
+##' @param ... additional arguments to pass on
 ##' @rdname pars
 ##' @export
 pars.strucGlmer <- function(object, ...) object$opt$par
@@ -202,7 +203,6 @@ pars.glmerMod <- function(object, ...) unlist(getME(object, c("theta", "beta")))
 ##' @export
 covar <- function(object, ...) UseMethod("covar")
 
-##' @param ... not used
 ##' @rdname pars
 ##' @export
 covar.strucGlmer <- function(object, ...) {
@@ -223,6 +223,7 @@ loads.strucGlmer <- function(object, ...) {
     getStrucGlmerPar(object, "loads")
 }
 
+##' @param x an object with \code{x$factors}
 ##' @rdname pars
 ##' @export
 factors <- function(x, ...) x$factors
@@ -491,6 +492,8 @@ model.matrix.strucGlmer <- function(object, ...) model.matrix(object$parsedForm)
 ## simulations
 ## ----------------------------------------------------------------------
 
+##' @param nsim number of simulations
+##' @param seed random seed (see \code{\link{set.seed}})
 ##' @importFrom stats simulate
 ##' @rdname strucGlmer-class
 ##' @export
@@ -531,8 +534,6 @@ simStrucParsedForm <- function(parsedForm, family = binomial,
 ## print random effects terms
 ## ----------------------------------------------------------------------
 
-
-
 ##' Print random effects term
 ##' 
 ##' @param object \code{\link{repSparse}} object
@@ -544,8 +545,10 @@ printReTrm <- function(object, forSummary = FALSE, ...) {
     UseMethod("printReTrm")
 }
 
+##' @param x \code{reTrmStruct} object
 ##' @rdname printReTrm
 ##' @aliases print.reTrmStruct
+##' @method print reTrmStruct
 ##' @export
 print.reTrmStruct <- function(x, ...) {
     printReTrm(x, ...)
@@ -684,6 +687,7 @@ getReTrm <- function(object, name, drop = TRUE) {
 ##'
 ##' @param object a \code{\link{strucGlmer}} object.
 ##' @param components components to compress.
+##' @param ... not used yet.
 ##' @return an error message pointing to this help page.
 ##' @export
 compressStrucGlmer <- function(object, components, ...) {

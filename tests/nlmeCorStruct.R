@@ -1,6 +1,6 @@
 library(lme4ord)
 library(ape)
-library(multitable)
+library(nlme)
 
 set.seed(1)
 

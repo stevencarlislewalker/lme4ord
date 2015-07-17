@@ -1,6 +1,5 @@
 library(lme4ord)
-library(Matrix)
-library(vegan)
+library(lme4)
 
                                         # simulation design
 nLakes   <- 50

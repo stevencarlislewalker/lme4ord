@@ -9,11 +9,16 @@
 \method{setReTrm}{factAnal}(object, addArgsList, auxEnv = NULL,
   devfunEnv = NULL)
 
-scores.factAnal(x, ...)
+\method{scores}{factAnal}(x, ...)
 
 \method{biplot}{factAnal}(x, ...)
 }
 \arguments{
+\item{x}{\code{\link{setReTrm.factAnal}} object}
+
+\item{...}{not used (for consistency with generic in \code{vegan}
+package)}
+
 \item{object}{a \code{reTrmStruct} object}
 
 \item{addArgsList}{a list of named quantities within which
@@ -39,8 +44,7 @@ Random effects term for factor analysis
 }
 \seealso{
 Other setReTrm: \code{\link{cooccur}},
-  \code{\link{setReTrm.cooccur}}; \code{\link{edge}},
-  \code{\link{setReTrm.edge}}; \code{\link{expDecay}},
+  \code{\link{setReTrm.cooccur}}; \code{\link{expDecay}},
   \code{\link{setReTrm.expDecay}};
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
   \code{\link{packReTrm}}, \code{\link{ranef.reTrmStruct}},
@@ -51,7 +55,9 @@ Other setReTrm: \code{\link{cooccur}},
   \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
-  \code{\link{sem}}, \code{\link{setReTrm.sem}};
+  \code{\link{phyloEdge}},
+  \code{\link{setReTrm.phyloEdge}}; \code{\link{sem}},
+  \code{\link{setReTrm.sem}};
   \code{\link{setReTrm.varExp}}, \code{\link{varExp}};
   \code{\link{setReTrm.varIdent}}, \code{\link{varIdent}}
 }

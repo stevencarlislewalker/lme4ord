@@ -21,6 +21,8 @@
 ##' @param data,family,weights,offset,etastart,devfunOnly see \code{\link{glmer}} 
 ##' @param addArgs list of additional arguments to pass to
 ##' @param optVerb verbose
+##' @param optMaxit maximum number of iterations for the nonlinear
+##' optimizers
 ##' @param ... further arguments to \code{\link{mkGeneralGlmerDevfun}}
 ##' @export
 strucGlmer <- function(formula, data, family, addArgs = list(),

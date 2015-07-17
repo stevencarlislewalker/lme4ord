@@ -58,13 +58,15 @@ easier to build edge-based phylogenetic models.
 }
 \examples{
 set.seed(1)
-phy <- rtree(5)
-plot(phy)
-edgelabels()
-edgeTipIndicator(phy)
-(ee <- edgeTipIndicator(phy))
-if (require(Matrix)) {
-   image(Matrix(ee),sub="",xlab="tips",ylab="branches")
+if (require("ape")) {
+   phy <- rtree(5)
+   plot(phy)
+   edgelabels()
+   edgeTipIndicator(phy)
+   (ee <- edgeTipIndicator(phy))
+   if (require("Matrix")) {
+       image(Matrix(ee),sub="",xlab="tips",ylab="branches")
+   }
 }
 }
 \seealso{

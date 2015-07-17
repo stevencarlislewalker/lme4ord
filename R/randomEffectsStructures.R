@@ -748,6 +748,8 @@ simReTrm <- function(object) {
     })
 }
 
+##' @param type see \code{\link{ranef.strucGlmer}}
+##' @param ... not used (for consistency with generic)
 ##' @rdname setReTrm
 ##' @export
 ranef.reTrmStruct <- function(object, type = c("u", "Lu", "ZLu"), ...) {
@@ -765,10 +767,14 @@ ranef.reTrmStruct <- function(object, type = c("u", "Lu", "ZLu"), ...) {
     subRagByLens(re, nRePerTrm)[[which(nms == trmName)]]
 }
 
+##' @param x \code{\link{setReTrm.factAnal}} object
+##' @param ... not used (for consistency with generic in \code{vegan}
+##' package)
 ##' @importFrom vegan scores
 ##' @rdname setReTrm.factAnal
 ##' @export
 scores.factAnal <- function(x, ...) {
+    ## requires vegan
     trans <- environment(x$Zt$trans)$Btrans
     trmDims <- environment(trans)$trmDims
     trmLoads <- matrix(trans(getInit(x$Zt)),
