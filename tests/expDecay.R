@@ -1,30 +1,40 @@
 library(lme4ord)
-library(multitable)
+library(Matrix)
 library(vegan)
 
-data(mite)
-data(mite.env)
-data(mite.xy)
+                                        # simulation design
+nLakes   <- 50
+nSpecies <- 30
+lakes   <- paste("lake",    1:nLakes,   sep = "")
+species <- paste("species", 1:nSpecies, sep = "")
+dataFrame <- expand.grid(lakes   = lakes,
+                         species = species)
 
-dl <- dims_to_vars(data.list(mite = as.matrix(mite), mite.env, mite.xy,
-                             dimids = c("sites", "species")))
-dl <- aperm(dl, c(2, 1)) ## better sparsity properties if species
-                         ## dimension comes first
-dl$sites <- factor(dl$sites, dl$sites)
-summary(dl)
-df <- as.data.frame(dl)
+                                        # model design
+form <- respVar ~ 1 + 
+    (1 | species) +
+    expDecay(1 | lakes, distMat = distMat, minCov = 1e-3, distCutoff = 1.5)
+distMat <- dist(matrix(rnorm(nLakes * 2), nLakes, 2))
 
-miteDist <- dist(cbind(dl$x, dl$y))
+                                        # simulations
+pform <- strucParseFormula(form, dataFrame, addArgs = list(distMat = distMat))
+respVar <- simulate(pform, nsim = 1, seed = 1,
+                    weights = rep(1, nrow(dataFrame)),
+                    family = binomial())
+dataFrame$respVar <- as.numeric(respVar)
+respMat <- matrix(dataFrame$respVar,
+                  nLakes, nSpecies)
 
-form <- mite ~ 1 + (1 | species) + 
-    expDecay(1 | sites, distMat = distMat,
-             minCov = 1e-3, distCutoff = 2)
-
-(gm <- strucGlmer(form, df, poisson, addArgs = list(distMat = miteDist)))
+                                        # structured GLMM with
+                                        # factor analysis
+gm <- strucGlmer(form, dataFrame, binomial,
+                 addArgs = list(distMat = distMat),
+                 optMaxit = 50000)
+print(gm)
 
 par(mfrow = c(2, 1), mar = c(4, 4, 1, 1))
-with(covExpDecay(covarPerTerm(gm)$sites.expDecay, distCutoff = 2),
-     plot(edgeDists, edgeCovs, type = "l", xlim = c(0, max(miteDist))))
-segments(2, 0, max(miteDist), 0)
-hist(miteDist, 30)
+with(covExpDecay(covarPerTerm(gm)$lakes.expDecay, distCutoff = 1.5),
+     plot(edgeDists, edgeCovs, type = "l", xlim = c(0, max(distMat))))
+segments(1.5, 0, max(distMat), 0)
+hist(distMat, 30)
 

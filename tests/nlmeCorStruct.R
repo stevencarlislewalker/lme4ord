@@ -4,30 +4,34 @@ library(multitable)
 
 set.seed(1)
 
-                                        # basic simulation design:
-nSites <- 800
-nSpec <- 10
-form <- y ~ x + nlmeCorStruct(1 | species, corObj = corObj, sig = 1)
-dataList <- dims_to_vars(data.list(y = 1 * (matrix(rnorm(nSites * nSpec), nSites, nSpec) > 0),
-                                   x = rnorm(nSites), # environmental variable, x
-                                   dimids = c("sites", "species")))
-phy <- compute.brlen(rtree(n = nSpec), method = "Grafen", power = 0.8)
-phy$tip.label <- dimnames(dataList)$species
-corObj <- Initialize(corBrownian(1, phy), dropdl(dataList[1, ]))
-image(repSparseCorFactor(corObj, sig = 1))
-dataFrame <- as.data.frame(dataList)
+                                        # simulation design
+nLakes   <- 800
+nSpecies <- 10
+lakes   <- data.frame(lakes   = paste("lake",    1:nLakes,   sep = ""))
+species <- data.frame(species = paste("species", 1:nSpecies, sep = ""))
+rownames(species) <- species$species
+dataFrame <- merge(species, lakes)
+dataFrame$envVar <- rnorm(nLakes)[as.numeric(dataFrame$lakes)]
+phy <- compute.brlen(rtree(n = nSpecies), method = "Grafen", power = 0.8)
+phy$tip.label <- as.character(unique(dataFrame$species))
+corObj <- Initialize(corBrownian(1, phy), species)
 
-                                        # simualate response variable:
-parsedForm <- strucParseFormula(form, dataFrame, addArgs = list(phy = phy))
-beta <- rnorm(ncol(parsedForm$fixed))
-u <- rnorm(nrow(parsedForm$Lambdat))
-dataFrame$y <- with(parsedForm, {
-    fe <- as.numeric(fixed %*% beta)
-    re <- as.numeric(t(Lambdat * Zt) %*% u)
-    mu <- plogis(fe + re)
-    rbinom(nSites * nSpec, 1, mu)
-})
 
+                                        # model design
+form <- respVar ~ envVar + nlmeCorStruct(1 | species, corObj = corObj, sig = 1)
+pform <- strucParseFormula(form, dataFrame, addArgs = list(corObj = corObj))
+pform$initPars[2:3] <- beta <- c(-1, 2)
+
+                                        # simulate response
+respVar <- simulate(pform, nsim = 1, seed = 1,
+                    weights = rep(1, nrow(dataFrame)),
+                    family = binomial())
+dataFrame$respVar <- as.numeric(respVar)
+
+                                        # fit model
 (gm <- strucGlmer(form, dataFrame, binomial, list(corObj = corObj)))
-beta
+
+                                        # plot covariance and phylogeny
+image(crossprod(getReTrm(gm, "species.nlmeCorStruct")$Lambdat))
+plot(phy)
 
