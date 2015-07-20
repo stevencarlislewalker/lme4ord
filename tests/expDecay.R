@@ -1,6 +1,9 @@
 library(lme4ord)
 library(lme4)
 
+set.seed(1)
+
+
                                         # simulation design
 nLakes   <- 50
 nSpecies <- 30

@@ -5,8 +5,9 @@ Version: 0.0-2
 Date: 2015-07-17
 Author: Steve Walker
 Maintainer: Steve Walker <steve.walker@utoronto.ca>
-Description: Generalized linear mixed models with flexible (co)variance
-    structures. The package was written to solve applied problems in biology
+Description: Generalized linear mixed models with
+    flexible (co)variance structures. The package
+    was written to solve applied problems in biology
     and ecology, but should be more general than that.
 License: GPL-2
 Roxygen: list(wrap = FALSE)

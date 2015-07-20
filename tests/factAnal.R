@@ -2,6 +2,8 @@ library(lme4ord)
 library(Matrix)
 library(vegan)
 
+set.seed(1)
+
                                         # simulation design
 nLakes   <- 50
 nSpecies <- 30
