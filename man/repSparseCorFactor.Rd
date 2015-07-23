@@ -16,7 +16,7 @@ Construct a repeated sparse upper Cholesky factor from an
 \code{nlme}-style \code{corStruct} object
 }
 \examples{
-(xCorFactor <- repSparseCorFactor(Initialize(corAR1(0.5, form = ~ 1 | Subject), data = Orthodont)))
+if(require("nlme")) (xCorFactor <- repSparseCorFactor(Initialize(corAR1(0.5, form = ~ 1 | Subject), data = Orthodont)))
 }
 \seealso{
 Other repSparseSpecial: \code{\link{repSparseBlank}};

@@ -13,7 +13,6 @@ License: GPL-2
 Roxygen: list(wrap = FALSE)
 Depends:
     lme4,
-    nlme,
     minqa
 Imports:
     stats,
@@ -24,6 +23,7 @@ Imports:
     ape,
     reshape2,
     MASS,
-    lattice
+    lattice,
+    nlme
 Suggests:
     multitable

@@ -1901,7 +1901,7 @@ setIs("repSparseExpChol", "repSparse")
 ##' @family repSparseSpecial
 ##' @export
 ##' @examples
-##' (xCorFactor <- repSparseCorFactor(Initialize(corAR1(0.5, form = ~ 1 | Subject), data = Orthodont)))
+##' if(require("nlme")) (xCorFactor <- repSparseCorFactor(Initialize(corAR1(0.5, form = ~ 1 | Subject), data = Orthodont)))
 repSparseCorFactor <- function(object, sig = 1) {
     ## MATNAME: Cholesky from corStruct object
     sigExists <- !is.null(sig)

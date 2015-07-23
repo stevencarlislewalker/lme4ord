@@ -17,10 +17,18 @@
 ##' following types of models:
 ##' 
 ##' \itemize{
-##'   \item Factor analytic and structural equation latent variable models (\code{\link{factAnal}})
-##'   \item Models with phylogenetic correlations (\code{\link{phyloEdge}})
-##'   \item Models with spatial correlations (\code{\link{expDecay}})
-##'   \item Any \code{\link{corStruct}} model from the \code{nlme} package (\code{\link{nlmeCorStruct}})
+##' 
+##' \item Factor analytic and structural equation latent variable
+##' models (\code{\link{factAnal}})
+##'
+##' \item Models with phylogenetic correlations
+##' (\code{\link{phyloEdge}})
+##'
+##' \item Models with spatial correlations (\code{\link{expDecay}})
+##'
+##' \item Any \code{\link{corStruct}} model from the \code{nlme}
+##' package (\code{\link{nlmeCorStruct}})
+##'
 ##' }
 ##' 
 ##' Despite this origin in community ecology, \code{lme4ord} is more

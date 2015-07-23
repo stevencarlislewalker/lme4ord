@@ -7,6 +7,8 @@ packReTrm(object, Zt, Lambdat, lowerLoads, upperLoads, lowerCovar, upperCovar,
   devfunEnv = NULL)
 }
 \arguments{
+\item{object}{a \code{\link{reTrmStruct}} object}
+
 \item{Zt}{transposed model matrix}
 
 \item{Lambdat}{relative covariance factor}
@@ -14,6 +16,8 @@ packReTrm(object, Zt, Lambdat, lowerLoads, upperLoads, lowerCovar, upperCovar,
 \item{lowerLoads,upperLoads,lowerCovar,upperCovar}{lower and upper
 bounds on possible loadings parameters (for \code{Zt}) and
 possible covariance parameters (for \code{Lambdat})}
+
+\item{devfunEnv}{optional environment of the deviance function}
 }
 \description{
 This function is useful as the final line of a method for

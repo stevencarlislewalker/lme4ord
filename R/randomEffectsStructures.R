@@ -575,6 +575,7 @@ setReTrm.nlmeCorStruct <- function(object, addArgsList,
 ##' This function is useful as the final line of a method for
 ##' \code{\link{setReTrm}}.
 ##'
+##' @param object a \code{\link{reTrmStruct}} object
 ##' @param Zt transposed model matrix
 ##' @param Lambdat relative covariance factor
 ##' @param lowerLoads,upperLoads,lowerCovar,upperCovar lower and upper
