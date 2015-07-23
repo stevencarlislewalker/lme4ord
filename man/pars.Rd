@@ -3,14 +3,12 @@
 \alias{covar}
 \alias{covar.strucGlmer}
 \alias{covarPerTerm}
-\alias{factors}
 \alias{fixef.strucGlmer}
 \alias{getStrucGlmerPar}
 \alias{loads}
 \alias{loads.default}
 \alias{loads.strucGlmer}
 \alias{loadsPerTerm}
-\alias{mkParInds}
 \alias{nRePerTrm}
 \alias{parPerTerm}
 \alias{pars}
@@ -36,8 +34,6 @@ loads(object, ...)
 
 \method{loads}{strucGlmer}(object, ...)
 
-factors(x, ...)
-
 \method{fixef}{strucGlmer}(object, ...)
 
 \method{ranef}{strucGlmer}(object, type = c("u", "Lu", "ZLu"), ...)
@@ -53,15 +49,11 @@ loadsPerTerm(object)
 nRePerTrm(object)
 
 reIndsPerTrm(object)
-
-mkParInds(parList)
 }
 \arguments{
 \item{object}{a \code{strucGlmer} fitted model object}
 
 \item{...}{additional arguments to pass on}
-
-\item{x}{an object with \code{x$factors}}
 
 \item{type}{character string giving the type of parameter
 (e.g. \code{"fixef", "covar"})}
@@ -70,9 +62,6 @@ mkParInds(parList)
 
 \item{pars}{parameter vector (e.g. result of \code{covar} or
 \code{loads}}
-
-\item{parList}{named list of parameters with possible names:
-(\code{covar}, \code{fixef}, \code{weigh}, \code{loads})}
 }
 \description{
 Parameter retrieval for structured generalized linear mixed models

@@ -25,6 +25,11 @@
 ##' optimizers
 ##' @param ... further arguments to \code{\link{mkGeneralGlmerDevfun}}
 ##' @export
+##' @examples
+##' cbpp$incidenceBySize <- with(cbpp, incidence/size)
+##' gm <- strucGlmer(incidenceBySize ~ factAnal(0 + herd | period, nAxes = 1),
+##'                  data = cbpp, family = binomial, weights = cbpp$size,
+##'                  penLoads = mkPenLpNorm())
 strucGlmer <- function(formula, data, family, addArgs = list(),
                        optVerb = 0L, optMaxit = 10000,
                        weights = NULL, offset = NULL, etastart = NULL,

@@ -18,7 +18,7 @@ form <- respVar ~ 1 +
     (1 | species) +
     factAnal(0 + lakes | species, nAxes = 2, seed = 1)
 
-                                        # simulations 
+                                        # simulations
 pform <- strucParseFormula(form, dataFrame)
 respVar <- simulate(pform, nsim = 1, seed = 1,
                     weights = rep(1, nrow(dataFrame)),
@@ -35,8 +35,10 @@ print(gm0)
 
                                         # structured GLMM with
                                         # factor analysis
+system.time({
 gm <- strucGlmer(form, dataFrame, binomial, optMaxit = 50000,
                  penLoads = mkPenLpNorm(p = 2, lambda = 1))
+})
 print(gm)
 
 fixef(gm) # 'true' value 0

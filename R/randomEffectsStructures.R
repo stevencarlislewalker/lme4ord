@@ -38,6 +38,7 @@
 ##' \item{grpName}{If present, the name of the grouping factor,
 ##' \code{NA} otherwise.}  \item{addArgs}{If present, any additional
 ##' arguments passed to the special function in the formula.}
+##' @aliases reTrmStruct reTrmStruct-class
 ##' @export
 mkReTrmStructs <- function(splitFormula, data) {
     if(inherits(splitFormula, "formula")) {
@@ -101,7 +102,7 @@ getModMatAndGrpFac <- function(bar, fr) {
 ##' Set model matrix slice and relative covariance factor block for a
 ##' random effects term
 ##' 
-##' @param object a \code{reTrmStruct} object
+##' @param object a \code{\link{reTrmStruct}} object
 ##' @param addArgsList a list of named quantities within which
 ##' \code{addArgsExpr} is evaluated
 ##' @param auxEnv an optional auxilliary environment containing
@@ -569,12 +570,17 @@ setReTrm.nlmeCorStruct <- function(object, addArgsList,
               devfunEnv = devfunEnv)
 }
 
+##' Package up a random effects term structure
+##'
+##' This function is useful as the final line of a method for
+##' \code{\link{setReTrm}}.
+##'
 ##' @param Zt transposed model matrix
 ##' @param Lambdat relative covariance factor
 ##' @param lowerLoads,upperLoads,lowerCovar,upperCovar lower and upper
 ##' bounds on possible loadings parameters (for \code{Zt}) and
 ##' possible covariance parameters (for \code{Lambdat})
-##' @rdname setReTrm
+##' @param devfunEnv optional environment of the deviance function
 ##' @export
 packReTrm <- function(object, Zt, Lambdat,
                       lowerLoads, upperLoads,
@@ -615,7 +621,7 @@ VarCorr.factAnal <- function(x, sigma = 1, rdig = 3) {
 
 ##' Update a random effects term structure with new parameters
 ##'
-##' @param object a \code{reTrmStruct} object
+##' @param object a \code{\link{reTrmStruct}} object
 ##' @param newCovar new covariance parameters
 ##' @param newLoads new loadings parameters
 ##' @param ... potential additional arguments (ignored by the default
@@ -696,7 +702,7 @@ indsForClass <- function(reTrmClass, reTrmClasses, nValuesPerTrm) {
 
 ##' Simulate additional arguments
 ##'
-##' @param object a \code{reTrmStruct} object
+##' @param object a \code{\link{reTrmStruct}} object
 ##' @param ... dots
 ##' @rdname simAddArgs
 ##' @export
@@ -757,7 +763,7 @@ getAddArgs <- function(addArgsExpr, addArgsList) {
 
 ##' Simulate from a random effects term
 ##'
-##' @param object \code{reTrmStruct} object
+##' @param object \code{\link{reTrmStruct}} object
 ##' @export
 simReTrm <- function(object) {
     with(object, {

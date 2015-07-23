@@ -11,10 +11,51 @@
 ## strucGlmer object extraction functions
 ## ----------------------------------------------------------------------
 
-##' @param parList named list of parameters with possible names:
-##' (\code{covar}, \code{fixef}, \code{weigh}, \code{loads})
-##' @rdname pars
+##' Make parameter indices
+##'
+##' One faces two somewhat opposing design goals when deciding on how
+##' to represent the parameters of structured generalized linear mixed
+##' models. On one hand, it would be nice to organize the
+##' representation in terms of the four different types of parameters
+##' (see below): (\code{covar}, \code{fixef}, \code{loads},
+##' \code{weigh}). On the other hand, the nonlinear optimizer takes
+##' vector valued parameter sets. The \code{mkParInds} function is
+##' used to get the best of both worlds, by constructing a list of
+##' indices for extracting various types of parameters from a
+##' parameter vector.
+##' 
+##' The \code{\link{lme4ord}} package keeps track of parameters using
+##' a simple named list of parameter vectors. The names correspond to
+##' different types of parameters, described in the following list:
+##' \describe{
+##' 
+##' \item{\code{covar}}{Parameters determining the transposed relative
+##' covariance factor, \code{Lambdat}.}
+##'
+##' \item{\code{fixef}}{The fixed effects coefficients.}
+##'
+##' \item{\code{loads}}{Parameters (called loadings) determining the
+##' random effects model matrix, \code{Zt}.}
+##'
+##' \item{\code{weigh}}{Parameters determining the observation weights
+##' (experimental).}
+##'
+##' }
+##' \code{mkParInds} constructs the indices required to extract the
+##' different types of parameters in \code{unlist(parList)}.
+##'
+##' @return A list with the same names as \code{parList} with the
+##' indices for each type of parameter.
+##' 
+##' @param parList named list of parameters with possible names (see
+##' details): (\code{covar}, \code{fixef}, \code{loads}, \code{weigh})
 ##' @export
+##' @examples
+##' set.seed(1)
+##' parList <- list(covar = 1, fixef = c(0, 0), loads = rnorm(10))
+##' parInds <- mkParInds(parList)
+##' parVec <- unlist(parList)
+##' parVec[parInds$fixef]
 mkParInds <- function(parList) {
     if(!is.recursive(parList)) stop("parList must be a list")
     if(length(parList) == 1L) return(lapply(parList, seq_along))
@@ -34,6 +75,19 @@ mkParInds <- function(parList) {
 
 ##' Get and set initial parameter values for repeated sparse matrices
 ##'
+##' The initial values for a repeated sparse matrix are stored in the
+##' environment of its transformation function, where they have the
+##' name \code{init}.  Random effects term structures
+##' (\code{\link{reTrmStruct}}) contain two repeated sparse matrices:
+##' the transposed relative covariance factor, \code{Lambdat}, and the
+##' transposed random effects model matrix, \code{Zt}. There are
+##' \code{getReTrm.reTrmStruct} and \code{setReTrm.reTrmStruct}
+##' methods for getting and setting the initial values of these
+##' matrices directly.  Setting initial values does not change the
+##' values themselves, only the initial values. Use the
+##' \code{\link{update.repSparse}} methods to actually update the
+##' values to the initial values.
+##' 
 ##' @param x object
 ##' @param ... not yet used
 ##' @rdname getInit
@@ -44,6 +98,7 @@ mkParInds <- function(parList) {
 ##' m2 <- repSparseCompSymm(1.2, -0.2, 5)
 ##' getInit(m1)
 ##' getInit(m2)
+##' setInit(m2, c(10, 0))
 getInit <- function(x, ...) UseMethod("getInit")
 
 ##' @rdname getInit
@@ -52,7 +107,7 @@ getInit.default <- function(x, ...) x$init
 
 ##' @rdname getInit
 ##' @export
-getInit.repSparse <- function(x, ...) environment(x$trans)$init
+getInit.repSparse <- function(x, ...) getInit(x$trans)
 
 ##' @rdname getInit
 ##' @export
@@ -105,6 +160,17 @@ parLength <- function(ll) {
     if(is.null(initll) || all(is.na(initll))) return(0L)
     return(length(initll))
 }
+
+##' Extract factors
+##'
+##' Intended for factor analysis (\code{\link{factAnal}}), and
+##' modelled after the \code{\link{loadings}} function in the
+##' \code{stats} package.
+##'
+##' @param x an object with \code{x$factors}
+##' @param ... not used
+##' @export
+factors <- function(x, ...) x$factors
 
 ## ----------------------------------------------------------------------
 ## Phylogenetic 

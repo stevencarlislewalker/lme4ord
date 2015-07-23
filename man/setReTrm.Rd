@@ -2,7 +2,6 @@
 \name{setReTrm}
 \alias{findReTrmClasses}
 \alias{getAddArgs}
-\alias{packReTrm}
 \alias{ranef.reTrmStruct}
 \alias{setReTrm}
 \alias{setReTrm.default}
@@ -14,9 +13,6 @@ setReTrm(object, addArgsList, auxEnv = NULL, devfunEnv = NULL)
 \method{setReTrm}{default}(object, addArgsList, auxEnv = NULL,
   devfunEnv = NULL)
 
-packReTrm(object, Zt, Lambdat, lowerLoads, upperLoads, lowerCovar, upperCovar,
-  devfunEnv = NULL)
-
 findReTrmClasses(formula = NULL)
 
 getAddArgs(addArgsExpr, addArgsList)
@@ -24,7 +20,7 @@ getAddArgs(addArgsExpr, addArgsList)
 \method{ranef}{reTrmStruct}(object, type = c("u", "Lu", "ZLu"), ...)
 }
 \arguments{
-\item{object}{a \code{reTrmStruct} object}
+\item{object}{a \code{\link{reTrmStruct}} object}
 
 \item{addArgsList}{a list of named quantities within which
 \code{addArgsExpr} is evaluated}
@@ -36,14 +32,6 @@ environment of a call to \code{\link{strucParseFormula}}, unless
 \code{setReTrm} is called directly)}
 
 \item{devfunEnv}{optional environment of the deviance function}
-
-\item{Zt}{transposed model matrix}
-
-\item{Lambdat}{relative covariance factor}
-
-\item{lowerLoads,upperLoads,lowerCovar,upperCovar}{lower and upper
-bounds on possible loadings parameters (for \code{Zt}) and
-possible covariance parameters (for \code{Lambdat})}
 
 \item{formula}{generalized mixed model formula.  if \code{NULL}
 (the default) \code{findReTrmClasses} returns classes available

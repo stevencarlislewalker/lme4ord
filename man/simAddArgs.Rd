@@ -16,7 +16,7 @@ simAddArgsList(object, ...)
   compute.brlenArgs = list(), ...)
 }
 \arguments{
-\item{object}{a \code{reTrmStruct} object}
+\item{object}{a \code{\link{reTrmStruct}} object}
 
 \item{...}{dots}
 

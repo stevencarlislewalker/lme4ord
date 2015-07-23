@@ -9,7 +9,7 @@
 \method{update}{flexvar}(object, newCovar, newLoads, ...)
 }
 \arguments{
-\item{object}{a \code{reTrmStruct} object}
+\item{object}{a \code{\link{reTrmStruct}} object}
 
 \item{newCovar}{new covariance parameters}
 

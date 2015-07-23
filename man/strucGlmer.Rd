@@ -33,4 +33,10 @@ linear mixed model deviance function}
 \item{\code{\link{mkStrucGlmer}}}{constructs an object of
 \code{\link{strucGlmer-class}}}}
 }
+\examples{
+cbpp$incidenceBySize <- with(cbpp, incidence/size)
+gm <- strucGlmer(incidenceBySize ~ factAnal(0 + herd | period, nAxes = 1),
+                 data = cbpp, family = binomial, weights = cbpp$size,
+                 penLoads = mkPenLpNorm())
+}
 

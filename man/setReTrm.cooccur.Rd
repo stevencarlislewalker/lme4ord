@@ -8,7 +8,7 @@
   devfunEnv = NULL)
 }
 \arguments{
-\item{object}{a \code{reTrmStruct} object}
+\item{object}{a \code{\link{reTrmStruct}} object}
 
 \item{addArgsList}{a list of named quantities within which
 \code{addArgsExpr} is evaluated}
@@ -37,12 +37,11 @@ Other setReTrm: \code{\link{biplot.factAnal}},
   \code{\link{setReTrm.factAnal}}; \code{\link{expDecay}},
   \code{\link{setReTrm.expDecay}};
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
-  \code{\link{packReTrm}}, \code{\link{ranef.reTrmStruct}},
-  \code{\link{setReTrm}}, \code{\link{setReTrm.default}};
-  \code{\link{flexvar}}, \code{\link{setReTrm.flexvar}};
-  \code{\link{identity}}, \code{\link{setReTrm.identity}};
-  \code{\link{lme4}}, \code{\link{setReTrm.lme4}};
-  \code{\link{nlmeCorStruct}},
+  \code{\link{ranef.reTrmStruct}}, \code{\link{setReTrm}},
+  \code{\link{setReTrm.default}}; \code{\link{flexvar}},
+  \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
+  \code{\link{setReTrm.identity}}; \code{\link{lme4}},
+  \code{\link{setReTrm.lme4}}; \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
   \code{\link{phyloEdge}},

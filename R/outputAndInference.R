@@ -224,11 +224,6 @@ loads.strucGlmer <- function(object, ...) {
     getStrucGlmerPar(object, "loads")
 }
 
-##' @param x an object with \code{x$factors}
-##' @rdname pars
-##' @export
-factors <- function(x, ...) x$factors
-
 ##' @importFrom nlme fixef 
 ##' @rdname pars
 ##' @export
@@ -595,10 +590,11 @@ printReTrm.factAnal <- function(object, forSummary = FALSE, ...) {
                       trmDims["nVar"], trmDims["nAxes"])
     
     .trmDims <- format(trmDims)
+    latentAxes <- if(trmDims["nAxes"] > 1) " latent axes\n" else " latent axis\n"
     cat ("",
          .trmDims["nObs"],  " multivariate observations\n",
          .trmDims["nVar"],  " variables\n",
-         .trmDims["nAxes"], " latent axes\n")
+         .trmDims["nAxes"], latentAxes)
 
     loadSums <- cbind(mean   = format(apply(loadMat, 2, mean)),
                       stdDev = format(apply(loadMat, 2, sd)))
