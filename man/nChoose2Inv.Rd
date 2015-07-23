@@ -11,6 +11,9 @@ nChoose2Inv(m)
 \description{
 Inverse of the n-choose-2 function
 }
+\note{
+No checks are made for non-integer input or output.
+}
 \examples{
 nChoose2Inv(choose(1:10, 2)) # = 1:10
 }

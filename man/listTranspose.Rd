@@ -11,4 +11,11 @@ listTranspose(lst)
 \description{
 Transpose a list
 }
+\examples{
+set.seed(1)
+X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
+Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
+listTranspose(list(X = X, Y = Y, Z = Z))
+}
 

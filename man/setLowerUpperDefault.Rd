@@ -18,4 +18,9 @@ setUpperDefault(init, ...)
 Get defaults choices for lower and/or upper bound of a model
 parameter
 }
+\examples{
+init <- rep(c(-1, 0, 1), each = 3)
+setLowerDefault(init)
+setUpperDefault(init)
+}
 

@@ -14,4 +14,7 @@ skeleton}
 \description{
 Show skeleton for some type of function
 }
+\examples{
+showSkeleton("setReTrm")
+}
 

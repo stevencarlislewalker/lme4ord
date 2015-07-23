@@ -68,6 +68,10 @@ mkReTrmStructs <- function(splitFormula, data) {
 ##' @param fr model frame
 ##' @return list with model matrix and grouping factor
 ##' @export
+##' @examples
+##' set.seed(1)
+##' dat <- data.frame(f = gl(5, 2), x = rnorm(10))
+##' getModMatAndGrpFac(quote(x | f), dat)
 getModMatAndGrpFac <- function(bar, fr) {
     ## based on mkBlist
 
@@ -678,6 +682,10 @@ update.flexvar <- function(object, newCovar, newLoads, ...) {
 ##' @param ... additional arguments not currently used
 ##' @rdname setLowerUpperDefault
 ##' @export
+##' @examples
+##' init <- rep(c(-1, 0, 1), each = 3)
+##' setLowerDefault(init)
+##' setUpperDefault(init)
 setLowerDefault <- function(init, ...) {
     if(missing(init)) return(NULL)
     if(length(init) == 0L) return(NULL)
@@ -701,7 +709,7 @@ indsForClass <- function(reTrmClass, reTrmClasses, nValuesPerTrm) {
     unlist(mapply(":", starts[whichClass], ends[whichClass], SIMPLIFY = FALSE))
 }
 
-##' Simulate additional arguments
+##' Simulate additional arguments (experimental)
 ##'
 ##' @param object a \code{\link{reTrmStruct}} object
 ##' @param ... dots
@@ -764,8 +772,17 @@ getAddArgs <- function(addArgsExpr, addArgsList) {
 
 ##' Simulate from a random effects term
 ##'
+##' The model matrix times the relative covariance factor times a
+##' simulated vector of random effects coefficients.
+##'
 ##' @param object \code{\link{reTrmStruct}} object
+##' @return a numeric vector of length equal to the number of rows of
+##' the model matrix for the term.
 ##' @export
+##' @examples
+##' example("strucGlmer")
+##' set.seed(1)
+##' simReTrm(getReTrm(gm, "period.factAnal"))
 simReTrm <- function(object) {
     with(object, {
         as.numeric(rnorm(nrow(Lambdat)) %*% as.matrix(Lambdat) %*% as.matrix(Zt))

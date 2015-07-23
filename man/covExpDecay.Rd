@@ -6,7 +6,8 @@
 covExpDecay(matPars, minCov = 0.001, distCutoff = 2, nPoints = 100)
 }
 \arguments{
-\item{matPars}{parameters of an \code{\link{expDecay}} term.}
+\item{matPars}{parameters of an \code{\link{expDecay}} term
+(FIXME: give more info).}
 
 \item{minCov,distCutoff}{see \code{\link{expDecay}}.}
 
@@ -15,5 +16,8 @@ covExpDecay(matPars, minCov = 0.001, distCutoff = 2, nPoints = 100)
 \description{
 Compute the exponential decay associated with an
 \code{\link{expDecay}} term.
+}
+\examples{
+covExpDecay(c(1, 1))
 }
 

@@ -306,9 +306,10 @@ reIndsPerTrm <- function(object) {
     setNames(subRagByLens(1:sum(nrpt), nrpt), names(nrpt))
 }
 
+##' @importFrom stats nobs
 ##' @rdname strucGlmer-class
 ##' @export
-nobs <- function(object, ...) nrow(object$parsedForm$fixed)
+nobs.strucGlmer <- function(object, ...) nrow(object$parsedForm$fixed)
 
 
 ## ----------------------------------------------------------------------

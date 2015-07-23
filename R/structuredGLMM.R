@@ -24,6 +24,7 @@
 ##' @param optMaxit maximum number of iterations for the nonlinear
 ##' optimizers
 ##' @param ... further arguments to \code{\link{mkGeneralGlmerDevfun}}
+##' @importFrom minqa bobyqa
 ##' @export
 ##' @examples
 ##' cbpp$incidenceBySize <- with(cbpp, incidence/size)

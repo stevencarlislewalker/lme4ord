@@ -62,7 +62,9 @@
 ##' standard \code{lme4}-style random effects terms, mixed model
 ##' formulas may consist of special \code{\link{reTrmStruct}} object
 ##' constructed using the random-effects structures module described
-##' below. Also see: \code{\link{splitForm}};
+##' below. The \code{\link{findReTrmClasses}} function may be used to
+##' list all such special structures that are available. Also see:
+##' \code{\link{splitForm}};
 ##' \code{\link{simulate.strucParseFormula}}.}
 ##'
 ##' \item{deviance function construction}{This module is what links a
@@ -86,7 +88,10 @@
 ##' random effects structures by defining new methods for the
 ##' \code{\link{setReTrm}} generic. To get started constructing such
 ##' methods see \code{showSkeleton("setReTrm")}. Also see:
-##' \code{\link{mkReTrmStructs}}; \code{\link{getModMatAndGrpFac}}; }
+##' \code{\link{mkReTrmStructs}}; \code{\link{getModMatAndGrpFac}};
+##' \code{\link{packReTrm}}; \code{\link{update.reTrmStruct}};
+##' \code{\link{setLowerDefault}}; \code{\link{simReTrm}};
+##' \code{\link{mkSparseTrans}}.}
 ##'
 ##' \item{repeated sparse matrices}{Many contemporary mixed models and
 ##' latent variable models involve large matrices, which at each

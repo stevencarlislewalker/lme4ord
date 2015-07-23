@@ -4,7 +4,7 @@
 \alias{simAddArgs.default}
 \alias{simAddArgs.phyloEdge}
 \alias{simAddArgsList}
-\title{Simulate additional arguments}
+\title{Simulate additional arguments (experimental)}
 \usage{
 simAddArgs(object, ...)
 
@@ -25,6 +25,6 @@ simAddArgsList(object, ...)
 \item{compute.brlenArgs}{arguments for \code{\link{compute.brlen}}}
 }
 \description{
-Simulate additional arguments
+Simulate additional arguments (experimental)
 }
 

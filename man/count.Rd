@@ -13,10 +13,15 @@ countInRange(x)
 \code{countInRange}) vector}
 }
 \value{
-data frame with \code{uniqueVals} and \code{counts}
-columns
+\code{\link{data.frame}} with \code{uniqueVals} and
+\code{counts} columns
 }
 \description{
 Count unique values
+}
+\examples{
+x <- rep(1:5, 5:1)
+countUnique(x)
+countInRange(x)
 }
 

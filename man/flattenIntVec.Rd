@@ -9,6 +9,11 @@ flattenIntVec(x)
 \item{x}{vector coercible to nonnegative integers}
 }
 \description{
-Flatten an integer vector
+Map integers in a vector, \code{x}, to the integers from \code{1,
+..., n}, where \code{n} is the number of unique integers in
+\code{x}.
+}
+\examples{
+flattenIntVec(rep(seq(0, 100, length = 5), 1:5))
 }
 

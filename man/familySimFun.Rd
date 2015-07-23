@@ -5,6 +5,7 @@
 \alias{familySimFun.binomialFamily}
 \alias{familySimFun.character}
 \alias{familySimFun.family}
+\alias{familySimFun.function}
 \alias{familySimFun.gaussianFamily}
 \alias{familySimFun.poissonFamily}
 \title{Family simulation functions}
@@ -14,6 +15,8 @@ familySimFun(object, ...)
 \method{familySimFun}{family}(object, ...)
 
 \method{familySimFun}{character}(object, ...)
+
+\method{familySimFun}{function}(object, ...)
 
 \method{familySimFun}{gaussianFamily}(object, ...)
 
@@ -34,5 +37,12 @@ a simulation function taking three arguments: \code{wts},
 }
 \description{
 Family simulation functions
+}
+\examples{
+set.seed(1)
+simFun <- familySimFun(binomial)
+simFun(wts = rep(1, 10),
+       nsim = 10,
+       ftd = binomial()$linkinv(rnorm(10)))
 }
 

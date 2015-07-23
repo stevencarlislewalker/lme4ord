@@ -186,11 +186,13 @@ stanCov <- function(covMat) {
 
 ##' Inverse of the n-choose-2 function
 ##'
+##' @note No checks are made for non-integer input or output.
+##'
 ##' @param m a vector coercible to integer
 ##' @export
 ##' @examples
 ##' nChoose2Inv(choose(1:10, 2)) # = 1:10
-nChoose2Inv <- function(m) as.integer((sqrt(1 + 8 * as.integer(m)) + 1)/2)
+nChoose2Inv <- function(m) (sqrt(1 + 8 * m) + 1)/2
 
 
 ## ----------------------------------------------------------------------
@@ -203,6 +205,12 @@ nChoose2Inv <- function(m) as.integer((sqrt(1 + 8 * as.integer(m)) + 1)/2)
 ##' @return a simulation function taking three arguments: \code{wts},
 ##' \code{nsim}, and \code{ftd}.
 ##' @export
+##' @examples
+##' set.seed(1)
+##' simFun <- familySimFun(binomial)
+##' simFun(wts = rep(1, 10),
+##'        nsim = 10,
+##'        ftd = binomial()$linkinv(rnorm(10)))
 familySimFun <- function(object, ...) {
     UseMethod("familySimFun")
 }
@@ -220,6 +228,10 @@ familySimFun.character <- function(object, ...) {
     dummyClass <- paste(object, "Family", sep = "")
     familySimFun(structure(list(), class = dummyClass))
 }
+
+##' @rdname familySimFun
+##' @export
+familySimFun.function <- function(object, ...) familySimFun(object())
 
 ##' @rdname familySimFun
 ##' @export
@@ -325,10 +337,14 @@ triInds <- function(rowInds, colInds, maxInd,
 ##'
 ##' @param x numeric (for \code{countUnique}) or integer (for
 ##' \code{countInRange}) vector
-##' @return data frame with \code{uniqueVals} and \code{counts}
-##' columns
+##' @return \code{\link{data.frame}} with \code{uniqueVals} and
+##' \code{counts} columns
 ##' @rdname count
 ##' @export
+##' @examples
+##' x <- rep(1:5, 5:1)
+##' countUnique(x)
+##' countInRange(x)
 countUnique <- function(x) {
     sx <- sort(x)
     counts <- diff(c(which(!duplicated(sx)), length(x) + 1))
@@ -347,8 +363,14 @@ countInRange <- function(x) {
 
 ##' Flatten an integer vector
 ##'
+##' Map integers in a vector, \code{x}, to the integers from \code{1,
+##' ..., n}, where \code{n} is the number of unique integers in
+##' \code{x}.
+##'
 ##' @param x vector coercible to nonnegative integers
 ##' @export
+##' @examples
+##' flattenIntVec(rep(seq(0, 100, length = 5), 1:5))
 flattenIntVec <- function(x) {
     x <- abs(as.integer(x))
     match(x, sort(unique(x)))
@@ -385,6 +407,8 @@ mapplyInvList <- function(vecList, lens) {
 ##' skeleton
 ##' @param package the default is probably what you want
 ##' @export
+##' @examples
+##' showSkeleton("setReTrm")
 showSkeleton <- function(whichSkel, package = "lme4ord") {
    fn <- system.file("skeletons",
                       paste(whichSkel, "R", sep = "."),
@@ -411,6 +435,12 @@ showSkeleton <- function(whichSkel, package = "lme4ord") {
 ##'
 ##' @param lst \code{\link{list}}
 ##' @export
+##' @examples
+##' set.seed(1)
+##' X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+##' Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
+##' Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
+##' listTranspose(list(X = X, Y = Y, Z = Z))
 listTranspose <- function(lst) {
     lstExtract <- function(i) lapply(lst, "[[", i)
     setNames(lapply(names(lst[[1]]), lstExtract), names(lst[[1]]))
@@ -426,6 +456,12 @@ subRagByLens <- function(x, lens) {
 ##' @param n matrix size
 ##' @rdname denseInds
 ##' @export
+##' @examples
+##' set.seed(1)
+##' A <- matrix(rnorm(25), 5, 5)
+##' A[denseDiagInds(5)]  ## = diag(A)
+##' A[denseLowerInds(5)] ## = A[lower.tri(A)]
+##' A[denseUpperInds(5)] ## = A[upper.tri(A)]
 denseDiagInds <- function(n) {
     seq(1, n^2, length.out = n)
 }
@@ -567,10 +603,13 @@ reorderPhylo <- function(object, ...) {
 ##' Compute the exponential decay associated with an
 ##' \code{\link{expDecay}} term.
 ##'
-##' @param matPars parameters of an \code{\link{expDecay}} term.
+##' @param matPars parameters of an \code{\link{expDecay}} term
+##' (FIXME: give more info).
 ##' @param minCov,distCutoff see \code{\link{expDecay}}.
 ##' @param nPoints number of points at which to evaluate the curve.
 ##' @export
+##' @examples
+##' covExpDecay(c(1, 1))
 covExpDecay <- function(matPars, minCov = 1e-3, distCutoff = 2, nPoints = 100) {
     edgeDists <- seq(0, distCutoff, length = nPoints)
     q1 <- (minCov - 1)/(exp(-(matPars[1]) * distCutoff) - 1)

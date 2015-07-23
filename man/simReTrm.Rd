@@ -8,7 +8,17 @@ simReTrm(object)
 \arguments{
 \item{object}{\code{\link{reTrmStruct}} object}
 }
+\value{
+a numeric vector of length equal to the number of rows of
+the model matrix for the term.
+}
 \description{
-Simulate from a random effects term
+The model matrix times the relative covariance factor times a
+simulated vector of random effects coefficients.
+}
+\examples{
+example("strucGlmer")
+set.seed(1)
+simReTrm(getReTrm(gm, "period.factAnal"))
 }
 

@@ -12,8 +12,7 @@ Description: Generalized linear mixed models with
 License: GPL-2
 Roxygen: list(wrap = FALSE)
 Depends:
-    lme4,
-    minqa
+    lme4
 Imports:
     stats,
     Matrix,
@@ -24,6 +23,7 @@ Imports:
     reshape2,
     MASS,
     lattice,
-    nlme
+    nlme,
+    minqa
 Suggests:
     multitable
