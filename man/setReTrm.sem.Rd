@@ -27,7 +27,15 @@ Random effects term for structural equation model
 
 \code{sem(1 | grpFac, loadMat)}
 \describe{
-\item{grpFac}{grouping factor for loadings} \item{nAxes}{number of axes} \item{seed}{random seed for initial axis values}
+\item{grpFac:}{grouping factor for loadings} \item{nAxes:}{number of axes} \item{seed:}{random seed for initial axis values}
+}
+}
+
+\section{Parameters}{
+
+\describe{
+\item{Covariance:}{FIXME}
+\item{Loadings:}{FIXME}
 }
 }
 \seealso{
@@ -39,10 +47,11 @@ Other setReTrm: \code{\link{biplot.factAnal}},
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
   \code{\link{ranef.reTrmStruct}}, \code{\link{setReTrm}},
   \code{\link{setReTrm.default}}; \code{\link{flexvar}},
-  \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
-  \code{\link{setReTrm.identity}}; \code{\link{lme4}},
-  \code{\link{setReTrm.lme4}}; \code{\link{nlmeCorStruct}},
+  \code{\link{setReTrm.flexvar}};
+  \code{\link{getCorStruct}}, \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
+  \code{\link{identity}}, \code{\link{setReTrm.identity}};
+  \code{\link{lme4}}, \code{\link{setReTrm.lme4}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
   \code{\link{phyloEdge}},
   \code{\link{setReTrm.phyloEdge}};

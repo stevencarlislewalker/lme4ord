@@ -4,6 +4,7 @@
 \alias{printReTrm}
 \alias{printReTrm.default}
 \alias{printReTrm.factAnal}
+\alias{printReTrm.nlmeCorStruct}
 \title{Print random effects term}
 \usage{
 printReTrm(object, forSummary = FALSE, ...)
@@ -13,6 +14,8 @@ printReTrm(object, forSummary = FALSE, ...)
 \method{printReTrm}{default}(object, forSummary = FALSE, ...)
 
 \method{printReTrm}{factAnal}(object, forSummary = FALSE, ...)
+
+\method{printReTrm}{nlmeCorStruct}(object, forSummary = FALSE, ...)
 }
 \arguments{
 \item{object}{\code{\link{repSparse}} object}

@@ -28,7 +28,15 @@ Random effects term for covariance proportional to identity matrix
 
 \code{identity(linForm | grpFac)}
 \describe{
-\item{linForm}{linear model formula decribing effects} \item{grpFac}{grouping factor}
+\item{linForm:}{linear model formula decribing effects} \item{grpFac:}{grouping factor}
+}
+}
+
+\section{Parameters}{
+
+\describe{
+\item{Covariance:}{standard deviation of the random effects}
+\item{Loadings:}{none}
 }
 }
 \seealso{
@@ -40,11 +48,11 @@ Other setReTrm: \code{\link{biplot.factAnal}},
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
   \code{\link{ranef.reTrmStruct}}, \code{\link{setReTrm}},
   \code{\link{setReTrm.default}}; \code{\link{flexvar}},
-  \code{\link{setReTrm.flexvar}}; \code{\link{lme4}},
-  \code{\link{setReTrm.lme4}}; \code{\link{nlmeCorStruct}},
-  \code{\link{setReTrm.nlmeCorStruct}};
-  \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
-  \code{\link{phyloEdge}},
+  \code{\link{setReTrm.flexvar}};
+  \code{\link{getCorStruct}}, \code{\link{nlmeCorStruct}},
+  \code{\link{setReTrm.nlmeCorStruct}}; \code{\link{lme4}},
+  \code{\link{setReTrm.lme4}}; \code{\link{obslev}},
+  \code{\link{setReTrm.obslev}}; \code{\link{phyloEdge}},
   \code{\link{setReTrm.phyloEdge}}; \code{\link{sem}},
   \code{\link{setReTrm.sem}};
   \code{\link{setReTrm.varExp}}, \code{\link{varExp}};

@@ -28,7 +28,15 @@ Random effects term with exponential decay in distance-based covariance
 
 \code{expDecay(1 | grpFac, distCutoff, minCov, distMat)}
 \describe{
-\item{grpFac}{grouping factor (e.g. with levels given by geographical sites)} \item{distCutoff}{maximum distance with covariance greater than minCov} \item{minCov}{minimum covariance} \item{distMat}{distance matrix object over the levels of grpFac}
+\item{grpFac:}{grouping factor (e.g. with levels given by geographical sites)} \item{distCutoff:}{maximum distance with covariance greater than minCov} \item{minCov:}{minimum covariance} \item{distMat:}{distance matrix object over the levels of grpFac}
+}
+}
+
+\section{Parameters}{
+
+\describe{
+\item{Covariance:}{length-two vector with the exponential decay parameter and the standard deviation at zero distance}
+\item{Loadings:}{none}
 }
 }
 \seealso{
@@ -39,10 +47,11 @@ Other setReTrm: \code{\link{biplot.factAnal}},
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
   \code{\link{ranef.reTrmStruct}}, \code{\link{setReTrm}},
   \code{\link{setReTrm.default}}; \code{\link{flexvar}},
-  \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
-  \code{\link{setReTrm.identity}}; \code{\link{lme4}},
-  \code{\link{setReTrm.lme4}}; \code{\link{nlmeCorStruct}},
+  \code{\link{setReTrm.flexvar}};
+  \code{\link{getCorStruct}}, \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
+  \code{\link{identity}}, \code{\link{setReTrm.identity}};
+  \code{\link{lme4}}, \code{\link{setReTrm.lme4}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
   \code{\link{phyloEdge}},
   \code{\link{setReTrm.phyloEdge}}; \code{\link{sem}},

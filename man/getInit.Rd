@@ -5,12 +5,13 @@
 \alias{getInit.function}
 \alias{getInit.reTrmStruct}
 \alias{getInit.repSparse}
-\alias{parLength}
+\alias{getInit.strucParseFormula}
 \alias{setInit}
 \alias{setInit.default}
 \alias{setInit.function}
 \alias{setInit.reTrmStruct}
 \alias{setInit.repSparse}
+\alias{setInit.strucParseFormula}
 \title{Get and set initial parameter values for repeated sparse matrices}
 \usage{
 getInit(x, ...)
@@ -23,6 +24,8 @@ getInit(x, ...)
 
 \method{getInit}{reTrmStruct}(x, ...)
 
+\method{getInit}{strucParseFormula}(x, ...)
+
 setInit(x, ...)
 
 \method{setInit}{default}(x, init, ...)
@@ -33,7 +36,7 @@ setInit(x, ...)
 
 \method{setInit}{reTrmStruct}(x, initCovar, initLoads, ...)
 
-parLength(ll)
+\method{setInit}{strucParseFormula}(x, init, parType, ...)
 }
 \arguments{
 \item{x}{object}
@@ -46,7 +49,14 @@ parLength(ll)
 
 \item{initLoads}{initial value for the loadings parameter vector}
 
-\item{ll}{length of parameter vector}
+\item{parType}{character string giving the type of parameter to set
+(if \code{parType} is missing, then guidance is provided by printing
+available \code{parType}s). types can be \code{"fixef"} if a fixed
+effects model matrix is present, \code{"weigh"} if weights
+parameters are present, \code{"covar.trmName"} if covariance
+parameters are present where \code{"trmName"} is the name of a
+random effects term, and \code{"loads.trmName"} if loadings are
+present.}
 }
 \description{
 The initial values for a repeated sparse matrix are stored in the

@@ -77,17 +77,40 @@
 ##'
 ##' \item{optimization}{Currently \code{lme4ord} uses the
 ##' \code{\link{bobyqa}} function in the \code{minqa} package to
-##' optimize deviance functions.}
+##' optimize deviance functions. }
 ##'
 ##' \item{output}{There are a variety of methods and extractor
 ##' functions for exploring fitted models of
-##' \code{\link{strucGlmer-class}}. Also see: \code{\link{pars}};
-##' \code{\link{getReTrm}}.}
+##' \code{\link{strucGlmer-class}}. These objects are constructed by
+##' \code{\link{strucGlmer}}, which calls
+##' \code{\link{mkStrucGlmer}}. There are many methods for
+##' \code{\link{strucGlmer-class}} objects including
+##' \code{\link{print.strucGlmer}}; \code{\link{summary}};
+##' \code{\link{pars.strucGlmer}}; \code{\link{fixef.strucGlmer}};
+##' \code{\link{covar.strucGlmer}}; \code{\link{loads.strucGlmer}};
+##' \code{\link{ranef.strucGlmer}}; \code{\link{nobs.strucGlmer}};
+##' \code{\link{residuals.strucGlmer}};
+##' \code{\link{fitted.strucGlmer}}; \code{\link{vcov.strucGlmer}};
+##' \code{\link{VarCorr.strucGlmer}}; \code{\link{isREML.strucGlmer}};
+##' \code{\link{df.residual.strucGlmer}};
+##' \code{\link{deviance.strucGlmer}};
+##' \code{\link{logLik.strucGlmer}}; \code{\link{formula.strucGlmer}};
+##' \code{\link{family.strucGlmer}}; \code{\link{weights.strucGlmer}};
+##' \code{\link{model.matrix.strucGlmer}};
+##' \code{\link{simulate.strucGlmer}}. Also see:
+##' \code{\link{getStrucGlmerPar}}; \code{\link{parPerTerm}};
+##' \code{\link{covarPerTerm}}; \code{\link{loadsPerTerm}};
+##' \code{\link{nRePerTrm}}; \code{\link{reIndsPerTrm}};
+##' \code{\link{getOffset}}; \code{\link{simStrucParsedForm}};
+##' \code{\link{printReTrm}}; \code{\link{getReTrm}};
+##' \code{\link{compressStrucGlmer}}.}
 ##'
 ##' \item{random-effects structures}{One may specify new special
 ##' random effects structures by defining new methods for the
 ##' \code{\link{setReTrm}} generic. To get started constructing such
-##' methods see \code{showSkeleton("setReTrm")}. Also see:
+##' methods see \code{showSkeleton("setReTrm")}. The
+##' \code{\link{findReTrmClasses}} function may be used to list all
+##' methods that are currently available. Also see:
 ##' \code{\link{mkReTrmStructs}}; \code{\link{getModMatAndGrpFac}};
 ##' \code{\link{packReTrm}}; \code{\link{update.reTrmStruct}};
 ##' \code{\link{setLowerDefault}}; \code{\link{simReTrm}};

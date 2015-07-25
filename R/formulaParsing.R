@@ -13,6 +13,7 @@
 ##' @param addArgs list of additional arguments to
 ##' \code{\link{setReTrm}} methods
 ##' @param reTrmsList if \code{NULL} \code{\link{mkReTrmStructs}} is used
+##' @param parList potential named list of initial parameters
 ##' @param ... additional parameters to \code{\link{as.data.frame}}
 ##' @return A list with components:
 ##' \item{response}{The response vector}
@@ -39,7 +40,8 @@
 ##' \item{formula}{Model formula.}
 ##' @rdname strucParseFormula
 ##' @export
-strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL, ...) {
+strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL,
+                              parList = NULL, ...) {
                                         # get and construct basic
                                         # information: (1) list of
                                         # formulas, (2) data, and (3)
@@ -64,6 +66,8 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
                                         # structures
     response <- try(model.response(model.frame(sf$fixedFormula, data)),
                     silent = TRUE)
+                                        # allow for no-response case
+                                        # (i.e. simulations)
     if(inherits(response, "try-error")) {
         response <- rep(NA, nrow(data))
         sf$fixedFormula <- sf$fixedFormula[-2]
@@ -135,7 +139,11 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
                 lower = lower, upper = upper,
                 devfunEnv = devfunEnv,
                 formula = formula)
-    structure(ans, class = "strucParseFormula")
+    ans <- structure(ans, class = "strucParseFormula")
+
+    if(!is.null(parList)) ans <- update(ans, parList)
+
+    return(ans)
 }
 
 ##' @param x \code{strucParseFormula} objects
@@ -178,6 +186,75 @@ simulate.strucParseFormula <- function(object, nsim = 1, seed = NULL,
     })
 }
 
+##' @rdname strucParseFormula
+##' @export
+getParTypes <- function(object) {
+    types <- character(0)
+    trmNames <- names(object$random)
+    randomPars <- listTranspose(lapply(object$random, getInit))
+    whichCovarTerms <- sapply(lapply(randomPars$initCovar, length), ">", 0)
+    whichLoadsTerms <- sapply(lapply(randomPars$initLoads, length), ">", 0)
+    if(length(object$initPars[object$parInds$fixef]) > 0) types <- c(types, "fixef")
+    if(length(object$initPars[object$parInds$weigh]) > 0) types <- c(types, "weigh")
+    if(any(whichCovarTerms)) {
+        types <- c(types, paste("covar", trmNames[whichCovarTerms], sep = "."))
+    }
+    if(any(whichLoadsTerms)) {
+        types <- c(types, paste("loads", trmNames[whichLoadsTerms], sep = "."))
+    }
+    return(types)
+}
+
+##' @method update strucParseFormula
+##' @rdname strucParseFormula
+##' @export
+update.strucParseFormula <- function(object, parList, ...) {
+    if(missing(parList)) return(getParTypes(object))
+    parType <- names(parList)
+                                        # get braodTypes (i.e. covar,
+                                        # loads, fixef, or weigh) and
+                                        # get narrowTypes (i.e. names
+                                        # of random effects terms)
+    breakUpNames <- strsplit(parType, ".", fixed = TRUE)
+    broadTypes <- sapply(breakUpNames, "[", 1)
+    narrowTypes <- sapply(lapply(breakUpNames, "[", -1), paste, collapse = ".")
+
+                                        # set initial values and
+                                        # update where necessary
+    for(i in seq_along(broadTypes)) {
+        if(broadTypes[i] == "fixef") object$initPars[object$parInds$fixef] <- parList[[i]]
+        if(broadTypes[i] == "weigh") object$initPars[object$parInds$weigh] <- parList[[i]]
+        if(broadTypes[i] == "covar") {
+            setInit(object$random[[narrowTypes[i]]]$Lambdat, parList[[i]])
+            object$random[[narrowTypes[i]]]$Lambdat <-
+                update(object$random[[narrowTypes[i]]]$Lambdat)
+        }
+        if(broadTypes[i] == "loads") {
+            setInit(object$random[[narrowTypes[i]]]$Zt, parList[[i]])
+            object$random[[narrowTypes[i]]]$Zt <- 
+                update(object$random[[narrowTypes[i]]]$Zt)
+        }
+    }
+
+                                        # propogate the new initial
+                                        # values and updates down
+                                        # through the parsed formula
+                                        # object
+    newRandomInit <- lapply(listTranspose(lapply(object$random, getInit)), unlist)
+    if(any(broadTypes == "covar")) {
+        setInit(object$Lambdat, newRandomInit$initCovar)
+        object$Lambdat <- update(object$Lambdat)
+        object$initPars[object$parInds$covar] <- newRandomInit$initCovar
+    }
+    if(any(broadTypes == "loads")) {
+        setInit(object$Zt, newRandomInit$initLoads)
+        object$Zt <- update(object$Zt)
+        object$initPars[object$parInds$loads] <- newRandomInit$initLoads
+    }
+    
+    return(object)
+}
+
 
 ##' Split a formula
 ##'
@@ -212,6 +289,10 @@ splitForm <- function(formula) {
                                         # random effects terms
                                         # (including special terms)
     formSplits <- fbas(formula)
+                                        # check for hidden specials
+                                        # (i.e. specials hidden behind
+                                        # parentheses)
+    formSplits <- lapply(formSplits, uncoverHiddenSpecials)
                                         # vector to identify what
                                         # special (by name), or give
                                         # "(" for standard terms, or
@@ -246,6 +327,9 @@ splitForm <- function(formula) {
     formSplitStan <- formSplits[formSplitID == "("]
                                         # structured RE terms
     formSplitSpec <- formSplits[!(formSplitID == "(")]
+
+    
+    
 
     if(length(formSplitSpec) == 0) stop(
                  "no special covariance structures. ",
@@ -327,3 +411,11 @@ anySpecial <- function(term) {
 simStruc <- function(formula, data, addArgs, family, ...) {
     parsedForm <- strucParseFormula(formula, data = data, addArgs = addArgs, ...)
 }
+
+uncoverHiddenSpecials <- function(trm) {
+    if(trm[[1]] == "(") {
+        if(anySpecial(trm[[2]][[1]])) trm <- trm[[2]]
+    }
+    return(trm)
+}
+

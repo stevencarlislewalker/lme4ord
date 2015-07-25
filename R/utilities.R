@@ -122,6 +122,11 @@ getInit.reTrmStruct <- function(x, ...) {
 
 ##' @rdname getInit
 ##' @export
+getInit.strucParseFormula <- function(x, ...) x$initPars
+
+
+##' @rdname getInit
+##' @export
 setInit <- function(x, ...) UseMethod("setInit")
 
 ##' @param init initial value for the parameter vector
@@ -152,13 +157,79 @@ setInit.reTrmStruct <- function(x, initCovar, initLoads, ...) {
     setInit(x$Zt,      initLoads)
 }
 
-##' @param ll length of parameter vector
+##' @param parType character string giving the type of parameter to set
+##' (if \code{parType} is missing, then guidance is provided by printing
+##' available \code{parType}s). types can be \code{"fixef"} if a fixed
+##' effects model matrix is present, \code{"weigh"} if weights
+##' parameters are present, \code{"covar.trmName"} if covariance
+##' parameters are present where \code{"trmName"} is the name of a
+##' random effects term, and \code{"loads.trmName"} if loadings are
+##' present.
 ##' @rdname getInit
 ##' @export
-parLength <- function(ll) {
-    initll <- getInit(ll)
-    if(is.null(initll) || all(is.na(initll))) return(0L)
-    return(length(initll))
+setInit.strucParseFormula <- function(x, init, parType, ...) {
+    if(missing(parType)) return(getParTypes(x))
+    breakUpNames <- strsplit(parType, ".", fixed = TRUE)
+                                        # get braodTypes (i.e. covar,
+                                        # loads, fixef, or weigh)
+    broadTypes <- sapply(breakUpNames, "[", 1)
+                                        # get narrowTypes (i.e. names
+                                        # of random effects terms)
+    narrowTypes <- sapply(lapply(breakUpNames, "[", -1), paste, collapse = ".")
+    for(i in seq_along(broadTypes)) {
+        if(broadTypes[i] == "fixef") x$initPars[x$parInds$fixef] <- init[[i]]
+        if(broadTypes[i] == "weigh") x$initPars[x$parInds$weigh] <- init[[i]]
+        if(broadTypes[i] == "covar") setInit(x$random[[narrowTypes[i]]]$Lambdat, init[[i]])
+        if(broadTypes[i] == "loads") setInit(x$random[[narrowTypes[i]]]$Zt,      init[[i]])
+    }
+    return(x)
+}
+
+
+
+##' Lengths of parameter vectors
+##'
+##' @param object parameterized object
+##' @param ... extra parameters
+##' @export
+parLength <- function(object, ...) {
+    UseMethod("parLength")
+}
+
+##' @rdname parLength
+##' @export
+parLength.repSparse <- function(object, ...) {
+    initObject <- getInit(object)
+    if(is.null(initObject) || all(is.na(initObject))) return(0L)
+    return(length(initObject))
+}
+
+##' @rdname parLength
+##' @export
+parLength.strucParseFormula <- function(object, ...) {
+    parType <- getParTypes(object)
+                                        # get braodTypes (i.e. covar,
+                                        # loads, fixef, or weigh) and
+                                        # get narrowTypes (i.e. names
+                                        # of random effects terms)
+    breakUpNames <- strsplit(parType, ".", fixed = TRUE)
+    broadTypes <- sapply(breakUpNames, "[", 1)
+    narrowTypes <- sapply(lapply(breakUpNames, "[", -1), paste, collapse = ".")
+
+    out <- numeric(length(parType))
+                                        # set initial values and
+                                        # update where necessary
+    for(i in seq_along(broadTypes)) {
+        if(broadTypes[i] == "fixef") out[[i]] <- length(object$initPars[object$parInds$fixef])
+        if(broadTypes[i] == "weigh") out[[i]] <- length(object$initPars[object$parInds$weigh])
+        if(broadTypes[i] == "covar") {
+            out[[i]] <- parLength(object$random[[narrowTypes[i]]]$Lambdat)
+        }
+        if(broadTypes[i] == "loads") {
+            out[[i]] <- parLength(object$random[[narrowTypes[i]]]$Zt)
+        }
+    }
+    return(setNames(out, parType))
 }
 
 ##' Extract factors

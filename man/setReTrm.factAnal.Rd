@@ -39,7 +39,15 @@ Random effects term for factor analysis
 
 \code{factAnal(0 + obsFac | varFac, nAxes, seed)}
 \describe{
-\item{obsFac}{grouping factor for multivariate observations} \item{varFac}{grouping factor for variables} \item{nAxes}{number of axes} \item{seed}{random seed for initial axis values}
+\item{obsFac:}{grouping factor for multivariate observations} \item{varFac:}{grouping factor for variables} \item{nAxes:}{number of axes} \item{seed:}{random seed for initial axis values}
+}
+}
+
+\section{Parameters}{
+
+\describe{
+\item{Covariance:}{none}
+\item{Loadings:}{elements of the lower triangle of the variables by axes loadings matrix}
 }
 }
 \seealso{
@@ -49,10 +57,11 @@ Other setReTrm: \code{\link{cooccur}},
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
   \code{\link{ranef.reTrmStruct}}, \code{\link{setReTrm}},
   \code{\link{setReTrm.default}}; \code{\link{flexvar}},
-  \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
-  \code{\link{setReTrm.identity}}; \code{\link{lme4}},
-  \code{\link{setReTrm.lme4}}; \code{\link{nlmeCorStruct}},
+  \code{\link{setReTrm.flexvar}};
+  \code{\link{getCorStruct}}, \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
+  \code{\link{identity}}, \code{\link{setReTrm.identity}};
+  \code{\link{lme4}}, \code{\link{setReTrm.lme4}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
   \code{\link{phyloEdge}},
   \code{\link{setReTrm.phyloEdge}}; \code{\link{sem}},

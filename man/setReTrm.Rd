@@ -85,10 +85,11 @@ Other setReTrm: \code{\link{biplot.factAnal}},
   \code{\link{setReTrm.factAnal}}; \code{\link{cooccur}},
   \code{\link{setReTrm.cooccur}}; \code{\link{expDecay}},
   \code{\link{setReTrm.expDecay}}; \code{\link{flexvar}},
-  \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
-  \code{\link{setReTrm.identity}}; \code{\link{lme4}},
-  \code{\link{setReTrm.lme4}}; \code{\link{nlmeCorStruct}},
+  \code{\link{setReTrm.flexvar}};
+  \code{\link{getCorStruct}}, \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
+  \code{\link{identity}}, \code{\link{setReTrm.identity}};
+  \code{\link{lme4}}, \code{\link{setReTrm.lme4}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
   \code{\link{phyloEdge}},
   \code{\link{setReTrm.phyloEdge}}; \code{\link{sem}},

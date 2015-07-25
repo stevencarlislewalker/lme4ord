@@ -28,7 +28,15 @@ Random effects term for a flexible variance function
 
 \code{flexvar(linForm, init, nBasis)}
 \describe{
-\item{linForm}{linear model formula decribing effects} \item{init}{initial values for coefficients for the linear predictor of the variance function} \item{nBasis}{number of coefficients for the linear predictor}
+\item{linForm:}{linear model formula decribing effects} \item{init:}{initial values for coefficients for the linear predictor of the variance function} \item{nBasis:}{number of coefficients for the linear predictor}
+}
+}
+
+\section{Parameters}{
+
+\describe{
+\item{Covariance:}{coefficients for the spline basis}
+\item{Loadings:}{none}
 }
 }
 \seealso{
@@ -39,10 +47,11 @@ Other setReTrm: \code{\link{biplot.factAnal}},
   \code{\link{setReTrm.expDecay}};
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
   \code{\link{ranef.reTrmStruct}}, \code{\link{setReTrm}},
-  \code{\link{setReTrm.default}}; \code{\link{identity}},
-  \code{\link{setReTrm.identity}}; \code{\link{lme4}},
-  \code{\link{setReTrm.lme4}}; \code{\link{nlmeCorStruct}},
+  \code{\link{setReTrm.default}};
+  \code{\link{getCorStruct}}, \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
+  \code{\link{identity}}, \code{\link{setReTrm.identity}};
+  \code{\link{lme4}}, \code{\link{setReTrm.lme4}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
   \code{\link{phyloEdge}},
   \code{\link{setReTrm.phyloEdge}}; \code{\link{sem}},

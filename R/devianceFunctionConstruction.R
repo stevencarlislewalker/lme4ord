@@ -166,9 +166,6 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     return(devfun)
 }
 
-
-
-
 initializeResp <- function(y, etastart = NULL, mustart = NULL,
                            offset = NULL, weights = NULL,
                            family){

@@ -1883,7 +1883,7 @@ repSparseExpChol <- function(distObj, cutOffDist = Inf) {
                      colInds = point2ind(cholMat@p),
                      valInds = seq_along(vecDist),
                      vals = cholMat@x,
-                     trans = mkExpCholTrans(1, cholObj, symmObj, vecDist))
+                     trans = mkExpCholTrans(1, cholMat, symmObj, vecDist))
     class(ans) <- c("repSparseExpChol", class(ans))
     return(ans)
 }
@@ -1908,9 +1908,11 @@ setIs("repSparseExpChol", "repSparse")
 ##' (xCorFactor <- repSparseCorFactor(corObj))
 repSparseCorFactor <- function(object, sig = 1) {
     ## MATNAME: Cholesky from corStruct object
+
+    
     sigExists <- !is.null(sig)
     coefExists <- length(coef(object)) != 0
-    
+
     corFac <- corFactor(object)
     lens <- Dim(object)$len
     vecLens <- 2 * choose(lens, 2) + lens
@@ -1933,6 +1935,7 @@ repSparseCorFactor <- function(object, sig = 1) {
     if(!coefExists) {
         ans <- resetTransConst(ans)
         if(!sigExists) {
+            assign("object", object, envir = environment(ans$trans))
             class(ans) <- c("repSparseCorFactor", class(ans))
             return(ans)
         }
@@ -1973,6 +1976,9 @@ repSparseCorFactor <- function(object, sig = 1) {
 
     if(sigExists) ans <- scalarMult(ans, sig)
     class(ans) <- c("repSparseCorFactor", class(ans))
+    assign( "sigExists",  sigExists, envir = environment(ans$trans))
+    assign("coefExists", coefExists, envir = environment(ans$trans))
+    assign("object",     object,     envir = environment(ans$trans))
     return(ans)
 }
 

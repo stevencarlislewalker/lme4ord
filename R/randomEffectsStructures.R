@@ -186,6 +186,8 @@ setReTrm.default <- function(object, addArgsList,
 ##' @templateVar form \code{lme4(linForm | grpFac)}
 ##' @templateVar arg "grpFac"
 ##' @templateVar desc "grouping factor"
+##' @templateVar covarDesc "elements of the upper triangle of the relative covariance factor for the random effects vector"
+##' @templateVar loadsDesc "none"
 setReTrm.lme4 <- function(object, addArgsList,
                           auxEnv = NULL, devfunEnv = NULL) {
     
@@ -200,6 +202,8 @@ setReTrm.lme4 <- function(object, addArgsList,
 ##' @templateVar form \code{factAnal(0 + obsFac | varFac, nAxes, seed)}
 ##' @templateVar arg c("obsFac", "varFac", "nAxes", "seed")
 ##' @templateVar desc c("grouping factor for multivariate observations", "grouping factor for variables", "number of axes", "random seed for initial axis values")
+##' @templateVar covarDesc "none"
+##' @templateVar loadsDesc "elements of the lower triangle of the variables by axes loadings matrix"
 setReTrm.factAnal <- function(object, addArgsList,
                               auxEnv = NULL, devfunEnv = NULL) {
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
@@ -261,6 +265,8 @@ setReTrm.factAnal <- function(object, addArgsList,
 ##' @templateVar form \code{sem(1 | grpFac, loadMat)}
 ##' @templateVar arg c("grpFac", "nAxes", "seed")
 ##' @templateVar desc c("grouping factor for loadings", "number of axes", "random seed for initial axis values")
+##' @templateVar covarDesc "FIXME"
+##' @templateVar loadsDesc "FIXME"
 setReTrm.sem <- function(object, addArgsList,
                          auxEnv = NULL, devfunEnv = NULL) {
     
@@ -301,6 +307,8 @@ setReTrm.sem <- function(object, addArgsList,
 ##' @templateVar form \code{identity(linForm | grpFac)}
 ##' @templateVar arg c("linForm", "grpFac")
 ##' @templateVar desc c("linear model formula decribing effects", "grouping factor")
+##' @templateVar covarDesc "standard deviation of the random effects"
+##' @templateVar loadsDesc "none"
 setReTrm.identity <- function(object, addArgsList,
                               auxEnv = NULL, devfunEnv = NULL) {
 
@@ -325,6 +333,8 @@ setReTrm.identity <- function(object, addArgsList,
 ##' @templateVar form \code{flexvar(linForm, init, nBasis)}
 ##' @templateVar arg c("linForm", "init", "nBasis")
 ##' @templateVar desc c("linear model formula decribing effects", "initial values for coefficients for the linear predictor of the variance function", "number of coefficients for the linear predictor")
+##' @templateVar covarDesc "coefficients for the spline basis"
+##' @templateVar loadsDesc "none"
 setReTrm.flexvar <- function(object, addArgsList,
                              auxEnv = NULL, devfunEnv = NULL) {
                                         # get additional arguments and
@@ -356,6 +366,8 @@ setReTrm.flexvar <- function(object, addArgsList,
 ##' @templateVar form \code{expDecay(1 | grpFac, distCutoff, minCov, distMat)}
 ##' @templateVar arg c("grpFac", "distCutoff", "minCov", "distMat")
 ##' @templateVar desc c("grouping factor (e.g. with levels given by geographical sites)", "maximum distance with covariance greater than minCov", "minimum covariance", "distance matrix object over the levels of grpFac")
+##' @templateVar covarDesc "length-two vector with the exponential decay parameter and the standard deviation at zero distance"
+##' @templateVar loadsDesc "none"
 setReTrm.expDecay <- function(object, addArgsList,
                               auxEnv = NULL, devfunEnv = NULL) {
     addArgs <- getAddArgs(object$addArgs[-1], addArgsList)
@@ -408,6 +420,8 @@ setReTrm.expDecay <- function(object, addArgsList,
 ##' @templateVar form \code{edge(linForm | grpFac, phy)}
 ##' @templateVar arg c("linForm", "grpFac", "phy")
 ##' @templateVar desc c("linear model formula decribing effects", "grouping factor", "phylo object relating the levels of the grouping factor")
+##' @templateVar covarDesc "standard deviation of the random effects associated with the edges"
+##' @templateVar loadsDesc "none"
 setReTrm.phyloEdge <- function(object, addArgsList,
                                auxEnv = NULL, devfunEnv = NULL) {
 
@@ -441,6 +455,8 @@ setReTrm.phyloEdge <- function(object, addArgsList,
 ##' @templateVar form \code{cooccur(linForm | grpFac)}
 ##' @templateVar arg c("linForm", "grpFac")
 ##' @templateVar desc c("linear model formula decribing effects", "grouping factor")
+##' @templateVar covarDesc "FIXME"
+##' @templateVar loadsDesc "FIXME"
 setReTrm.cooccur <- function(object, addArgsList,
                              auxEnv = NULL, devfunEnv = NULL) {
 
@@ -466,6 +482,8 @@ setReTrm.cooccur <- function(object, addArgsList,
 ##' @templateVar form \code{varIdent(1 | grpFac)}
 ##' @templateVar arg c("grpFac")
 ##' @templateVar desc c("grouping factor")
+##' @templateVar covarDesc "standard deviations associated with each level of the grouping factor"
+##' @templateVar loadsDesc "none"
 setReTrm.varIdent <- function(object, addArgsList,
                               auxEnv = NULL, devfunEnv = NULL) {
                                         # transposed model matrix (or
@@ -498,6 +516,8 @@ setReTrm.varIdent <- function(object, addArgsList,
 ##' @templateVar form \code{varExp(linForm | grpFac)} or \code{varExp(linForm)}
 ##' @templateVar arg c("linForm", "grpFac")
 ##' @templateVar desc c("linear model formula decribing effects", "grouping factor")
+##' @templateVar covarDesc "FIXME"
+##' @templateVar loadsDesc "none"
 setReTrm.varExp <- function(object, addArgsList,
                             auxEnv = NULL, devfunEnv = NULL) {
                                         # transposed model matrix (or
@@ -534,6 +554,8 @@ setReTrm.varExp <- function(object, addArgsList,
 ##' @templateVar form \code{obslev(1)}
 ##' @templateVar arg "no arguments"
 ##' @templateVar desc "NULL"
+##' @templateVar covarDesc "standard deviation of the observation-level random effect"
+##' @templateVar loadsDesc "none"
 setReTrm.obslev <- function(object, addArgsList,
                              auxEnv = NULL, devfunEnv = NULL) {
 
@@ -554,6 +576,8 @@ setReTrm.obslev <- function(object, addArgsList,
 ##' @templateVar form \code{nlmeCorStruct(1, corObj)} or \code{nlmeCorStruct(1 | grpFac, corObj)}
 ##' @templateVar arg c("corObj", "sig")
 ##' @templateVar desc c("corStruct object", "initial standard deviation")
+##' @templateVar covarDesc "parameters for the correlation structure"
+##' @templateVar loadsDesc "none"
 setReTrm.nlmeCorStruct <- function(object, addArgsList,
                                    auxEnv = NULL, devfunEnv = NULL) {
 
@@ -570,8 +594,16 @@ setReTrm.nlmeCorStruct <- function(object, addArgsList,
     Lambdat <- repSparseCorFactor(corObj, sig = sig)
     Zt <- resetTransConst(kr(as.repSparse(grpFac),
                            t(as.repSparse(modMat))))
+
+    nCovar <- length(getInit(Lambdat))
     packReTrm(object, Zt, Lambdat,
-              devfunEnv = devfunEnv)
+              devfunEnv = devfunEnv,
+              lowerCovar = rep(-Inf, nCovar), 
+              upperCovar = rep( Inf, nCovar)) ## no bounds because
+                                              ## coef.corStruct in
+                                              ## repSparseCorFactor is
+                                              ## used on the
+                                              ## unconstrained scale
 }
 
 ##' Package up a random effects term structure
@@ -661,6 +693,26 @@ update.flexvar <- function(object, newCovar, newLoads, ...) {
                name  = "indsObsLevel",
                data  = transEnv$devfunEnv,
                envir = transEnv)
+    return(object)
+}
+
+##' @rdname update.reTrmStruct
+##' @method update nlmeCorStruct
+##' @export
+update.nlmeCorStruct <- function(object, newCovar, newLoads, ...) {
+    
+    ## This special method is required to update the coefficients of
+    ## the corStruct object
+
+    object$Lambdat <- update(object$Lambdat, newCovar)
+    Lambdat <- object$Lambdat
+    transEnv <- environment(Lambdat$trans)
+    if(transEnv$coefExists) {
+        gil <- getInit(Lambdat)
+        if(transEnv$sigExists) gil <- gil[-1]
+        coef(transEnv$object) <- gil
+    }
+    
     return(object)
 }
 
@@ -835,6 +887,12 @@ biplot.factAnal <- function(x, ...) {
     l... <- list(...)
     do.call(biplot, c(setNames(scores(x), c("y", "x")), l...))
 }
+
+##' @param object \code{nlmeCorStruct} object
+##' @rdname setReTrm.nlmeCorStruct
+##' @export
+getCorStruct <- function(object, ...) environment(object$Lambdat$trans)$object
+
 
 ##' Bind repeated sparse matrices and sort their indices to be
 ##' compatible with column-compressed sparse matrices

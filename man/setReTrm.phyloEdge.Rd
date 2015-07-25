@@ -28,7 +28,15 @@ Random effects term for edge-based model of tree-induced covariance
 
 \code{edge(linForm | grpFac, phy)}
 \describe{
-\item{linForm}{linear model formula decribing effects} \item{grpFac}{grouping factor} \item{phy}{phylo object relating the levels of the grouping factor}
+\item{linForm:}{linear model formula decribing effects} \item{grpFac:}{grouping factor} \item{phy:}{phylo object relating the levels of the grouping factor}
+}
+}
+
+\section{Parameters}{
+
+\describe{
+\item{Covariance:}{standard deviation of the random effects associated with the edges}
+\item{Loadings:}{none}
 }
 }
 \seealso{
@@ -40,10 +48,11 @@ Other setReTrm: \code{\link{biplot.factAnal}},
   \code{\link{findReTrmClasses}}, \code{\link{getAddArgs}},
   \code{\link{ranef.reTrmStruct}}, \code{\link{setReTrm}},
   \code{\link{setReTrm.default}}; \code{\link{flexvar}},
-  \code{\link{setReTrm.flexvar}}; \code{\link{identity}},
-  \code{\link{setReTrm.identity}}; \code{\link{lme4}},
-  \code{\link{setReTrm.lme4}}; \code{\link{nlmeCorStruct}},
+  \code{\link{setReTrm.flexvar}};
+  \code{\link{getCorStruct}}, \code{\link{nlmeCorStruct}},
   \code{\link{setReTrm.nlmeCorStruct}};
+  \code{\link{identity}}, \code{\link{setReTrm.identity}};
+  \code{\link{lme4}}, \code{\link{setReTrm.lme4}};
   \code{\link{obslev}}, \code{\link{setReTrm.obslev}};
   \code{\link{sem}}, \code{\link{setReTrm.sem}};
   \code{\link{setReTrm.varExp}}, \code{\link{varExp}};

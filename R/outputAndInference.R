@@ -27,10 +27,12 @@ setOldClass("strucGlmer")
 ##' @export
 mkStrucGlmer <- function(opt, parsedForm, dfun, mc) {
     
-    names(opt$par) <- names(parsedForm$initPars)
+    if(optSuccess <- !inherits(opt, "try-error")) names(opt$par) <- names(parsedForm$initPars)
 
     ans <- list(opt = opt, parsedForm = parsedForm, dfun = dfun, mc = mc)
     class(ans) <- "strucGlmer"
+
+    if(!optSuccess) return(ans)
 
                                         # update the initialized
                                         # parameters in the repeated
@@ -72,6 +74,12 @@ print.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3),  ...) 
     .prt.methTit(strucGlmerMethTitle(), class(x))
     .prt.family(famlink(x, resp = x$parsedForm$devfunEnv$resp))
     .prt.call(x$mc)
+
+    if(inherits(x$opt, "try-error")) {
+        cat("Model failed to converge with error:\n")
+        cat(x$opt)
+        return(invisible())
+    }
     
     llAIC <- getStrucLlikAIC(x)
     .prt.aictab(llAIC$AICtab, 4)
@@ -548,6 +556,16 @@ printReTrm <- function(object, forSummary = FALSE, ...) {
 ##' @method print reTrmStruct
 ##' @export
 print.reTrmStruct <- function(x, ...) {
+    objectsFromSetting <- c("Zt", "Lambdat",
+                            "lowerLoads", "upperLoads",
+                            "lowerCovar", "upperCovar")
+    if(!all(objectsFromSetting %in% names(x))){
+        .title <- paste("Random effects term (class: ", class(x)[1], "):", sep = "")
+        cat(.title, "\n")
+        cat("Structure has not fully been set --",
+            "use setReTrm\n")
+        return(invisible(x))
+    }
     printReTrm(x, ...)
 }
 
@@ -601,6 +619,23 @@ printReTrm.factAnal <- function(object, forSummary = FALSE, ...) {
                       stdDev = format(apply(loadMat, 2, sd)))
     rownames(loadSums) <- paste("axis", format(1:trmDims["nAxes"]))
     print(as.table(loadSums))
+}
+
+##' @rdname printReTrm
+##' @export
+printReTrm.nlmeCorStruct <- function(object, forSummary = FALSE, ...) {
+    .title <- paste("Random effects term (class: ", class(object)[1], "):", sep = "")
+    cat (.title, "\n")
+    cpd <- "  corStruct object: "
+    transEnv <- environment(object$Lambdat$trans)
+    corObj <- transEnv$object
+    vc <- structure(list(VarCorr(object)), names = object$grpName, useSc = FALSE)
+    vcd <- "  variance-correlation:  "
+    print(corObj)
+    if(transEnv$sigExists) {
+        cat("  Standard deviation multiplier: ", getInit(object$Lambdat), "\n")
+    }
+    .printVC(vcd, vc)
 }
 
 ## FIXME: write more specific printReTrm methods for different classes

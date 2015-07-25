@@ -17,4 +17,9 @@ list with model matrix and grouping factor
 This is kind of like \code{\link{model.matrix}} but for random
 effects terms.
 }
+\examples{
+set.seed(1)
+dat <- data.frame(f = gl(5, 2), x = rnorm(10))
+getModMatAndGrpFac(quote(x | f), dat)
+}
 

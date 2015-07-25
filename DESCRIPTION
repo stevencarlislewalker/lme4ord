@@ -26,4 +26,5 @@ Imports:
     nlme,
     minqa
 Suggests:
-    multitable
+    multitable,
+    ggplot2
