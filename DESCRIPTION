@@ -1,8 +1,8 @@
 Package: lme4ord
 Type: Package
 Title: Generalized Linear Mixed Models with Flexible (Co)Variance Structures
-Version: 0.0-2
-Date: 2015-07-17
+Version: 0.0-3
+Date: 2015-07-25
 Author: Steve Walker
 Maintainer: Steve Walker <steve.walker@utoronto.ca>
 Description: Generalized linear mixed models with
