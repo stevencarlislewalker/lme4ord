@@ -42,7 +42,7 @@ gm <- strucGlmer(form, dataFrame, binomial, optMaxit = 50000,
 print(gm)
 
 fixef(gm) # 'true' value 0
-covarPerTerm(gm) # 'true' values both 1
+unlist(covarPerTerm(gm)[c("lakes.unstruc", "species.unstruc")]) # 'true' values both 1
 
                                         # extract factor analysis
 gmFA <- getReTrm(gm, "species.factAnal")
@@ -67,5 +67,6 @@ ordMat <- matrix(respMat,
                  nLakes,
                  nSpecies)[order(factors(gmScores)[,2]),
                            order(loadings(gmScores)[,2])]
-image(as(respMat, "sparseMatrix"))
-image(as(ordMat, "sparseMatrix"))
+image(as(respMat, "sparseMatrix")) # original
+image(as(ordMat,  "sparseMatrix")) # reordered
+

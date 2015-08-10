@@ -366,7 +366,7 @@ vcov.strucGlmer <- function(object, correlation = TRUE,
                             use.hessian = TRUE, justFixef = TRUE, ...) {
     if(use.hessian) {
         optPar <- pars(object)
-        h <- try(lme4:::deriv12(object$dfun, optPar)$Hessian, silent = TRUE)
+        h <- try(deriv12(object$dfun, optPar)$Hessian, silent = TRUE)
         hess.avail <- !inherits(h, "error-try")
         if(!hess.avail) {
             stop(shQuote("use.hessian"),
@@ -432,7 +432,7 @@ VarCorr.strucGlmer <- function(x, sigma = 1, rdig = 3) {
 formatStrucVC <- function(varc) {
     whichNoNames <- sapply(lapply(varc, rownames), is.null)
     ans <- vector("list", length(varc))
-    ans[whichNoNames] <- lme4:::formatVC(varc[whichNoNames])
+    ans[whichNoNames] <- formatVC(varc[whichNoNames])
 }
 
 
@@ -578,7 +578,7 @@ print.reTrmStruct <- function(x, ...) {
 .printVC <- function(description = "variance-correlation: ", value) {
     if((nrow(value[[1]]) < 6) && (!is.null(rownames(value[[1]])))) {
         cat(description, "\n")
-        print(lme4:::formatVC(value), quote = FALSE, digits = 3)
+        print(formatVC(value), quote = FALSE, digits = 3)
     }
 }
 

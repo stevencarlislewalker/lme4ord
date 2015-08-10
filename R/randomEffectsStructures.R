@@ -84,7 +84,7 @@ getModMatAndGrpFac <- function(bar, fr) {
         fr <- lme4::factorize(bar, fr)
         nm <- deparse(grpLang)
         ## try to evaluate grouping factor within model frame ...
-        if (is.null(ff <- tryCatch(eval(substitute(lme4:::makeFac(fac),
+        if (is.null(ff <- tryCatch(eval(substitute(makeFac(fac),
                                                    list(fac = grpLang)), fr),
                                    error = function(e) NULL)))
             stop("couldn't evaluate grouping factor ",
@@ -628,10 +628,10 @@ packReTrm <- function(object, Zt, Lambdat,
     if(missing(lowerCovar)) lowerCovar <- setLowerDefault(getInit(Lambdat))
     if(missing(upperCovar)) upperCovar <- setUpperDefault(getInit(Lambdat))
     structure(c(object,
-                lme4:::namedList(Zt, Lambdat,
-                                 lowerLoads, upperLoads,
-                                 lowerCovar, upperCovar,
-                                 devfunEnv)),
+                namedList(Zt, Lambdat,
+                          lowerLoads, upperLoads,
+                          lowerCovar, upperCovar,
+                          devfunEnv)),
               class = class(object))
 }
 

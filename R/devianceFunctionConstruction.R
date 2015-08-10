@@ -143,9 +143,9 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
         offset <- if (length(spars)==0) baseOffset else baseOffset + pp$X %*% spars
         resp$setOffset(offset)
         ## pp, resp, nAGQ, tol, maxit, verbose
-        #p <- lme4::glmerLaplaceHandle(pp$ptr(), resp$ptr(), 1, tolPwrss, maxit, verbose)
-        p <- lme4:::glmerPwrssUpdate(pp, resp, tolPwrss, GQmat,
-                                     compDev, fac, maxit, verbose)
+        p <- lme4::glmerLaplaceHandle(pp$ptr(), resp$ptr(), 1, tolPwrss, maxit, verbose)
+        ##p <- lme4:::glmerPwrssUpdate(pp, resp, tolPwrss, GQmat,
+        ##                             compDev, fac, maxit, verbose)
         resp$updateWts()
         p
     }
@@ -153,7 +153,9 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     penFun <- mkPenaltyFun(penCovar, penFixef, penLoads, devfunEnv)
     if(!is.null(penFun)) {
         devfunList$penFun <- penFun
-        body(devfun)[[12]] <- quote(p + penFun(pars, parInds))
+                                        # 12 means line 12 of the
+                                        # devfun
+        body(devfun)[[12]] <- quote(p + penFun(pars, parInds)) 
     }
     environment(devfun) <- list2env(devfunList, envir = devfunEnv)
 
@@ -254,7 +256,6 @@ mkPenaltyFun <- function(penCovar, penFixef, penLoads, env = environment()) {
     eval(call("function", as.pairlist(alist(pars = , parInds = )),
               as.call(unname(penSumCall))), env)
 }
-
 
 ##' @param p exponent of the L-p norm
 ##' @param lambda multiplier for the penalty term

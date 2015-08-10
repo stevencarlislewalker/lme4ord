@@ -728,7 +728,7 @@ simplifyFacList <- function(facList) {
 
 
 ## ----------------------------------------------------------------------
-## print utilities copied from lme4 (FIXME: export from lme4???)
+## utilities copied from lme4 (FIXME: export from lme4)
 ## ----------------------------------------------------------------------
 
 .prt.methTit <- function(mtit, class) {
@@ -779,7 +779,7 @@ getLlikAIC <- function(object, cmp = object@devcomp$cmp) {
 	if(isREML(object)) cmp["REML"] # *no* likelihood stats here
 	else {
 	    c(AIC = AIC(llik), BIC = BIC(llik), logLik = c(llik),
-	      deviance = lme4:::devCritFun(object),
+	      deviance = devCritFun(object),
               df.resid = df.residual(object))
 	}
     }
@@ -801,9 +801,9 @@ getLlikAIC <- function(object, cmp = object@devcomp$cmp) {
 .prt.VC <- function(varcor, digits, comp, formatter = format, ...) {
     cat("Random effects:\n")
     fVC <- if(missing(comp))
-	lme4:::formatVC(varcor, digits = digits, formatter = formatter)
+	formatVC(varcor, digits = digits, formatter = formatter)
     else
-	lme4:::formatVC(varcor, digits = digits, formatter = formatter, comp = comp)
+	formatVC(varcor, digits = digits, formatter = formatter, comp = comp)
     print(fVC, quote = FALSE, digits = digits, ...)
 }
 
@@ -846,3 +846,150 @@ famlink <- function(object, resp = object@resp) {
     else list(family = NULL, link = NULL)
 }
 
+deriv12 <- function(fun, x, delta=1e-4, fx=NULL,
+                    lower=rep(NA,length(x)), upper=rep(NA,length(x)), ...) {
+### Compute gradient and Hessian at the same time (to save computing
+### time)
+    nx <- length(x)
+    fx <- if(!is.null(fx)) fx else fun(x, ...)
+    stopifnot(length(fx) == 1)
+    H <- array(NA, dim=c(nx, nx))
+    g <- numeric(nx)
+    xadd <- x + delta
+    ubActive <- !is.na(upper) & xadd>upper
+    udelta <- ifelse(ubActive,upper-x,delta)
+    xadd[ubActive] <- upper[ubActive]
+    xsub <- x - delta
+    lbActive <- !is.na(lower) & xadd<lower
+    ldelta <- ifelse(lbActive,x-lower,delta)
+    xsub[lbActive] <- lower[lbActive]
+    ## substitute elements of 'mod' vectors into position(s) 'pos'
+    ## in base
+    spos <- function(base,mod,pos) {
+        if (is.list(mod)) {
+            for (i in seq_along(mod)) {
+                base <- spos(base,mod[[i]],pos[i])
+            }
+            base
+        } else {
+            base[pos] <- mod[pos]
+            base
+        }
+    }
+    ## TOTAL delta
+    Delta <- ldelta+udelta
+    for(j in 1:nx) {
+        ## Diagonal elements:
+        fadd <- fun(spos(x,xadd,j), ...)
+        fsub <- fun(spos(x,xsub,j), ...)
+        H[j, j] <- fadd/udelta[j]^2 - 2 * fx/(udelta[j]*ldelta[j]) +
+            fsub/ldelta[j]^2
+        g[j] <- (fadd - fsub) / Delta[j]
+        ## Off diagonal elements:
+        for(i in 1:nx) {
+            if(i >= j) break
+            ## Compute upper triangular elements:
+            xaa <- spos(x,list(xadd,xadd),c(i,j))
+            xas <- spos(x,list(xadd,xsub),c(i,j))
+            xsa <- spos(x,list(xsub,xadd),c(i,j))
+            xss <- spos(x,list(xsub,xsub),c(i,j))
+            H[i, j] <- H[j, i] <-
+                fun(xaa, ...)/(udelta[i]+udelta[j])^2 -
+                    fun(xas, ...)/(udelta[i]+ldelta[j])^2 -
+                        fun(xsa, ...)/(ldelta[i]+udelta[j])^2 +
+                            fun(xss, ...)/(ldelta[i]+ldelta[j])^2
+        }
+    }
+    list(gradient = g, Hessian = H)
+}
+
+makeFac <- function(x,char.only=FALSE) {
+    if (!is.factor(x) && (!char.only || is.character(x))) factor(x) else x
+}
+
+formatVC <- function(varc, digits = max(3, getOption("digits") - 2),
+		     comp = "Std.Dev.", formatter = format, ...)
+{
+    c.nms <- c("Groups", "Name", "Variance", "Std.Dev.")
+    avail.c <- c.nms[-(1:2)]
+    if(anyNA(mcc <- pmatch(comp, avail.c)))
+	stop("Illegal 'comp': ", comp[is.na(mcc)])
+    nc <- length(colnms <- c(c.nms[1:2], (use.c <- avail.c[mcc])))
+    if(length(use.c) == 0)
+	stop("Must *either* show variances or standard deviations")
+    useScale <- attr(varc, "useSc")
+    reStdDev <- c(lapply(varc, attr, "stddev"),
+		  if(useScale) list(Residual = unname(attr(varc, "sc"))))
+    reLens <- vapply(reStdDev, length, 1L)
+    nr <- sum(reLens)
+    reMat <- array('', c(nr, nc), list(rep.int('', nr), colnms))
+    reMat[1+cumsum(reLens)-reLens, "Groups"] <- names(reLens)
+    reMat[,"Name"] <- c(unlist(lapply(varc, colnames)), if(useScale) "")
+    if(any("Variance" == use.c))
+    reMat[,"Variance"] <- formatter(unlist(reStdDev)^2, digits = digits, ...)
+    if(any("Std.Dev." == use.c))
+    reMat[,"Std.Dev."] <- formatter(unlist(reStdDev),   digits = digits, ...)
+    if (any(reLens > 1)) {
+	maxlen <- max(reLens)
+	recorr <- lapply(varc, attr, "correlation")
+	corr <-
+	    do.call(Matrix::rBind,
+		    lapply(recorr,
+			   function(x) {
+			       x <- as(x, "matrix")
+			       dig <- max(2, digits - 2) # use 'digits' !
+                               ## not using formatter() for correlations
+			       cc <- format(round(x, dig), nsmall = dig)
+			       cc[!lower.tri(cc)] <- ""
+			       nr <- nrow(cc)
+			       if (nr >= maxlen) return(cc)
+			       cbind(cc, matrix("", nr, maxlen-nr))
+			   }))[, -maxlen, drop = FALSE]
+	if (nrow(corr) < nrow(reMat))
+	    corr <- rbind(corr, matrix("", nrow(reMat) - nrow(corr), ncol(corr)))
+	colnames(corr) <- c("Corr", rep.int("", max(0L, ncol(corr)-1L)))
+	cbind(reMat, corr)
+    } else reMat
+}
+
+
+namedList <- function(...) {
+    L <- list(...)
+    snm <- sapply(substitute(list(...)), deparse)[-1]
+    if (is.null(nm <- names(L))) nm <- snm
+    if (any(nonames <- nm == "")) nm[nonames] <- snm[nonames]
+    setNames(L,nm)
+}
+
+devCritFun <- function(object, REML = NULL) {
+    # silence no visible global function definition 
+    ## cf. (1) lmerResp::Laplace in respModule.cpp
+    ##     (2) section 5.6 of lMMwR, listing lines 34-42
+    if (isTRUE(REML) && !lme4::isLMM(object))
+        stop("can't compute REML deviance for a non-LMM")
+    cmp <- object@devcomp$cmp
+    if (is.null(REML) || is.na(REML[1]))
+        REML <- isREML(object)
+    if (REML) {
+        if (isREML(object)) {
+            cmp[["REML"]]
+        } else {
+            ## adjust ML results to REML
+	    lnum <- log(2*pi*cmp[["pwrss"]])
+	    n <- object@devcomp$dims[["n"]]
+	    nmp <- n - length(object@beta)
+            ldW <- sum(log(weights(object, method = "prior")))
+            - ldW + cmp[["ldL2"]] + cmp[["ldRX2"]] + nmp*(1 + lnum - log(nmp))
+        }
+    } else {
+        if (!isREML(object)) {
+            cmp[["dev"]]
+        } else {
+            ## adjust REML results to ML
+            n <- object@devcomp$dims[["n"]]
+            lnum <- log(2*pi*cmp[["pwrss"]])
+            ldW <- sum(log(weights(object, method = "prior")))
+            - ldW + cmp[["ldL2"]] + n*(1 + lnum - log(n))
+        }
+    }
+}
