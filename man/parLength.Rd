@@ -2,6 +2,7 @@
 \name{parLength}
 \alias{parLength}
 \alias{parLength.repSparse}
+\alias{parLength.strucGlmer}
 \alias{parLength.strucParseFormula}
 \title{Lengths of parameter vectors}
 \usage{
@@ -10,6 +11,8 @@ parLength(object, ...)
 \method{parLength}{repSparse}(object, ...)
 
 \method{parLength}{strucParseFormula}(object, ...)
+
+\method{parLength}{strucGlmer}(object, ...)
 }
 \arguments{
 \item{object}{parameterized object}

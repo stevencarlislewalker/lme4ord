@@ -11,7 +11,6 @@
 \alias{logLik.strucGlmer}
 \alias{mkStrucGlmer}
 \alias{model.matrix.strucGlmer}
-\alias{nobs.strucGlmer}
 \alias{print.strucGlmer}
 \alias{print.summary.strucGlmer}
 \alias{residuals.strucGlmer}
@@ -31,8 +30,6 @@ mkStrucGlmer(opt, parsedForm, dfun, mc)
 \method{print}{summary.strucGlmer}(x, digits = max(3, getOption("digits") -
   3), correlation = NULL, signif.stars = getOption("show.signif.stars"),
   show.resids = TRUE, ...)
-
-\method{nobs}{strucGlmer}(object, ...)
 
 \method{residuals}{strucGlmer}(object, ...)
 

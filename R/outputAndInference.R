@@ -138,7 +138,7 @@ print.summary.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3)
                                      correlation = NULL, 
                                      signif.stars = getOption("show.signif.stars"),
                                      show.resids = TRUE, ...) {
-    ## basically just stolen from lme4
+    ## basically just stolen from lme4, but with tweaks
     
     .prt.methTit(x$methTitle, x$objClass)
     .prt.family(x)
@@ -187,137 +187,7 @@ print.summary.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3)
     }               
 }
 
-## ----------------------------------------------------------------------
-## parameter extraction
-## ----------------------------------------------------------------------
 
-##' @rdname pars
-##' @export
-pars <- function(object, ...) UseMethod("pars")
-
-##' Parameter retrieval for structured generalized linear mixed models
-##'
-##' @param object a \code{strucGlmer} fitted model object
-##' @param ... additional arguments to pass on
-##' @rdname pars
-##' @export
-pars.strucGlmer <- function(object, ...) object$opt$par
-
-##' @importFrom lme4 getME
-##' @rdname pars
-##' @export
-pars.glmerMod <- function(object, ...) unlist(getME(object, c("theta", "beta")))
-
-##' @rdname pars
-##' @export
-covar <- function(object, ...) UseMethod("covar")
-
-##' @rdname pars
-##' @export
-covar.strucGlmer <- function(object, ...) {
-    unname(getStrucGlmerPar(object, "covar"))
-}
-
-##' @rdname pars
-##' @export
-loads <- function(object, ...) UseMethod("loads")
-
-##' @rdname pars
-##' @export
-loads.default <- function(object, ...) loadings(object)
-
-##' @rdname pars
-##' @export
-loads.strucGlmer <- function(object, ...) {
-    getStrucGlmerPar(object, "loads")
-}
-
-##' @importFrom nlme fixef 
-##' @rdname pars
-##' @export
-fixef.strucGlmer <- function(object, ...) {
-    setNames(getStrucGlmerPar(object, "fixef"),
-             colnames(object$parsedForm$fixed))
-}
-
-##' @importFrom nlme ranef
-##' @rdname pars
-##' @export
-ranef.strucGlmer <- function(object, type = c("u", "Lu", "ZLu"), ...) {
-    type <- type[1]
-    pp <- object$parsedForm$devfunEnv$pp
-    structs <- object$parsedForm$random
-    nms <- names(nRePerTrm <- environment(object$dfun)$nRePerTrm)
-    if(type ==   "u") {
-        re <- pp$u(1)
-    } else {
-        re <- pp$b(1)
-        if(type == "ZLu") {
-            b <- subRagByLens(re, nRePerTrm)
-            multFn <- function(struc, re) {
-                as.numeric(as.matrix(t(struc$Zt), sparse = TRUE) %*% re)
-            }
-            return(setNames(mapply(multFn, structs, b, SIMPLIFY = FALSE), nms))
-        }
-    }
-    setNames(subRagByLens(re, nRePerTrm), nms)
-}
-
-##' @param type character string giving the type of parameter
-##' (e.g. \code{"fixef", "covar"})
-##' @rdname pars
-##' @export
-getStrucGlmerPar <- function(object, type, ...) {
-    parInds <- environment(object$dfun)$parInds
-    optPar <- object$opt$par
-    optPar[unlist(parInds[type])]
-}
-
-##' @param nParPerTrm vector of the number of parameters per term
-##' @param pars parameter vector (e.g. result of \code{covar} or
-##' \code{loads}
-##' @rdname pars
-##' @export
-parPerTerm <- function(nParPerTrm, pars) {
-    if(is.null(pars)) pars <- numeric(0)
-    whichThere <- (nParPerTrm > 0) & (!is.na(nParPerTrm))
-    ans <- vector("list", length(whichThere))
-    ans[whichThere] <- subRagByLens(pars, nParPerTrm[whichThere])
-    names(ans) <- names(nParPerTrm)
-    return(ans)
-}
-
-##' @rdname pars
-##' @export
-covarPerTerm <- function(object) {
-    parPerTerm(environment(object$dfun)$nLambdatParPerTrm,
-               covar(object))
-}
-
-##' @rdname pars
-##' @export
-loadsPerTerm <- function(object) {
-    parPerTerm(environment(object$dfun)$nZtParPerTrm,
-               loads(object))
-}
-
-##' @rdname pars
-##' @export
-nRePerTrm <- function(object) {
-    object$parsedForm$devfunEnv$nRePerTrm
-}
-
-##' @rdname pars
-##' @export
-reIndsPerTrm <- function(object) {
-    nrpt <- nRePerTrm(object)
-    setNames(subRagByLens(1:sum(nrpt), nrpt), names(nrpt))
-}
-
-##' @importFrom stats nobs
-##' @rdname strucGlmer-class
-##' @export
-nobs.strucGlmer <- function(object, ...) nrow(object$parsedForm$fixed)
 
 
 ## ----------------------------------------------------------------------
