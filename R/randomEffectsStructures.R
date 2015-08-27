@@ -1,8 +1,8 @@
 ## ----------------------------------------------------------------------
 ## Random-effects structures
 ##
-## used by:  strucParseFormula.R, outputModule.R
-## uses:  repSparse.R
+## used by:  formulaParsing.R, outputAndInference.R
+## uses:  repeatedSparseMatrices.R
 ## ----------------------------------------------------------------------
 
 

@@ -1,8 +1,8 @@
 ## ----------------------------------------------------------------------
 ## Output module
 ##
-## used by:  strucGlmer.R
-## uses:  reTrmStructs.R, repSparse.R
+## used by:  structuredGLMM.R
+## uses:  randomEffectsStructures.R, repeatedSparseMatrices.R
 ## ----------------------------------------------------------------------
 
 

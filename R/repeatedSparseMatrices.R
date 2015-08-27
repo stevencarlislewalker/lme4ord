@@ -1,7 +1,7 @@
 ## ----------------------------------------------------------------------
 ## Repeated sparse matrices
 ##
-## used by: strucParseFormula.R, reTrmStructs.R, outputModule.R
+## used by: formulaParsing.R, randomEffectsStructures.R, outputAndInference.R
 ## ----------------------------------------------------------------------
 
 

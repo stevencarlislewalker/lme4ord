@@ -1,8 +1,8 @@
 ## ----------------------------------------------------------------------
 ## Formula parsing
 ##
-## used by:  strucGlmer.R
-## uses:  reTrmSruct.R, repSparse.R
+## used by:  structuredGLMM.R
+## uses:  randomEffectsStructures.R, repeatedSparseMatrices.R
 ## ----------------------------------------------------------------------
 
 
