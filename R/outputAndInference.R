@@ -503,7 +503,7 @@ printReTrm.nlmeCorStruct <- function(object, forSummary = FALSE, ...) {
     vcd <- "  variance-correlation:  "
     print(corObj)
     if(transEnv$sigExists) {
-        cat("  Standard deviation multiplier: ", getInit(object$Lambdat), "\n")
+        cat("  Standard deviation multiplier: ", sigma(object), "\n")
     }
     .printVC(vcd, vc)
 }
@@ -552,6 +552,8 @@ getReTrm <- function(object, name, drop = TRUE) {
         return(structs [nameInd] )
     }
 }
+
+
 
 
 ## ----------------------------------------------------------------------

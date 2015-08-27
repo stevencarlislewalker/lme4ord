@@ -309,6 +309,33 @@ nobs.strucGlmer <- function(object, ...) nrow(object$parsedForm$fixed)
 ##' @export
 nobs.strucParseFormula <- function(object, ...) nrow(object$fixed)
 
+##' @importFrom lme4 sigma
+##' @rdname pars
+##' @export
+sigma.reTrmStruct <- function(object, ...) return(NA)
+
+##' @rdname pars
+##' @export
+sigma.nlmeCorStruct <- function(object, ...) {
+    sigExists <- environment(Lambdat <- object$Lambdat$trans)$sigExists
+    if(sigExists) {
+        return(getInit(Lambdat)[1])
+    } else {
+        return(1)
+    }
+}
+
+##' @rdname pars
+##' @export
+sigma.strucParseFormula <- function(object, ...) lapply(object$random, sigma)
+
+##' @rdname pars
+##' @export
+sigma.strucGlmer <- function(object, ...) {
+    random <- object$parsedForm$random
+    setNames(lapply(random, sigma), names(random))
+}
+
 
 ## ----------------------------------------------------------------------
 ## Initial values -- get and set init parameter vectors for repeated

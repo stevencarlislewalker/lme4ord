@@ -33,6 +33,10 @@
 \alias{response}
 \alias{response.strucGlmer}
 \alias{response.strucParseFormula}
+\alias{sigma.nlmeCorStruct}
+\alias{sigma.reTrmStruct}
+\alias{sigma.strucGlmer}
+\alias{sigma.strucParseFormula}
 \alias{strucDims}
 \title{Parameter retrieval for structured generalized linear mixed models}
 \usage{
@@ -109,6 +113,14 @@ relCovFact(object, ...)
 \method{nobs}{strucGlmer}(object, ...)
 
 \method{nobs}{strucParseFormula}(object, ...)
+
+\method{sigma}{reTrmStruct}(object, ...)
+
+\method{sigma}{nlmeCorStruct}(object, ...)
+
+\method{sigma}{strucParseFormula}(object, ...)
+
+\method{sigma}{strucGlmer}(object, ...)
 }
 \arguments{
 \item{object}{a \code{strucGlmer} fitted model object}
