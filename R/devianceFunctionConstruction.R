@@ -168,6 +168,32 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     return(devfun)
 }
 
+##' Make a (Laplace) glmer deviance function from a parsed formula
+##'
+##' @param parsedForm results of \code{\link{strucParseFormula}}
+##' @param family,weights,offset,etastart see \code{\link{mkGeneralGlmerDevfun}}
+##' @param ... not used
+##' @export
+strucMkDevfun <- function(parsedForm, family,
+                          weights = NULL, offset = NULL,
+                          etastart = NULL, ...) {
+    mkGeneralGlmerDevfun(y = response(parsedForm),
+                         X = fixefModMat(parsedForm),
+                         Zt      = ranefModMat(parsedForm),
+                         Lambdat = relCovFact(parsedForm),
+                         weights   = weights,
+                         offset    = offset,
+                         etastart  = etastart,
+                         initPars  = pars(parsedForm),
+                         parInds   = getParInds(parsedForm),
+                         mapToCovFact = parsedForm$mapToCovFact,
+                         mapToModMat  = parsedForm$mapToModMat,
+                         devfunEnv = parsedForm$devfunEnv,
+                         family = family,
+                         Lind = parsedForm$Lambdat$valInds,
+                         ...)
+}
+
 initializeResp <- function(y, etastart = NULL, mustart = NULL,
                            offset = NULL, weights = NULL,
                            family){

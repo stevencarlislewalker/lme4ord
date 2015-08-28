@@ -1,5 +1,6 @@
+if(FALSE) {
+
 library(lme4ord)
-library(lme4pureR)
 
 mLmer <- lmer(Reaction ~ Days + (Days | Subject), sleepstudy, REML = FALSE)
 mGlmer <- glmer(Reaction ~ Days + (Days | Subject), sleepstudy, family = freeDispGaussian())
@@ -9,8 +10,6 @@ pForm <- glFormula(Reaction ~ Days + (Days | Subject), sleepstudy, family = free
 dfun0 <- do.call(mkDglmerDevfun, pForm)
 opt0 <- lme4:::optimizeDglmer(dfun0)
 dfun <- updateGlmerDevfun(dfun0, pForm$reTrms)
-
-if(FALSE) {
 
 opt <- lme4:::optimizeDglmer(dfun, stage = 2)
 

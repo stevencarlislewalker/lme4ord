@@ -140,7 +140,7 @@ fixef.strucGlmer <- function(object, ...) {
 
 ##' @rdname pars
 ##' @export
-fixef.strucParsedFormula <- function(object, ...) {
+fixef.strucParseFormula <- function(object, ...) {
     with(object, initPars[parInds$fixef])
 }
 
@@ -220,6 +220,20 @@ reIndsPerTrm <- function(object) {
 
 ##' @rdname pars
 ##' @export
+getParInds <- function(object, ...) {
+    UseMethod("getParInds")
+}
+
+##' @rdname pars
+##' @export
+getParInds.strucParseFormula <- function(object, ...) object$parInds
+
+##' @rdname pars
+##' @export
+getParInds.strucGlmer <- function(object, ...) getParInds(object$parsedForm)
+
+##' @rdname pars
+##' @export
 strucDims <- function(object) {
     list(nObs = nobs(object),
          nFixef = ncol(object$parsedForm$fixed),
@@ -244,6 +258,20 @@ response.strucGlmer <- function(object, ...) response(object$parsedForm)
 ##' @rdname pars
 ##' @export
 response.strucParseFormula <- function(object, ...) object$response
+
+##' @rdname pars
+##' @export
+fixefModMat <- function(object, ...) {
+    UseMethod("fixefModMat")
+}
+
+##' @rdname pars
+##' @export
+fixefModMat.strucParseFormula <- function(object, ...) object$fixed
+
+##' @rdname pars
+##' @export
+fixefModMat.strucGlmer <- function(object, ...) fixefModMat(object$parsedForm)
 
 ##' @rdname pars
 ##' @export
@@ -653,6 +681,26 @@ gamma.shape.merMod <- function(object, ...) {
 ## 		   Gamma    = Gamma_simfun,
 ## 		   negative.binomial = negative.binomial_simfun)
 
+## ----------------------------------------------------------------------
+## family methods
+## ----------------------------------------------------------------------
+
+##' Extract family object
+##'
+##' @param object \code{\link{strucGlmer}} or
+##' \code{\link{strucParseFormula}} object
+##' @param ... not used
+##' @importFrom stats family
+##' @export
+family.strucGlmer <- function(object, ...) family(object$parsedForm)
+
+##' @rdname family.strucGlmer
+##' @export
+family.strucParseFormula <- function(object, ...) {
+    resp <- object$devfunEnv$resp
+    if(is.null(resp)) stop("a family is not (yet) present in this object")
+    return(resp$family)
+}
 
 ##' Convert row and column indices to vector indices, for a triangular
 ##' matrix

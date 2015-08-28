@@ -5,7 +5,13 @@
 \alias{covar.strucParseFormula}
 \alias{covarPerTerm}
 \alias{fixef.strucGlmer}
-\alias{fixef.strucParsedFormula}
+\alias{fixef.strucParseFormula}
+\alias{fixefModMat}
+\alias{fixefModMat.strucGlmer}
+\alias{fixefModMat.strucParseFormula}
+\alias{getParInds}
+\alias{getParInds.strucGlmer}
+\alias{getParInds.strucParseFormula}
 \alias{getStrucGlmerPar}
 \alias{loads}
 \alias{loads.default}
@@ -64,7 +70,7 @@ loads(object, ...)
 
 \method{fixef}{strucGlmer}(object, ...)
 
-\method{fixef}{strucParsedFormula}(object, ...)
+\method{fixef}{strucParseFormula}(object, ...)
 
 \method{ranef}{strucGlmer}(object, type = c("u", "Lu", "ZLu"), ...)
 
@@ -80,6 +86,12 @@ nRePerTrm(object)
 
 reIndsPerTrm(object)
 
+getParInds(object, ...)
+
+\method{getParInds}{strucParseFormula}(object, ...)
+
+\method{getParInds}{strucGlmer}(object, ...)
+
 strucDims(object)
 
 response(object, ...)
@@ -87,6 +99,12 @@ response(object, ...)
 \method{response}{strucGlmer}(object, ...)
 
 \method{response}{strucParseFormula}(object, ...)
+
+fixefModMat(object, ...)
+
+\method{fixefModMat}{strucParseFormula}(object, ...)
+
+\method{fixefModMat}{strucGlmer}(object, ...)
 
 ranefModMat(object, ...)
 

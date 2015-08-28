@@ -6,9 +6,16 @@ with(loon, plot(year, prop, type = "o"))
 summary(m <- glm(prop ~ year, binomial, loon, lakes))
 
 corObj <- nlme:::Initialize(nlme:::corAR1(0, form = ~ year), loon)
-(gm <- strucGlmer(prop ~ scale(year) + nlmeCorStruct(1, corObj = corObj, sig = 1),
-                  loon, binomial, weights = loon$lakes))
+(pform <- strucGlmer(prop ~ scale(year) + nlmeCorStruct(1, corObj = corObj, sig = 1),
+                     loon, numModularSteps = 1))
+
+dfun <- strucMkDevfun(pform, family = binomial, weights = loon$lakes)
+dfun(pars(pform))
+
+(gm <- strucGlmer(pform, weights = loon$lakes))
+
 image(crossprod(relCovFact(gm)))
 plot(plogis(fitted(gm)), loon$prop)
 abline(a = 0, b = 1)
 sigma(gm)
+sigma(pform)

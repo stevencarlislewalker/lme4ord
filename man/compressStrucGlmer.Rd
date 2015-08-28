@@ -44,7 +44,6 @@ while retaining a fast optimization module. In partiular, the
 \code{\link{repSparse}} objects in the parsed formula make it
 easier to write consistent and resuseable code, whereas the
 \code{Matrix}/\code{C++} objects in the environment of the
-deviance function facilitate relatively faster linear
-algebra.
+deviance function facilitate relatively fast linear algebra.
 }
 

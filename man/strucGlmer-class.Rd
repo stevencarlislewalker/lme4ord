@@ -3,7 +3,6 @@
 \alias{VarCorr.strucGlmer}
 \alias{deviance.strucGlmer}
 \alias{df.residual.strucGlmer}
-\alias{family.strucGlmer}
 \alias{fitted.strucGlmer}
 \alias{formula.strucGlmer}
 \alias{getOffset}
@@ -49,8 +48,6 @@ mkStrucGlmer(opt, parsedForm, dfun, mc)
 \method{logLik}{strucGlmer}(object, ...)
 
 \method{formula}{strucGlmer}(x, ...)
-
-\method{family}{strucGlmer}(object, ...)
 
 \method{weights}{strucGlmer}(object, ...)
 

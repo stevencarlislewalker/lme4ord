@@ -344,10 +344,6 @@ logLik.strucGlmer <- function(object, ...) {
 ##' @export
 formula.strucGlmer <- function(x, ...) x$parsedForm$formula
 
-##' @importFrom stats family
-##' @rdname strucGlmer-class
-##' @export
-family.strucGlmer <- function(object, ...) object$parsedForm$devfunEnv$resp$family
 
 ##' @importFrom stats weights
 ##' @rdname strucGlmer-class
@@ -587,8 +583,7 @@ getReTrm <- function(object, name, drop = TRUE) {
 ##' \code{\link{repSparse}} objects in the parsed formula make it
 ##' easier to write consistent and resuseable code, whereas the
 ##' \code{Matrix}/\code{C++} objects in the environment of the
-##' deviance function facilitate relatively faster linear
-##' algebra.
+##' deviance function facilitate relatively fast linear algebra.
 ##'
 ##' @param object a \code{\link{strucGlmer}} object.
 ##' @param components components to compress.
