@@ -199,10 +199,6 @@ initializeResp <- function(y, etastart = NULL, mustart = NULL,
                            family){
     # taken mostly from mkRespMod
     
-    ## y <- model.response(fr)
-### Why consider there here?  They are handled in plsform.
-    # offset <- model.offset(fr)
-    # weights <- model.weights(fr)
     n <- length(y)
     etastart_update <- etastart
     if(length(dim(y)) == 1) {
@@ -266,19 +262,49 @@ fixFamily <- function(family) {
 ##' penLoads <- function(gg) abs(gg) + 10
 ##' mkPenaltyFun(penCovar, penFixef, penLoads)(1:10, list(covar = 1:5, loads = 6:10))
 mkPenaltyFun <- function(penCovar, penFixef, penLoads, env = environment()) {
+                                        # list of possible penalty
+                                        # functions ...
     penFuncs <- list(penCovar, penFixef, penLoads)
+                                        # ... but only keep those that
+                                        # get passed through the
+                                        # arguments
     keepers <- !sapply(penFuncs, is.null)
+                                        # don't bother if nothing to
+                                        # keep
     if(!any(keepers)) return(NULL)
+
+                                        # make the penalty names
     parTypes <- c("Covar", "Fixef", "Loads")
     parTypesName <- paste("pen", parTypes, sep = "")
+
+    # ----------------------------------------
+    # the rest constructs a call for summing
+    # up the penalties that are kept,
+    # and evaluating that sum in the
+    # specified environment
+    # ----------------------------------------
+                                        # 'clever' way to construct a
+                                        # list (parTypeCall) of
+                                        # expressions:
+                                        # pars[parInds$covar],
+                                        # pars[parInds$fixef],
+                                        # pars[parInds$loads]
     indsChar <- lapply(lapply(tolower(parTypes), c, list("$", "parInds")),
                        "[", c(2, 3, 1))
     parTypeCall <- lapply(lapply(rapply(indsChar, as.name, how = "list"), as.call),
                           function(inds) {
                               as.call(list(as.name("["), as.name("pars"), inds))})
+                                        # name this list and add a
+                                        # quote(sum) sum to it
     penSumCall <- c(list(quote(sum)),
                     mapply(call, parTypesName[keepers], parTypeCall[keepers]))
+                                        # put these language objects
+                                        # in an environment (probably
+                                        # the environment of a
+                                        # deviance function)
     env <- list2env(setNames(penFuncs, parTypesName), env)
+                                        # and finally the sum of these
+                                        # penalties in the environment
     eval(call("function", as.pairlist(alist(pars = , parInds = )),
               as.call(unname(penSumCall))), env)
 }
