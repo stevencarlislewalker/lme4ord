@@ -17,7 +17,7 @@ strucGlmer(formula, ...)
   offset = NULL, etastart = NULL, devfunOnly = FALSE,
   numModularSteps = 4L, parList = NULL, ...)
 
-\method{strucGlmer}{strucParseFormula}(formula, optVerb = 0L,
+\method{strucGlmer}{strucParseFormula}(formula, family, optVerb = 0L,
   optMaxit = 10000, weights = NULL, offset = NULL, etastart = NULL, ...)
 
 \method{strucGlmer}{function}(formula, optVerb = 0L, optMaxit = 10000,

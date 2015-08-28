@@ -70,32 +70,13 @@ strucGlmer.formula <- function(formula, data, family, addArgs = list(),
     if(numModularSteps == 1L) return(parsedForm)
 
     if(modularVerb) cat("\nConstructing deviance function...\n")
-    dfun <- mkGeneralGlmerDevfun(y = parsedForm$response,
-                                 X = parsedForm$fixed,
-                                 Zt      = as(parsedForm$Zt,      "dgCMatrix"),
-                                 Lambdat = as(parsedForm$Lambdat, "dgCMatrix"),
-                                 weights   = weights,
-                                 offset    = offset,
-                                 etastart  = etastart,
-                                 initPars  = parsedForm$initPars,
-                                 parInds   = parsedForm$parInds,
-                                 mapToCovFact = parsedForm$mapToCovFact,
-                                 mapToModMat  = parsedForm$mapToModMat,
-                                 devfunEnv = parsedForm$devfunEnv,
-                                 family = family,
-                                 Lind = parsedForm$Lambdat$valInds,
-                                 ...)
+    dfun <- strucMkDevfun(parsedForm, family = family, weights = weights,
+                          offset = offset, etastart = etastart, ...)
     if(devfunOnly || (numModularSteps == 2L)) return(dfun)
     
     if(modularVerb) cat("\nOptimizing deviance function...\n")
-    opt <- try(minqa::bobyqa(parsedForm$initPars, dfun,
-                             lower = parsedForm$lower,
-                             upper = parsedForm$upper,
-                             control =
-                             list(iprint = optVerb,
-                                  maxfun = optMaxit,
-                                  rhobeg = 0.0002,
-                                  rhoend = 2e-7)))
+    opt <- strucOpt(minqa::bobyqa, parsedForm$initPars, dfun,
+                    parsedForm$lower, parsedForm$upper, optVerb, optMaxit)
     if(numModularSteps == 3L) return(opt)
 
     if(modularVerb) cat("\nPreparing output...\n")
@@ -107,35 +88,17 @@ strucGlmer.formula <- function(formula, data, family, addArgs = list(),
 
 ##' @rdname strucGlmer
 ##' @export
-strucGlmer.strucParseFormula <- function(formula, optVerb = 0L, optMaxit = 10000,
+strucGlmer.strucParseFormula <- function(formula, family, optVerb = 0L, optMaxit = 10000,
                                          weights = NULL, offset = NULL, etastart = NULL,
                                          ...) {
     mc <- match.call()
     parsedForm <- formula
-    dfun <- mkGeneralGlmerDevfun(y = parsedForm$response,
-                                 X = parsedForm$fixed,
-                                 Zt      = as(parsedForm$Zt,      "dgCMatrix"),
-                                 Lambdat = as(parsedForm$Lambdat, "dgCMatrix"),
-                                 weights   = weights,
-                                 offset    = offset,
-                                 etastart  = etastart,
-                                 initPars  = parsedForm$initPars,
-                                 parInds   = parsedForm$parInds,
-                                 mapToCovFact = parsedForm$mapToCovFact,
-                                 mapToModMat  = parsedForm$mapToModMat,
-                                 devfunEnv = parsedForm$devfunEnv,
-                                 family = family(parsedForm),
-                                 Lind = parsedForm$Lambdat$valInds,
-                                 ...)
+    if(is.null(fam <- stats::family(parsedForm))) fam <- family
+    dfun <- strucMkDevfun(parsedForm, family = fam, weights = weights,
+                          offset = offset, etastart = etastart, ...)
 
-    opt <- try(minqa::bobyqa(parsedForm$initPars, dfun,
-                             lower = parsedForm$lower,
-                             upper = parsedForm$upper,
-                             control =
-                             list(iprint = optVerb,
-                                  maxfun = optMaxit,
-                                  rhobeg = 0.0002,
-                                  rhoend = 2e-7)))
+    opt <- strucOpt(minqa::bobyqa, parsedForm$initPars, dfun,
+                    parsedForm$lower, parsedForm$upper, optVerb, optMaxit)
     
     mkStrucGlmer(opt, parsedForm, dfun, mc)
 }
@@ -155,14 +118,8 @@ strucGlmer.function <- function(formula, optVerb = 0L, optMaxit = 10000,
         if(missing(upper))    stop("need upper if no parsedForm")
     }
     dfun <- formula
-    opt <- try(minqa::bobyqa(initPars, dfun,
-                             lower = lower,
-                             upper = upper,
-                             control =
-                             list(iprint = optVerb,
-                                  maxfun = optMaxit,
-                                  rhobeg = 0.0002,
-                                  rhoend = 2e-7)))
+    opt <- strucOpt(minqa::bobyqa, initPars, dfun,
+                    lower, upper, optVerb, optMaxit)
     if(missing(parsedForm)) return(opt)
     mkStrucGlmer(opt, parsedForm, dfun, mc)
 }
@@ -190,31 +147,12 @@ update.strucGlmer <- function(object, formula, parList,
     }
     if(is.null(weights)) weights <- weights(object)
     if(is.null(offset)) offset <- getOffset(object)
-    
-    dfun <- mkGeneralGlmerDevfun(y = parsedForm$response,
-                                 X = parsedForm$fixed,
-                                 Zt      = as(parsedForm$Zt,      "dgCMatrix"),
-                                 Lambdat = as(parsedForm$Lambdat, "dgCMatrix"),
-                                 weights   = weights,
-                                 offset    = offset,
-                                 etastart  = etastart,
-                                 initPars  = parsedForm$initPars,
-                                 parInds   = parsedForm$parInds,
-                                 mapToCovFact = parsedForm$mapToCovFact,
-                                 mapToModMat  = parsedForm$mapToModMat,
-                                 devfunEnv = parsedForm$devfunEnv,
-                                 family = family(object),
-                                 Lind = parsedForm$Lambdat$valInds,
-                                 ...)
 
-    opt <- try(minqa::bobyqa(parsedForm$initPars, dfun,
-                             lower = parsedForm$lower,
-                             upper = parsedForm$upper,
-                             control =
-                             list(iprint = optVerb,
-                                  maxfun = optMaxit,
-                                  rhobeg = 0.0002,
-                                  rhoend = 2e-7)))
+    dfun <- strucMkDevfun(parsedForm, family = family(object), weights = weights,
+                          offset = offset, etastart = etastart, ...)
+
+    opt <- strucOpt(minqa::bobyqa, parsedForm$initPars, dfun,
+                    parsedForm$lower, parsedForm$upper, optVerb, optMaxit)
     
     mkStrucGlmer(opt, parsedForm, dfun, mc)
 }
