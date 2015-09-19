@@ -12,7 +12,7 @@
 \alias{setInit.reTrmStruct}
 \alias{setInit.strucMatrix}
 \alias{setInit.strucParseFormula}
-\title{Get and set initial parameter values for repeated sparse matrices}
+\title{Get and set initial parameter values for structured sparse matrices}
 \usage{
 getInit(x, ...)
 
@@ -59,10 +59,10 @@ random effects term, and \code{"loads.trmName"} if loadings are
 present.}
 }
 \description{
-The initial values for a repeated sparse matrix are stored in the
+The initial values for a structured sparse matrix are stored in the
 environment of its transformation function, where they have the
 name \code{init}.  Random effects term structures
-(\code{\link{reTrmStruct}}) contain two repeated sparse matrices:
+(\code{\link{reTrmStruct}}) contain two structured sparse matrices:
 the transposed relative covariance factor, \code{Lambdat}, and the
 transposed random effects model matrix, \code{Zt}. There are
 \code{getReTrm.reTrmStruct} and \code{setReTrm.reTrmStruct}

@@ -4,7 +4,7 @@
 \alias{chol,strucMatrix-method}
 \alias{chol,strucMatrixCompSymm-method}
 \alias{chol,strucMatrixOneOffDiag-method}
-\title{Cholesky decomposition of repeated sparse matrices}
+\title{Cholesky decomposition of structured sparse matrices}
 \usage{
 \S4method{chol}{strucMatrix}(x, ...)
 
@@ -19,7 +19,7 @@
 \item{...}{passed to subsequent functions}
 }
 \description{
-Cholesky decomposition of repeated sparse matrices
+Cholesky decomposition of structured sparse matrices
 }
 \note{
 These are often just bailout methods, but some special

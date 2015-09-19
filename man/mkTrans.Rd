@@ -17,7 +17,7 @@
 \alias{mkVarIdentTrans}
 \alias{mkVarPowerTrans}
 \title{Construct functions for transforming a parameter vector to the
-non-zero values of a repeated sparse matrix}
+non-zero values of a structured sparse matrix}
 \usage{
 mkIdentityTrans(init)
 
@@ -61,7 +61,7 @@ symmetric \code{\link{strucMatrix}} matrix objects}
 
 \item{devfunEnv}{environment of the deviance function}
 
-\item{Atrans,Btrans}{functions for transforming two repeated
+\item{Atrans,Btrans}{functions for transforming two structured
 sparse matrices, \code{A} and \code{B} say}
 
 \item{ABtrans}{function to pass as \code{FUN} in
@@ -81,7 +81,7 @@ length of \code{init}}
 }
 \description{
 These functions return a 'trans function', for transforming a
-parameter vector to the repeated non-zero values of a repeated
+parameter vector to the repeated non-zero values of a structured
 sparse matrix.  Each trans function takes one vector argument
 called \code{matPars}, which are the parameters of the matrix.
 The environment of these transformation functions must contain a

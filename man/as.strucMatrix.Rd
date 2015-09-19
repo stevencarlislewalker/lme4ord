@@ -17,7 +17,7 @@
 \alias{strucMatrix2gCsparseMatrix}
 \alias{strucMatrix2gTsparseMatrix}
 \alias{strucMatrix2sparseMatrix}
-\title{Coerce to and from repeated sparse matrices}
+\title{Coerce to and from structured sparse matrices}
 \usage{
 as.strucMatrix(x, ...)
 
@@ -47,7 +47,7 @@ as.strucMatrix(x, ...)
 \item{sparse}{return \code{sparseMatrix}?}
 }
 \description{
-Coerce to and from repeated sparse matrices
+Coerce to and from structured sparse matrices
 
 as("strucMatrix", "sparseMatrix")
 

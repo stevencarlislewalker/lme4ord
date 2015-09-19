@@ -2,7 +2,7 @@
 \name{subset.strucMatrix}
 \alias{strucMatrixRowSubset}
 \alias{subset.strucMatrix}
-\title{Subsetting repeated sparse matices}
+\title{Subsetting structured sparse matices}
 \usage{
 \method{subset}{strucMatrix}(x, rowInds = NULL, colInds = NULL, ...)
 
@@ -17,7 +17,7 @@ columns}
 \item{...}{unused}
 }
 \description{
-Subsetting repeated sparse matices
+Subsetting structured sparse matices
 }
 \examples{
 set.seed(1)

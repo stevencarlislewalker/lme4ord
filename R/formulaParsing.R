@@ -2,7 +2,7 @@
 ## Formula parsing
 ##
 ## used by:  structuredGLMM.R
-## uses:  randomEffectsStructures.R, repeatedSparseMatrices.R
+## uses:  randomEffectsStructures.R, structuredSparseMatrices.R
 ## ----------------------------------------------------------------------
 
 
@@ -77,7 +77,7 @@ strucParseFormula <- function(formula, data, addArgs = list(), reTrmsList = NULL
                        auxEnv = environment(),
                        devfunEnv = devfunEnv)
 
-                                        # lists of repeated sparse
+                                        # lists of structured sparse
                                         # matrices
     ZtList      <- lapply(random, "[[",      "Zt")
     LambdatList <- lapply(random, "[[", "Lambdat")

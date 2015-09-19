@@ -2,7 +2,7 @@
 \name{sort.strucMatrix}
 \alias{sort.strucMatrix}
 \alias{standardSort}
-\title{Sort the indices of a repeated sparse matrix}
+\title{Sort the indices of a structured sparse matrix}
 \usage{
 \method{sort}{strucMatrix}(x, decreasing = FALSE, type = c("col", "row",
   "val"), ...)

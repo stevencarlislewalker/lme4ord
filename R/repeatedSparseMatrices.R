@@ -88,9 +88,9 @@ setOldClass("strucMatrix")
 ## strucMatrix-class
 ## ----------------------------------------------------------------------
 
-##' A repeated sparse matrix class
+##' A structured sparse matrix class
 ##'
-##' An \code{S3} class for repeated sparse matrices, which are lists
+##' An \code{S3} class for structured sparse matrices, which are lists
 ##' with a \code{Dim} attribute and with the following elements:
 ##' \describe{
 ##'   \item{\code{rowInds}}{0-based row indices}
@@ -148,8 +148,8 @@ print.strucMatrix <- function(x, n = 6L, ...) {
     reportTruncInds <- nrow(inds) > n
     reportTruncPars <- length(init) > n
 
-    cat("Repeated sparse matrix\n")
-    cat("----------------------\n")
+    cat("Structured sparse matrix\n")
+    cat("------------------------\n")
     cat("dimensions:\n")
     cat("", nrow(x), "rows and", ncol(x), "columns\n",
         nrow(inds), "nonzero values\n",
@@ -172,7 +172,7 @@ print.strucMatrix <- function(x, n = 6L, ...) {
     cat ("row, column, and value indices (with associated values):\n")
     print(headInds)
     if(length(class(x)) > 1L) {
-        cat("\nspecial repeated sparse matrix, inheriting from:\n")
+        cat("\nspecial structured sparse matrix, inheriting from:\n")
         print(class(x))
     }
     cat("\n")
@@ -330,7 +330,7 @@ setMethod("diag<-", signature(x = "strucMatrix"), {
 dim.strucMatrix <- function(x) attr(x, "Dim")
 
 
-##' Sort the indices of a repeated sparse matrix
+##' Sort the indices of a structured sparse matrix
 ##'
 ##' The ordering of the indices is arbitrary, but some orders are more
 ##' computationally efficient than others in certain circumstances.
@@ -370,7 +370,7 @@ standardSort <- function(x) {
 ## Coercion -- as...
 ## ----------------------------------------------------------------------
 
-##' Coerce to and from repeated sparse matrices
+##' Coerce to and from structured sparse matrices
 ##'
 ##' @param x an object
 ##' @param ... dots
@@ -574,7 +574,7 @@ setAs("strucMatrix",     "dtTMatrix", def = strucMatrix2tTsparse)
 
 
 
-##' Get repetition pattern of a repeated sparse matrix
+##' Get repetition pattern of a structured sparse matrix
 ##'
 ##' @param object a \code{\link{strucMatrix}} object
 ##' @export
@@ -591,9 +591,9 @@ getRepPattern <- function(object) {
 ## product)
 ## ----------------------------------------------------------------------
 
-##' Kronecker and Khatri-Rao products for repeated sparse matrices
+##' Kronecker and Khatri-Rao products for structured sparse matrices
 ##'
-##' @param X,Y repeated sparse matrices (\code{\link{strucMatrix-class}})
+##' @param X,Y structured sparse matrices (\code{\link{strucMatrix-class}})
 ##' @param trans see argument \code{FUN} in \code{\link{outer}}
 ##' @param makedimnames ignored
 ##' @param ... ignored
@@ -635,7 +635,7 @@ setIs("strucMatrixKron", "strucMatrix")
 ##' (krExample <- kr(X, Y))
 kr <- function(X, Y, trans = "*") {
 
-    ## modified Matrix::KhatriRao to allow for repeated sparse case
+    ## modified Matrix::KhatriRao to allow for structured sparse case
 
     X <- standardSort(X)
     Y <- standardSort(Y)
@@ -682,7 +682,7 @@ setMethod("kronecker", signature(X = "strucMatrix", Y = "strucMatrix"), {
     function(X, Y, FUN = "*", make.dimnames = FALSE, ...) kron(X, Y)
 })
 
-##' Repeated sparse matrix multiplication (and other binary operations)
+##' Structured sparse matrix multiplication (and other binary operations)
 ##'
 ##' Because of the marginal summations involved, the results of a
 ##' matrix multiplication of \code{\link{strucMatrix}} objects is not
@@ -749,10 +749,10 @@ setMethod("tcrossprod", signature(x = "strucMatrix", y = "strucMatrix"), {
 ## ----------------------------------------------------------------------
 
 ##' Construct functions for transforming a parameter vector to the
-##' non-zero values of a repeated sparse matrix
+##' non-zero values of a structured sparse matrix
 ##'
 ##' These functions return a 'trans function', for transforming a
-##' parameter vector to the repeated non-zero values of a repeated
+##' parameter vector to the repeated non-zero values of a structured
 ##' sparse matrix.  Each trans function takes one vector argument
 ##' called \code{matPars}, which are the parameters of the matrix.
 ##' The environment of these transformation functions must contain a
@@ -934,7 +934,7 @@ mkFlexDiagTrans <- function(init, defaultOutput,
 }
 
 
-##' @param Atrans,Btrans functions for transforming two repeated
+##' @param Atrans,Btrans functions for transforming two structured
 ##' sparse matrices, \code{A} and \code{B} say
 ##' @param ABtrans function to pass as \code{FUN} in
 ##' \code{\link{outer}}
@@ -1098,16 +1098,16 @@ mkCholCompSymmTrans <- function(init, matSize) {
 
 
 ## ----------------------------------------------------------------------
-## Special modifications of repeated sparse matrices
+## Special modifications of structured sparse matrices
 ## ----------------------------------------------------------------------
 
-##' Constant repeated sparse matrix
+##' Constant structured sparse matrix
 ##'
-##' Convert a parameterized repeated sparse matrix into a constant
-##' repeated sparse matrix (i.e. \code{getInit(object)} has length
+##' Convert a parameterized structured sparse matrix into a constant
+##' structured sparse matrix (i.e. \code{getInit(object)} has length
 ##' zero).
 ##'
-##' @param object repeated sparse matrix
+##' @param object structured sparse matrix
 ##' @family modifications
 ##' @export
 resetTransConst <- function(object) {
@@ -1123,14 +1123,14 @@ resetTransConst <- function(object) {
 }
 
 
-##' Simplify repeated sparse matrices
+##' Simplify structured sparse matrices
 ##'
-##' Simplify repeated sparse matrices by (1) forcing non structural
+##' Simplify structured sparse matrices by (1) forcing non structural
 ##' zeros to be structural zeros, (2) eliminate duplicates in the
 ##' repeated values, and (3) resetting the transformation function to
 ##' be the identity.
 ##'
-##' @param object repeated sparse matrix
+##' @param object structured sparse matrix
 ##' @param force force non structural zeros to be structural zeros?
 ##' @param eliminate eliminate duplicates in the repeated values?
 ##' @param reset reset the transformation function to be the identity?
@@ -1166,13 +1166,13 @@ simplifyRepSparse <- function(object,
     return(object)
 }
 
-##' Add scalar multiple to a repeated sparse matrix
+##' Add scalar multiple to a structured sparse matrix
 ##'
 ##' Adjust the \code{trans} function of \code{object} such that a
 ##' scalar multiplier parameter is concatenated at the beginning of
 ##' the parameter vector.
 ##'
-##' @param object repeated sparse matrix
+##' @param object structured sparse matrix
 ##' @param mult initial value for the multiplier parameter
 ##' @family modifications
 ##' @export
@@ -1194,7 +1194,7 @@ scalarMult <- function(object, mult) {
 ## Matrix binding and repeating
 ## ----------------------------------------------------------------------
 
-##' Row, column, and block-diagonal binding for repeated sparse
+##' Row, column, and block-diagonal binding for structured sparse
 ##' matrices
 ##'
 ##' @param ... list of \code{strucMatrix} objects (but not used for
@@ -1255,7 +1255,7 @@ setIs("strucMatrixBind", "strucMatrix")
     do.call(bind, c(mats, list(type = type)))
 }
 
-##' Repeat repeated sparse matrix
+##' Repeat structured sparse matrix
 ##'
 ##' @param x \code{strucMatrix} object
 ##' @param times like \code{rep}
@@ -1326,7 +1326,7 @@ setIs("strucMatrixRep", "strucMatrix")
 ## Subsetting
 ## ----------------------------------------------------------------------
 
-##' Subsetting repeated sparse matices
+##' Subsetting structured sparse matices
 ##'
 ##' @param x a \code{\link{strucMatrix-class}} object
 ##' @param rowInds,colInds 1-based integer indices for rows and
@@ -1433,7 +1433,7 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 ## strucMatrixIdent, rRepSparse
 ## ----------------------------------------------------------------------
 
-##' Blank repeated sparse matrix
+##' Blank structured sparse matrix
 ##'
 ##' @param nrow,ncol number of rows and columns
 ##' @export
@@ -1451,7 +1451,7 @@ setOldClass(c("strucMatrixBlank", "strucMatrix"))
 setIs("strucMatrixBlank", "strucMatrix")
 
 
-##' Identity repeated sparse matrix
+##' Identity structured sparse matrix
 ##'
 ##' @param matSize matrix size
 ##' @family strucMatrixSpecial
@@ -1469,7 +1469,7 @@ setOldClass(c("strucMatrixIdent", "strucMatrix"))
 setIs("strucMatrixIdent", "strucMatrix")
 
 
-##' Diagonal repeated sparse matrix
+##' Diagonal structured sparse matrix
 ##'
 ##' @param vals vector of values
 ##' @param valInds vector of value indices
@@ -1492,7 +1492,7 @@ setIs("strucMatrixDiag", "strucMatrix")
 
 
 
-##' Full repeated sparse matrix
+##' Full structured sparse matrix
 ##' 
 ##' @param nrow,ncol numbers of rows and columns
 ##' @param vals vector of values
@@ -1515,7 +1515,7 @@ setOldClass(c("strucMatrixFull", "strucMatrix"))
 setIs("strucMatrixFull", "strucMatrix")
 
 
-##' Column vector as repeated sparse matrix
+##' Column vector as structured sparse matrix
 ##'
 ##' @param vals vector of values
 ##' @param valInds vector of value indices
@@ -1537,7 +1537,7 @@ setOldClass(c("strucMatrixCol", "strucMatrix"))
 setIs("strucMatrixCol", "strucMatrix")
 
 
-##' Repeated sparse indicator matrix
+##' Structured sparse indicator matrix
 ##'
 ##' @param fac vector coercible to factor
 ##' @family strucMatrixSpecial
@@ -1555,7 +1555,7 @@ setOldClass(c("strucMatrixInd", "strucMatrix"))
 setIs("strucMatrixInd", "strucMatrix")
 
 
-##' Triangular repeated sparse matrix
+##' Triangular structured sparse matrix
 ##'
 ##' @param diagVals values for the diagonal
 ##' @param offDiagVals values for the off-diagonal
@@ -1593,7 +1593,7 @@ strucMatrixTri <- function(diagVals, offDiagVals, low = TRUE) {
 setOldClass(c("strucMatrixTri", "strucMatrix"))
 setIs("strucMatrixTri", "strucMatrix")
 
-##' General and full triangular repeated sparse matrix
+##' General and full triangular structured sparse matrix
 ##'
 ##' @note Beware there appear to be bugs here.
 ##'
@@ -1619,7 +1619,7 @@ setOldClass(c("strucMatrixGenFullTri", "strucMatrix"))
 setIs("strucMatrixGenFullTri", "strucMatrix")
 
 
-##' Repeated sparse matrix of ones
+##' Structured sparse matrix of ones
 ##'
 ##' @param nrow,ncol numbers of rows and columns
 ##' @family strucMatrixSpecial
@@ -1639,7 +1639,7 @@ setOldClass(c("strucMatrixOnes", "strucMatrix"))
 setIs("strucMatrixOnes", "strucMatrix")
 
 
-##' Symmetric repeated sparse matrix
+##' Symmetric structured sparse matrix
 ##'
 ##' @param diagVals values for the diagonal
 ##' @param offDiagVals values for the off-diagonal
@@ -1675,7 +1675,7 @@ setOldClass(c("strucMatrixSymm", "strucMatrix"))
 setIs("strucMatrixSymm", "strucMatrix")
 
 
-##' Repeated sparse matrix with compound symmetry
+##' Structured sparse matrix with compound symmetry
 ##'
 ##' @param diagVal value for the diagonal
 ##' @param offDiagVal value for the off-diagonal
@@ -1704,7 +1704,7 @@ setOldClass(c("strucMatrixCompSymm", "strucMatrix"))
 setIs("strucMatrixCompSymm", "strucMatrix")
 
 
-##' Repeated sparse matrix with only one non-zero value off the
+##' Structured sparse matrix with only one non-zero value off the
 ##' diagonal
 ##'
 ##' @param diagVal unique value for the diagonal
@@ -1734,7 +1734,7 @@ setOldClass(c("strucMatrixOneOffDiag", "strucMatrix"))
 setIs("strucMatrixOneOffDiag", "strucMatrix")
 
 
-##' Repeated sparse Cholesky factor leading to constant variance
+##' Structured sparse Cholesky factor leading to constant variance
 ##'
 ##' @param sdVal standard deviation of crossproduct of the result
 ##' factor
@@ -1770,7 +1770,7 @@ setOldClass(c("strucMatrixConstVarChol", "strucMatrix"))
 setIs("strucMatrixConstVarChol", "strucMatrix")
 
 
-##' Repeated sparse Cholesky factor of a correlation matrix
+##' Structured sparse Cholesky factor of a correlation matrix
 ##'
 ##' @param offDiagPars parameters determining the off-diagonal of the
 ##' Cholesky factor
@@ -1810,7 +1810,7 @@ setOldClass(c("strucMatrixCorMatChol", "strucMatrix"))
 setIs("strucMatrixCorMatChol", "strucMatrix")
 
 
-##' Repeated sparse diagonal covariance matrix with a covariate
+##' Structured sparse diagonal covariance matrix with a covariate
 ##' determining the diagonal
 ##'
 ##' @param varPars vector of variance parameters (one per level of
@@ -1846,7 +1846,7 @@ setIs("strucMatrixVarWithCovariate", "strucMatrix")
 
 
 
-##' Cholesky factor of a repeated sparse covariance matrix obeying
+##' Cholesky factor of a structured sparse covariance matrix obeying
 ##' exponential distance decay in covariance
 ##'
 ##' @importFrom Matrix Cholesky
@@ -1891,7 +1891,7 @@ strucMatrixExpChol <- function(distObj, cutOffDist = Inf) {
 setOldClass(c("strucMatrixExpChol", "strucMatrix"))
 setIs("strucMatrixExpChol", "strucMatrix")
 
-##' Construct a repeated sparse upper Cholesky factor from an
+##' Construct a structured sparse upper Cholesky factor from an
 ##' \code{nlme}-style \code{corStruct} object
 ##'
 ##' @importFrom nlme Dim
@@ -1986,10 +1986,10 @@ setOldClass(c("strucMatrixCorFactor", "strucMatrix"))
 setIs("strucMatrixCorFactor", "strucMatrix")
 
 ## ----------------------------------------------------------------------
-## Random repeated sparse matrices
+## Random structured sparse matrices
 ## ----------------------------------------------------------------------
 
-##' Random repeated sparse matrices
+##' Random structured sparse matrices
 ##'
 ##' @param nrows,ncols numbers of rows and columns
 ##' @param nvals number of values
@@ -1998,7 +1998,7 @@ setIs("strucMatrixCorFactor", "strucMatrix")
 ##' @param ... dots
 ##' @export
 rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
-    ## Random repeated sparse matrix
+    ## Random structured sparse matrix
     if(nnonzeros < nvals)
         stop("number of nonzeros must be at least the number of values")
     if(nnonzeros > (nrows * ncols))
@@ -2020,7 +2020,7 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
 ## Cholesky --
 ## ----------------------------------------------------------------------
 
-##' Cholesky decomposition of repeated sparse matrices
+##' Cholesky decomposition of structured sparse matrices
 ##'
 ##' @note These are often just bailout methods, but some special
 ##' \code{strucMatrix} matrices have exploitable structure, which can be

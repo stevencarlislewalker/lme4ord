@@ -3,7 +3,7 @@
 \alias{.bind}
 \alias{bind}
 \alias{rep.strucMatrix}
-\title{Row, column, and block-diagonal binding for repeated sparse
+\title{Row, column, and block-diagonal binding for structured sparse
 matrices}
 \usage{
 bind(..., type = c("row", "col", "diag"))
@@ -32,10 +32,10 @@ or do you want each replicate to be settable to it's own values
 (\code{TRUE})?}
 }
 \description{
-Row, column, and block-diagonal binding for repeated sparse
+Row, column, and block-diagonal binding for structured sparse
 matrices
 
-Repeat repeated sparse matrix
+Repeat structured sparse matrix
 }
 \examples{
 set.seed(1)

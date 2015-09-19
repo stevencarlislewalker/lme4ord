@@ -4,7 +4,7 @@
 \alias{kr}
 \alias{kron}
 \alias{kronecker,strucMatrix,strucMatrix-method}
-\title{Kronecker and Khatri-Rao products for repeated sparse matrices}
+\title{Kronecker and Khatri-Rao products for structured sparse matrices}
 \usage{
 kron(X, Y, trans = "*", makedimnames = FALSE, ...)
 
@@ -14,7 +14,7 @@ kr(X, Y, trans = "*")
   make.dimnames = FALSE, ...)
 }
 \arguments{
-\item{X,Y}{repeated sparse matrices (\code{\link{strucMatrix-class}})}
+\item{X,Y}{structured sparse matrices (\code{\link{strucMatrix-class}})}
 
 \item{trans}{see argument \code{FUN} in \code{\link{outer}}}
 
@@ -28,7 +28,7 @@ kr(X, Y, trans = "*")
    dimnames of \code{X} and \code{Y}.}
 }
 \description{
-Kronecker and Khatri-Rao products for repeated sparse matrices
+Kronecker and Khatri-Rao products for structured sparse matrices
 }
 \examples{
 set.seed(1)

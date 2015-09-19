@@ -10,7 +10,7 @@
 \alias{strucMatrix-class}
 \alias{t.strucMatrix}
 \alias{update.strucMatrix}
-\title{A repeated sparse matrix class}
+\title{A structured sparse matrix class}
 \usage{
 \method{print}{strucMatrix}(x, n = 6L, ...)
 
@@ -46,7 +46,7 @@
 \item{value}{replacement value for diagonal}
 }
 \description{
-An \code{S3} class for repeated sparse matrices, which are lists
+An \code{S3} class for structured sparse matrices, which are lists
 with a \code{Dim} attribute and with the following elements:
 \describe{
   \item{\code{rowInds}}{0-based row indices}

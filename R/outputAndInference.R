@@ -2,7 +2,7 @@
 ## Output module
 ##
 ## used by:  structuredGLMM.R
-## uses:  randomEffectsStructures.R, repeatedSparseMatrices.R
+## uses:  randomEffectsStructures.R, structuredSparseMatrices.R
 ## ----------------------------------------------------------------------
 
 
@@ -35,7 +35,7 @@ mkStrucGlmer <- function(opt, parsedForm, dfun, mc) {
     if(!optSuccess) return(ans)
 
                                         # update the initialized
-                                        # parameters in the repeated
+                                        # parameters in the structured
                                         # sparse matrices to optimized
                                         # values
     trash <- mapply(setInit, parsedForm$random,

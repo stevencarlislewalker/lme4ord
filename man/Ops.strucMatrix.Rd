@@ -6,7 +6,7 @@
 \alias{crossprod,strucMatrix,strucMatrix-method}
 \alias{tcrossprod,strucMatrix,missing-method}
 \alias{tcrossprod,strucMatrix,strucMatrix-method}
-\title{Repeated sparse matrix multiplication (and other binary operations)}
+\title{Structured sparse matrix multiplication (and other binary operations)}
 \usage{
 \method{Ops}{strucMatrix}(e1, e2)
 
