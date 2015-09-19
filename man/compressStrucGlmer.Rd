@@ -32,7 +32,7 @@ connection and retreive the component that way.
 function. The environment of this deviance function contains many
 objects, some of which are essentially replicated in the parsed
 formula object. In particular, the matrices in the parsed formula
-are \code{\link{repSparse}} objects whereas the matrices in the
+are \code{\link{strucMatrix}} objects whereas the matrices in the
 environment of the deviance function are \code{Matrix} package
 objects linked to \code{C++} objects through external pointers.
 }
@@ -41,7 +41,7 @@ objects linked to \code{C++} objects through external pointers.
 
 This redundancy makes the output module code easier to maintain,
 while retaining a fast optimization module. In partiular, the
-\code{\link{repSparse}} objects in the parsed formula make it
+\code{\link{strucMatrix}} objects in the parsed formula make it
 easier to write consistent and reuseable code, whereas the
 \code{Matrix}/\code{C++} objects in the environment of the
 deviance function facilitate relatively fast linear algebra.

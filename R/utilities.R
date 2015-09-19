@@ -280,14 +280,14 @@ ranefModMat <- function(object, ...) {
 }
 
 ##' @param transposed Return transposed model matrix?
-##' @param repSparse Return as \code{\link{repSparse}} or
+##' @param strucMatrix Return as \code{\link{strucMatrix}} or
 ##' \code{dgCMatrix} object?
 ##' @rdname pars
 ##' @export
-ranefModMat.strucParseFormula <- function(object, transposed = TRUE, repSparse = FALSE, ...) {
+ranefModMat.strucParseFormula <- function(object, transposed = TRUE, strucMatrix = FALSE, ...) {
     ans <- object$Zt
     if(!transposed) ans <- t(ans)
-    if(!repSparse) ans <- as(ans, "dgCMatrix")
+    if(!strucMatrix) ans <- as(ans, "dgCMatrix")
     return(ans)
 }
 
@@ -298,8 +298,8 @@ ranefModMat.reTrmStruct <- ranefModMat.strucParseFormula
 
 ##' @rdname pars
 ##' @export
-ranefModMat.strucGlmer <- function(object, transposed = TRUE, repSparse = FALSE, ...) {
-    ranefModMat(object$parsedForm, transposed, repSparse, ...)
+ranefModMat.strucGlmer <- function(object, transposed = TRUE, strucMatrix = FALSE, ...) {
+    ranefModMat(object$parsedForm, transposed, strucMatrix, ...)
 }
 
 
@@ -311,10 +311,10 @@ relCovFact <- function(object, ...) {
 
 ##' @rdname pars
 ##' @export
-relCovFact.strucParseFormula <- function(object, transposed = TRUE, repSparse = FALSE, ...) {
+relCovFact.strucParseFormula <- function(object, transposed = TRUE, strucMatrix = FALSE, ...) {
     ans <- object$Lambdat
     if(!transposed) ans <- t(ans)
-    if(!repSparse) ans <- as(ans, "dgCMatrix")
+    if(!strucMatrix) ans <- as(ans, "dgCMatrix")
     return(ans)
 }
 
@@ -324,8 +324,8 @@ relCovFact.reTrmStruct <- relCovFact.strucParseFormula
 
 ##' @rdname pars
 ##' @export
-relCovFact.strucGlmer <- function(object, transposed = TRUE, repSparse = FALSE, ...) {
-    relCovFact(object$parsedForm, transposed, repSparse, ...)
+relCovFact.strucGlmer <- function(object, transposed = TRUE, strucMatrix = FALSE, ...) {
+    relCovFact(object$parsedForm, transposed, strucMatrix, ...)
 }
 
 ##' @importFrom stats nobs
@@ -382,7 +382,7 @@ sigma.strucGlmer <- function(object, ...) {
 ##' methods for getting and setting the initial values of these
 ##' matrices directly.  Setting initial values does not change the
 ##' values themselves, only the initial values. Use the
-##' \code{\link{update.repSparse}} methods to actually update the
+##' \code{\link{update.strucMatrix}} methods to actually update the
 ##' values to the initial values.
 ##' 
 ##' @param x object
@@ -391,8 +391,8 @@ sigma.strucGlmer <- function(object, ...) {
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' m1 <- as.repSparse(matrix(rnorm(6), 2, 3))
-##' m2 <- repSparseCompSymm(1.2, -0.2, 5)
+##' m1 <- as.strucMatrix(matrix(rnorm(6), 2, 3))
+##' m2 <- strucMatrixCompSymm(1.2, -0.2, 5)
 ##' getInit(m1)
 ##' getInit(m2)
 ##' setInit(m2, c(10, 0))
@@ -404,7 +404,7 @@ getInit.default <- function(x, ...) x$init
 
 ##' @rdname getInit
 ##' @export
-getInit.repSparse <- function(x, ...) getInit(x$trans)
+getInit.strucMatrix <- function(x, ...) getInit(x$trans)
 
 ##' @rdname getInit
 ##' @export
@@ -435,7 +435,7 @@ setInit.default <- function(x, init, ...) {
 
 ##' @rdname getInit
 ##' @export
-setInit.repSparse <- function(x, init, ...) {
+setInit.strucMatrix <- function(x, init, ...) {
     assign("init", init, envir = environment(x$trans))
 }
 
@@ -495,7 +495,7 @@ parLength <- function(object, ...) {
 
 ##' @rdname parLength
 ##' @export
-parLength.repSparse <- function(object, ...) {
+parLength.strucMatrix <- function(object, ...) {
     initObject <- getInit(object)
     if(is.null(initObject) || all(is.na(initObject))) return(0L)
     return(length(initObject))
@@ -830,9 +830,9 @@ showSkeleton <- function(whichSkel, package = "lme4ord") {
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
-##' Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
-##' Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
+##' X <- strucMatrix(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+##' Y <- strucMatrix(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
+##' Z <- strucMatrix(c(1, 2), c(1, 2), 1:2, rnorm(2))
 ##' listTranspose(list(X = X, Y = Y, Z = Z))
 listTranspose <- function(lst) {
     lstExtract <- function(i) lapply(lst, "[[", i)

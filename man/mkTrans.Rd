@@ -53,7 +53,7 @@ mkCholCompSymmTrans(init, matSize)
 \item{init}{initial parameter values}
 
 \item{cholObj,symmObj}{corresponding triangular cholesky and
-symmetric \code{\link{repSparse}} matrix objects}
+symmetric \code{\link{strucMatrix}} matrix objects}
 
 \item{vecDist}{distances as a vector}
 

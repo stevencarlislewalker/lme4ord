@@ -109,24 +109,24 @@ fixefModMat(object, ...)
 ranefModMat(object, ...)
 
 \method{ranefModMat}{strucParseFormula}(object, transposed = TRUE,
-  repSparse = FALSE, ...)
+  strucMatrix = FALSE, ...)
 
 \method{ranefModMat}{reTrmStruct}(object, transposed = TRUE,
-  repSparse = FALSE, ...)
+  strucMatrix = FALSE, ...)
 
 \method{ranefModMat}{strucGlmer}(object, transposed = TRUE,
-  repSparse = FALSE, ...)
+  strucMatrix = FALSE, ...)
 
 relCovFact(object, ...)
 
 \method{relCovFact}{strucParseFormula}(object, transposed = TRUE,
-  repSparse = FALSE, ...)
+  strucMatrix = FALSE, ...)
 
 \method{relCovFact}{reTrmStruct}(object, transposed = TRUE,
-  repSparse = FALSE, ...)
+  strucMatrix = FALSE, ...)
 
 \method{relCovFact}{strucGlmer}(object, transposed = TRUE,
-  repSparse = FALSE, ...)
+  strucMatrix = FALSE, ...)
 
 \method{nobs}{strucGlmer}(object, ...)
 
@@ -155,7 +155,7 @@ relCovFact(object, ...)
 
 \item{transposed}{Return transposed model matrix?}
 
-\item{repSparse}{Return as \code{\link{repSparse}} or
+\item{strucMatrix}{Return as \code{\link{strucMatrix}} or
 \code{dgCMatrix} object?}
 }
 \description{

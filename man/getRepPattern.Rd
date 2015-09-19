@@ -6,7 +6,7 @@
 getRepPattern(object)
 }
 \arguments{
-\item{object}{a \code{\link{repSparse}} object}
+\item{object}{a \code{\link{strucMatrix}} object}
 }
 \description{
 Get repetition pattern of a repeated sparse matrix

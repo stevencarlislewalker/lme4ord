@@ -121,10 +121,10 @@ getModMatAndGrpFac <- function(bar, fr) {
 ##' @seealso \code{\link{mkReTrmStructs}} for construction of these objects
 ##' @return \code{object} with the following additional elements:
 ##' 
-##' \item{Zt}{A \code{\link{repSparse}} object describing the slice of
+##' \item{Zt}{A \code{\link{strucMatrix}} object describing the slice of
 ##' the model matrix associated with the random effects term.}
 ##'
-##' \item{Lambdat}{A \code{\link{repSparse}} object describing the
+##' \item{Lambdat}{A \code{\link{strucMatrix}} object describing the
 ##' block of the relative covariance factor associated with the random
 ##' effects term.}
 ##'
@@ -156,15 +156,15 @@ setReTrm.default <- function(object, addArgsList,
                                         # transposed model matrix (or
                                         # loadings matrix) -- Zt rows
                                         # associated with this term
-    Zt <- resetTransConst(kr(as.repSparse(object$grpFac),
-                           t(as.repSparse(object$modMat))))
+    Zt <- resetTransConst(kr(as.strucMatrix(object$grpFac),
+                           t(as.strucMatrix(object$modMat))))
 
                                         # covariance factor -- block
                                         # of Lambdat associated with
                                         # this term
     nc <-    ncol(object$modMat)
     nl <- nlevels(object$grpFac)
-    templateBlock <- repSparseTri(   diagVals = rep(1,        nc    ),
+    templateBlock <- strucMatrixTri(   diagVals = rep(1,        nc    ),
                                   offDiagVals = rep(0, choose(nc, 2)),
                                   low = FALSE)
     Lambdat <- rep(templateBlock, nl, type = "diag")
@@ -218,10 +218,10 @@ setReTrm.factAnal <- function(object, addArgsList,
         obsInds <- apply(obsMat == 1, 1, which)
         obsFac <- as.factor(colnames(obsMat)[obsInds])
         initLoad <- svd(2 * xtabs(auxEnv$response ~ obsFac + varFac) - 1)$v[,1:nAxes]
-        loadMat <- repSparseFull(nVar, nAxes, as.vector(initLoad))
+        loadMat <- strucMatrixFull(nVar, nAxes, as.vector(initLoad))
     } else {
         set.seed(addArgs$seed)
-        loadMat <- repSparseFull(nVar, nAxes, rnorm(nVar * nAxes))
+        loadMat <- strucMatrixFull(nVar, nAxes, rnorm(nVar * nAxes))
     }
     
     initLoadMat <- as.matrix(loadMat)
@@ -240,13 +240,13 @@ setReTrm.factAnal <- function(object, addArgsList,
     loadMat <- update(loadMat)
     
     Zt <- kr(t(subset(loadMat, as.numeric(varFac))),
-             t(resetTransConst(simplifyRepSparse(as.repSparse(obsMat)))))
+             t(resetTransConst(simplifyRepSparse(as.strucMatrix(obsMat)))))
 
     ## check equivalence of subset versus matrix multiplication
-    ## plot(t(t(as.matrix(loadMat)) %*% as.matrix(as.repSparse(obsMat))),
+    ## plot(t(t(as.matrix(loadMat)) %*% as.matrix(as.strucMatrix(obsMat))),
     ##      as.matrix(obsMat))
 
-    Lambdat <- resetTransConst(repSparseIdent(nrow(Zt)))
+    Lambdat <- resetTransConst(strucMatrixIdent(nrow(Zt)))
     
     lowerLoads <- rep(-Inf, length(getInit(Zt)))
     upperLoads <- rep( Inf, length(getInit(Zt)))
@@ -279,14 +279,14 @@ setReTrm.sem <- function(object, addArgsList,
     set.seed(addArgs$seed)
     ## loadMat <- rRepSparse(nl, nc, nl * nc, nl * nc)
     modMat <- subset(loadMat, as.numeric(grpFac))
-    indMat <- resetTransConst(as.repSparse(addArgs$obsFac))
+    indMat <- resetTransConst(as.strucMatrix(addArgs$obsFac))
 
     ## check equivalence of subset versus matrix multiplication
-    ## plot(t(t(as.matrix(loadMat)) %*% as.matrix(as.repSparse(grpFac))),
+    ## plot(t(t(as.matrix(loadMat)) %*% as.matrix(as.strucMatrix(grpFac))),
     ##      as.matrix(modMat))
 
     Zt <- kr(t(modMat), indMat) ## FIXME: obsFac before modMod??
-    Lambdat <- resetTransConst(repSparseIdent(nrow(Zt)))
+    Lambdat <- resetTransConst(strucMatrixIdent(nrow(Zt)))
     
     lowerLoads <- rep(-Inf, length(getInit(Zt)))
     upperLoads <- rep( Inf, length(getInit(Zt)))
@@ -313,13 +313,13 @@ setReTrm.identity <- function(object, addArgsList,
                               auxEnv = NULL, devfunEnv = NULL) {
 
                                         # Zt
-    Zt <- resetTransConst(kr(as.repSparse(object$grpFac),
-                           t(as.repSparse(object$modMat))))
+    Zt <- resetTransConst(kr(as.strucMatrix(object$grpFac),
+                           t(as.strucMatrix(object$modMat))))
 
                                         # Lambdat
     nl <- nlevels(object$grpFac)
     nc <-    ncol(object$modMat)
-    Lambdat <- repSparseIdent(nl * nc)
+    Lambdat <- strucMatrixIdent(nl * nc)
 
                                         # pack
     packReTrm(object, Zt, Lambdat, devfunEnv = devfunEnv)
@@ -343,12 +343,12 @@ setReTrm.flexvar <- function(object, addArgsList,
     n <- nrow(object$modMat)
 
                                         # Zt
-    Zt <- resetTransConst(repSparseIdent(n))
+    Zt <- resetTransConst(strucMatrixIdent(n))
 
                                         # Lambdat
     inds <- seq_len(n); baselineVars <- rep(1, n)
     if(is.null(init <- addArgs$init)) init <- rep(0, addArgs$nBasis)
-    Lambdat       <- repSparseDiag  (      baselineVars, inds     )
+    Lambdat       <- strucMatrixDiag  (      baselineVars, inds     )
     Lambdat$trans <- mkFlexDiagTrans(init, baselineVars, devfunEnv)
 
                                         # pack
@@ -393,8 +393,8 @@ setReTrm.expDecay <- function(object, addArgsList,
     edgeDists <- sparseMat@x[inds]
     
     Jgrp <- as(object$grpFac, "sparseMatrix")
-    Jt <- as.repSparse(Jedge %*% Jgrp)
-    Zt <- resetTransConst(kr(Jt, t(as.repSparse(object$modMat))))
+    Jt <- as.strucMatrix(Jedge %*% Jgrp)
+    Zt <- resetTransConst(kr(Jt, t(as.strucMatrix(object$modMat))))
     
     transFun <- local({
         init <- init
@@ -407,7 +407,7 @@ setReTrm.expDecay <- function(object, addArgsList,
             matPars[2] * (q2 + q1 * exp(-(matPars[1]) * edgeDists))
         }
     })
-    Lambdat <- repSparseDiag(transFun(1))
+    Lambdat <- strucMatrixDiag(transFun(1))
     Lambdat$trans <- transFun
     packReTrm(object, Zt, update(Lambdat), devfunEnv = devfunEnv)
 }
@@ -434,13 +434,13 @@ setReTrm.phyloEdge <- function(object, addArgsList,
                                         # Zt
     Jedge <- as(edgeTipIndicator(addArgs$phy), "sparseMatrix")
     Jspp <- as(object$grpFac, "sparseMatrix")
-    Jt <- resetTransConst(as.repSparse(Jedge %*% Jspp))
-    Zt <- resetTransConst(kr(Jt, t(as.repSparse(object$modMat))))
+    Jt <- resetTransConst(as.strucMatrix(Jedge %*% Jspp))
+    Zt <- resetTransConst(kr(Jt, t(as.strucMatrix(object$modMat))))
 
                                         # Lambdat
     nl <- nrow(Jedge)
     nc <- ncol(object$modMat)
-    Lambdat <- repSparseIdent(nl * nc)
+    Lambdat <- strucMatrixIdent(nl * nc)
     
                                         # pack
     packReTrm(object, Zt, Lambdat,
@@ -461,12 +461,12 @@ setReTrm.cooccur <- function(object, addArgsList,
                              auxEnv = NULL, devfunEnv = NULL) {
 
                                         # Zt
-    Jt <- as.repSparse(as(object$grpFac, "sparseMatrix"))
-    Zt <- resetTransConst(kr(Jt, t(as.repSparse(object$modMat))))
+    Jt <- as.strucMatrix(as(object$grpFac, "sparseMatrix"))
+    Zt <- resetTransConst(kr(Jt, t(as.strucMatrix(object$modMat))))
 
                                         # Lambdat
     nCovPars <- choose(ncol(object$modMat), 2)
-    Tt <- t(repSparseCorMatChol(rep(0, nCovPars)))
+    Tt <- t(strucMatrixCorMatChol(rep(0, nCovPars)))
     Lambdat <- rep(Tt, nrow(Jt), type = "diag")
     
                                         # pack
@@ -490,7 +490,7 @@ setReTrm.varIdent <- function(object, addArgsList,
                                         # loadings matrix) -- Zt rows
                                         # associated with this term
     n <- length(object$grpFac)
-    Zt <- resetTransConst(repSparseIdent(n))
+    Zt <- resetTransConst(strucMatrixIdent(n))
     
                                         # covariance factor -- block
                                         # of Lambdat associated with
@@ -498,7 +498,7 @@ setReTrm.varIdent <- function(object, addArgsList,
 
     nl <- nlevels(object$grpFac)
     init <- rep(1, nl)
-    Lambdat <- repSparseVarWithCovariate(init, 
+    Lambdat <- strucMatrixVarWithCovariate(init, 
                                          grpFac = object$grpFac,,
                                          mkTransFunc = mkVarIdentTrans)
     
@@ -524,7 +524,7 @@ setReTrm.varExp <- function(object, addArgsList,
                                         # loadings matrix) -- Zt rows
                                         # associated with this term
     n <- nrow(object$modMat)
-    Zt <- resetTransConst(repSparseIdent(n))
+    Zt <- resetTransConst(strucMatrixIdent(n))
     
                                         # covariance factor -- block
                                         # of Lambdat associated with
@@ -537,7 +537,7 @@ setReTrm.varExp <- function(object, addArgsList,
     }
     nc <- ncol(object$modMat)
     init <- rep(0, nl * nc)
-    Lambdat <- repSparseDiag(rep(1, n), 1:n)
+    Lambdat <- strucMatrixDiag(rep(1, n), 1:n)
     Lambdat$trans <- mkMultiVarExpTrans(init, object$modMat, object$grpFac)
     
                                         # package up object
@@ -560,8 +560,8 @@ setReTrm.obslev <- function(object, addArgsList,
                              auxEnv = NULL, devfunEnv = NULL) {
 
     n <- nrow(object$modMat)
-    Zt <- resetTransConst(repSparseIdent(n))
-    Lambdat <- repSparseIdent(n)
+    Zt <- resetTransConst(strucMatrixIdent(n))
+    Lambdat <- strucMatrixIdent(n)
     packReTrm(object, Zt, Lambdat,
               devfunEnv = devfunEnv)
 }
@@ -591,9 +591,9 @@ setReTrm.nlmeCorStruct <- function(object, addArgsList,
     } else {
         grpFac <- object$grpFac
     }
-    Lambdat <- repSparseCorFactor(corObj, sig = sig)
-    Zt <- resetTransConst(kr(as.repSparse(grpFac),
-                           t(as.repSparse(modMat))))
+    Lambdat <- strucMatrixCorFactor(corObj, sig = sig)
+    Zt <- resetTransConst(kr(as.strucMatrix(grpFac),
+                           t(as.strucMatrix(modMat))))
 
     nCovar <- length(getInit(Lambdat))
     packReTrm(object, Zt, Lambdat,
@@ -601,7 +601,7 @@ setReTrm.nlmeCorStruct <- function(object, addArgsList,
               lowerCovar = rep(-Inf, nCovar), 
               upperCovar = rep( Inf, nCovar)) ## no bounds because
                                               ## coef.corStruct in
-                                              ## repSparseCorFactor is
+                                              ## strucMatrixCorFactor is
                                               ## used on the
                                               ## unconstrained scale
 }
@@ -897,7 +897,7 @@ getCorStruct <- function(object, ...) environment(object$Lambdat$trans)$object
 ##' Bind repeated sparse matrices and sort their indices to be
 ##' compatible with column-compressed sparse matrices
 ##'
-##' @param mats list of \code{repSparse} matrix objects
+##' @param mats list of \code{strucMatrix} matrix objects
 ##' @param type type of bind
 sortedBind <- function(mats, type = c("row", "col", "diag")) {
     standardSort(.bind(mats, type = type))

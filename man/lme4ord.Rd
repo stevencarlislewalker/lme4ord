@@ -144,7 +144,7 @@ efficient matrix operations involved in the fitting
 proceedure. There is quite alot of machinery in the \code{Matrix}
 package for exploiting sparsity. There is less machinery for
 exploiting the building-block property of mixed-model
-matrices. The \code{\link{repSparse}} objects in the
+matrices. The \code{\link{strucMatrix}} objects in the
 \code{lme4ord} package provide such machinery.}
 
 \item{utilities}{A utility is a function that does _not_ make use

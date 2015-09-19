@@ -3,18 +3,18 @@
 \name{kron}
 \alias{kr}
 \alias{kron}
-\alias{kronecker,repSparse,repSparse-method}
+\alias{kronecker,strucMatrix,strucMatrix-method}
 \title{Kronecker and Khatri-Rao products for repeated sparse matrices}
 \usage{
 kron(X, Y, trans = "*", makedimnames = FALSE, ...)
 
 kr(X, Y, trans = "*")
 
-\S4method{kronecker}{repSparse,repSparse}(X, Y, FUN = "*",
+\S4method{kronecker}{strucMatrix,strucMatrix}(X, Y, FUN = "*",
   make.dimnames = FALSE, ...)
 }
 \arguments{
-\item{X,Y}{repeated sparse matrices (\code{\link{repSparse-class}})}
+\item{X,Y}{repeated sparse matrices (\code{\link{strucMatrix-class}})}
 
 \item{trans}{see argument \code{FUN} in \code{\link{outer}}}
 
@@ -32,20 +32,20 @@ Kronecker and Khatri-Rao products for repeated sparse matrices
 }
 \examples{
 set.seed(1)
-X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
-Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
+X <- strucMatrix(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+Y <- strucMatrix(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
 (kronExample <- kron(X, Y))
 (krExample <- kr(X, Y))
 }
 \seealso{
 Other matrixCombining: \code{\link{.bind}},
-  \code{\link{bind}}, \code{\link{rep.repSparse}};
-  \code{\link{repSparseRowSubset}},
-  \code{\link{subset.repSparse}}
+  \code{\link{bind}}, \code{\link{rep.strucMatrix}};
+  \code{\link{strucMatrixRowSubset}},
+  \code{\link{subset.strucMatrix}}
 
 Other matrixCombining: \code{\link{.bind}},
-  \code{\link{bind}}, \code{\link{rep.repSparse}};
-  \code{\link{repSparseRowSubset}},
-  \code{\link{subset.repSparse}}
+  \code{\link{bind}}, \code{\link{rep.strucMatrix}};
+  \code{\link{strucMatrixRowSubset}},
+  \code{\link{subset.strucMatrix}}
 }
 

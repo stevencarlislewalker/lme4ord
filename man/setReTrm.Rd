@@ -47,10 +47,10 @@ environment of a call to \code{\link{strucParseFormula}}, unless
 \value{
 \code{object} with the following additional elements:
 
-\item{Zt}{A \code{\link{repSparse}} object describing the slice of
+\item{Zt}{A \code{\link{strucMatrix}} object describing the slice of
 the model matrix associated with the random effects term.}
 
-\item{Lambdat}{A \code{\link{repSparse}} object describing the
+\item{Lambdat}{A \code{\link{strucMatrix}} object describing the
 block of the relative covariance factor associated with the random
 effects term.}
 

@@ -1,21 +1,21 @@
 ## ----------------------------------------------------------------------
-## Repeated sparse matrices
+## Structured sparse matrices
 ##
 ## used by: formulaParsing.R, randomEffectsStructures.R, outputAndInference.R
 ## ----------------------------------------------------------------------
 
 
-## TOC:  grep -A 1 "## \-\-\-" * | grep "\-##" | grep repSparse
+## TOC:  grep -A 1 "## \-\-\-" * | grep "\-##" | grep strucMatrix
 
-##' Repeated sparse matrices
+##' Structured sparse matrices
 ##'
 ##' A sparse matrix class for matrices whose elements come from a set
 ##' of a relatively small number of values or computable from a
 ##' relatively small parameter vector.
 ##'
-##' These parameterized matrix objects are useful for updating
-##' matrices at each iteration of a general nonlinear optimizer.  This
-##' \code{\link{repSparse-class}} is designed to work well with the
+##' These structured matrix objects are useful for updating matrices
+##' at each iteration of a general nonlinear optimizer.  This
+##' \code{\link{strucMatrix-class}} is designed to work well with the
 ##' \code{\link{Matrix}} package, in that they can be quickly coerced
 ##' to \code{\link{sparseMatrix}} objects.  The
 ##' \code{\link{mkSparseTrans}} function can be used to automatically
@@ -25,10 +25,10 @@
 ##'
 ##' Such matrices are best constructed by \code{\link{bind}}ing,
 ##' \code{\link{kron}}ing, and \code{\link{kr}}ing together a series
-##' of simpler \code{repSparse} matrices, which can be constructed
-##' with the \code{repSparse} function or a function for constructing
-##' special \code{repSparse} objects
-##' (e.g. \code{\link{repSparseDiag}}).
+##' of simpler \code{strucMatrix} matrices, which can be constructed
+##' with the \code{strucMatrix} function or a function for constructing
+##' special \code{strucMatrix} objects
+##' (e.g. \code{\link{strucMatrixDiag}}).
 ##'
 ##' Note that the ordering of the indices supplied to \code{rowInds},
 ##' \code{colInds}, and \code{valInds} may not appear in the same
@@ -49,7 +49,7 @@
 ##' should contain a vector of these parameters (called \code{init}),
 ##' which could be taken as the arguments to \code{trans}.  these
 ##' initial values can be obtained by \code{\link{getInit}} and set by
-##' \code{\link{setInit}}.  an \code{\link{update.repSparse}} method
+##' \code{\link{setInit}}.  an \code{\link{update.strucMatrix}} method
 ##' will update these parameters.
 ##' @param Dim matrix dimensions
 ##' @param sortFun a function with which to sort the indices of the
@@ -57,12 +57,12 @@
 ##' \code{standardSort} function is used, which provides a convenient
 ##' ordering for computing Khatri-Rao products (with
 ##' \code{\link{kr}}).  see details.
-##' @return A member of the \code{\link{repSparse-class}}.
-##' @rdname repSparse
+##' @return A member of the \code{\link{strucMatrix-class}}.
+##' @rdname strucMatrix
 ##' @export
 ##' @examples
-##' repSparse(1:4, 4:1, rep(1:2, 2), c(-pi, pi))
-repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim,
+##' strucMatrix(1:4, 4:1, rep(1:2, 2), c(-pi, pi))
+strucMatrix <- function(rowInds, colInds, valInds, vals, trans, Dim,
                       sortFun = standardSort) {
     maxValInds <- ifelse(length(valInds), max(valInds), 0L)
     if(missing(Dim)) Dim <- c(max(rowInds), max(colInds))
@@ -76,16 +76,16 @@ repSparse <- function(rowInds, colInds, valInds, vals, trans, Dim,
                            valInds = as.integer(valInds),
                            vals = vals,
                            trans = trans),
-                      class = "repSparse",
+                      class = "strucMatrix",
                       Dim = Dim))
 }
 
-setOldClass("repSparse")
+setOldClass("strucMatrix")
 
 
 
 ## ----------------------------------------------------------------------
-## repSparse-class
+## strucMatrix-class
 ## ----------------------------------------------------------------------
 
 ##' A repeated sparse matrix class
@@ -99,28 +99,28 @@ setOldClass("repSparse")
 ##'                         \code{colInds} pair with the elements in \code{vals}}
 ##'   \item{\code{trans}}{A function for transforming a parameter vector
 ##'                       into \code{vals}.  This function is used by
-##'                       \code{\link{update.repSparse}}}
+##'                       \code{\link{update.strucMatrix}}}
 ##' }
 ##' Objects in this class can be constructed with
-##' \code{\link{repSparse}} (and, for example,
-##' \code{\link{repSparseDiag}}), and has several methods including
+##' \code{\link{strucMatrix}} (and, for example,
+##' \code{\link{strucMatrixDiag}}), and has several methods including
 ##' the following.
 ##'
-##' The \code{...} arguments for the \code{update.repSparse} method
+##' The \code{...} arguments for the \code{update.strucMatrix} method
 ##' can be used to specify special parameter arguments, if
 ##' \code{object$mkNewPars} exits (which is often the case for special
-##' matrices such as \code{\link{repSparseTri}}.  This is a more
+##' matrices such as \code{\link{strucMatrixTri}}.  This is a more
 ##' explicit approach and can therefore be more convenient than having
 ##' to figure out what order the parameters should appear in
 ##' \code{newPars}.  For example, \code{update(., diagVals = c(1, 1),
 ##' offDiagVals = -0.2)} is more explicit than \code{update(., c(1,
 ##' -0.2, 1))}.
 ##'
-##' @name repSparse-class
-##' @rdname repSparse-class
-##' @exportClass repSparse
+##' @name strucMatrix-class
+##' @rdname strucMatrix-class
+##' @exportClass strucMatrix
 ##' @examples
-##' (X <- repSparse(rowInds = 1:6,
+##' (X <- strucMatrix(rowInds = 1:6,
 ##'                 colInds = rep(1:2, 3),
 ##'                 valInds = rep(1:2, each = 3),
 ##'                 vals    = c(-pi, pi)))
@@ -129,15 +129,15 @@ setOldClass("repSparse")
 ##' as.matrix(Y, sparse = TRUE)
 ##' image(kron(t(X), Y))
 ##' image(bind(X, Y, type = "diag"))
-setOldClass("repSparse")
+setOldClass("strucMatrix")
 
-##' @param x \code{repSparse} object
+##' @param x \code{strucMatrix} object
 ##' @param n how many indices and repeated values to print?
 ##' @param ... passed to subsequent functions
-##' @rdname repSparse-class
-##' @method print repSparse
+##' @rdname strucMatrix-class
+##' @method print strucMatrix
 ##' @export
-print.repSparse <- function(x, n = 6L, ...) {
+print.strucMatrix <- function(x, n = 6L, ...) {
 
     init <- getInit(x)
     parsEqualRepVals <- identical(x$vals, init)
@@ -178,13 +178,13 @@ print.repSparse <- function(x, n = 6L, ...) {
     cat("\n")
 }
 
-##' @param object \code{repSparse} object
+##' @param object \code{strucMatrix} object
 ##' @param newPars new parameter values
 ##' @importFrom stats update
-##' @rdname repSparse-class
-##' @method update repSparse
+##' @rdname strucMatrix-class
+##' @method update strucMatrix
 ##' @export
-update.repSparse <- function(object, newPars, ...) {
+update.strucMatrix <- function(object, newPars, ...) {
     l... <- list(...)
     if(length(l...) > 0L) {
         mkNewPars <- object$mkNewPars
@@ -238,15 +238,15 @@ update.repSparse <- function(object, newPars, ...) {
 
 ##' @param plain should a completely plain plot be used? (try and see)
 ##' @importFrom Matrix image
-##' @rdname repSparse-class
-##' @method image repSparse
+##' @rdname strucMatrix-class
+##' @method image strucMatrix
 ##' @export
-image.repSparse <- function(x, plain = FALSE, ...) {
+image.strucMatrix <- function(x, plain = FALSE, ...) {
     blank <- length(x$vals) == 0
     x <- as.matrix(x, sparse = TRUE)
     if(plain) {
         if(blank) { # hack to give something useful for
-                                  # image(repSparseBlank(...))
+                                  # image(strucMatrixBlank(...))
             grid::pushViewport(grid::viewport())
             bx <- grid::unit(0.99, "npc")
             grid::grid.rect(width = bx, height = bx)
@@ -269,15 +269,15 @@ image.repSparse <- function(x, plain = FALSE, ...) {
 }
 
 ##' @param y not used
-##' @rdname repSparse-class
-##' @method plot repSparse
+##' @rdname strucMatrix-class
+##' @method plot strucMatrix
 ##' @export
-plot.repSparse <- function(x, y, plain = FALSE, ...) image(x, plain = plain, ...)
+plot.strucMatrix <- function(x, y, plain = FALSE, ...) image(x, plain = plain, ...)
 
-##' @rdname repSparse-class
-##' @method t repSparse
+##' @rdname strucMatrix-class
+##' @method t strucMatrix
 ##' @export
-t.repSparse <- function(x) {
+t.strucMatrix <- function(x) {
     tx <- x
     tx$rowInds <- x$colInds
     tx$colInds <- x$rowInds
@@ -287,9 +287,9 @@ t.repSparse <- function(x) {
 
 
 
-##' @rdname repSparse-class
+##' @rdname strucMatrix-class
 ##' @export
-setMethod("diag", signature(x = "repSparse"), {
+setMethod("diag", signature(x = "strucMatrix"), {
     function(x) {
         with(x, {
             diagInds <- which(rowInds == colInds)
@@ -302,9 +302,9 @@ setMethod("diag", signature(x = "repSparse"), {
 })
 
 ##' @param value replacement value for diagonal
-##' @rdname repSparse-class
+##' @rdname strucMatrix-class
 ##' @export
-setMethod("diag<-", signature(x = "repSparse"), {
+setMethod("diag<-", signature(x = "strucMatrix"), {
     function(x, value) {
         diagInds <- with(x, {
             diagInds <- unique(valInds[  rowInds == colInds])
@@ -324,10 +324,10 @@ setMethod("diag<-", signature(x = "repSparse"), {
 })
 
 
-##' @rdname repSparse-class
-##' @method dim repSparse
+##' @rdname strucMatrix-class
+##' @method dim strucMatrix
 ##' @export
-dim.repSparse <- function(x) attr(x, "Dim")
+dim.strucMatrix <- function(x) attr(x, "Dim")
 
 
 ##' Sort the indices of a repeated sparse matrix
@@ -339,14 +339,14 @@ dim.repSparse <- function(x) attr(x, "Dim")
 ##' used throughout, and in particular is required for using the
 ##' \code{\link{kr}} function.
 ##'
-##' @param x \code{\link{repSparse}} object
+##' @param x \code{\link{strucMatrix}} object
 ##' @param decreasing see \code{\link{sort}}
 ##' @param type sort by column, row, or value indices?
 ##' @param ... for consistency with generic
-##' @rdname sort.repSparse
-##' @method sort repSparse
+##' @rdname sort.strucMatrix
+##' @method sort strucMatrix
 ##' @export
-sort.repSparse <- function(x, decreasing = FALSE,
+sort.strucMatrix <- function(x, decreasing = FALSE,
                            type = c("col", "row", "val"), ...) {
     inds <- switch(type[1],
                    col = x$colInds,
@@ -359,7 +359,7 @@ sort.repSparse <- function(x, decreasing = FALSE,
     return(x)
 }
 
-##' @rdname sort.repSparse
+##' @rdname sort.strucMatrix
 ##' @export
 standardSort <- function(x) {
     sort(sort(x, type = "row"), type = "col")
@@ -374,35 +374,35 @@ standardSort <- function(x) {
 ##'
 ##' @param x an object
 ##' @param ... dots
-##' @rdname as.repSparse
+##' @rdname as.strucMatrix
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' m1 <- as.repSparse(matrix(rnorm(6), 2, 3))
-##' m2 <- as.repSparse(matrix(rbinom(6, 1, 0.5), 2, 3))
+##' m1 <- as.strucMatrix(matrix(rnorm(6), 2, 3))
+##' m2 <- as.strucMatrix(matrix(rbinom(6, 1, 0.5), 2, 3))
 ##' m3 <- sparseMatrix(i = 1:10, j = rep(1:5, 2),
 ##'                    x = as.integer(rbinom(10, 1, 0.5)),
 ##'                    giveCsparse = FALSE)
-##' as.repSparse(m1)
-##' as.repSparse(m2)
-##' as.repSparse(m3)
+##' as.strucMatrix(m1)
+##' as.strucMatrix(m2)
+##' as.strucMatrix(m3)
 ##' as(m1, "TsparseMatrix")
 ##' as(m2, "dgCMatrix")
 ##' as(m2, "sparseMatrix")
-as.repSparse <- function(x, ...) {
-    UseMethod("as.repSparse")
+as.strucMatrix <- function(x, ...) {
+    UseMethod("as.strucMatrix")
 }
 
-##' @rdname as.repSparse
+##' @rdname as.strucMatrix
 ##' @export
-as.repSparse.repSparse <- function(x, ...) {
-    class(x) <- "repSparse"
+as.strucMatrix.strucMatrix <- function(x, ...) {
+    class(x) <- "strucMatrix"
     return(x)
 }
 
-##' @rdname as.repSparse
+##' @rdname as.strucMatrix
 ##' @export
-as.repSparse.dsparseMatrix <- function(x, ...) {
+as.strucMatrix.dsparseMatrix <- function(x, ...) {
     x <- as(x, "TsparseMatrix")
                                         # try to find detectable
                                         # repeated structure.
@@ -410,7 +410,7 @@ as.repSparse.dsparseMatrix <- function(x, ...) {
     vi <- match(x@x, va)
 
                                         # return value
-    ans <- repSparse(rowInds = x@i + 1L,
+    ans <- strucMatrix(rowInds = x@i + 1L,
                      colInds = x@j + 1L,
                      valInds = vi,
                      vals = va,
@@ -419,55 +419,55 @@ as.repSparse.dsparseMatrix <- function(x, ...) {
     return(sort(ans))
 }
 
-##' @rdname as.repSparse
+##' @rdname as.strucMatrix
 ##' @export
-as.repSparse.matrix <- function(x, ...) {
+as.strucMatrix.matrix <- function(x, ...) {
     vecx <- as.numeric(x)
     va <- sort(unique(vecx))
     vi <- match(vecx, va)
     ii <- rep.int(1:nrow(x), ncol(x))
     jj <- rep.int(1:ncol(x), rep.int(nrow(x), ncol(x)))
-    ans <- repSparse(rowInds = ii, colInds = jj,
+    ans <- strucMatrix(rowInds = ii, colInds = jj,
                      valInds = vi, vals = va,
                      trans = mkIdentityTrans(va),
                      Dim = dim(x))
     return(sort(ans))
 }
 
-##' @rdname as.repSparse
+##' @rdname as.strucMatrix
 ##' @export
-as.repSparse.factor <- function(x, ...) {
-    as.repSparse(as(x, "sparseMatrix"))
+as.strucMatrix.factor <- function(x, ...) {
+    as.strucMatrix(as(x, "sparseMatrix"))
 }
 
-##' @rdname as.repSparse
+##' @rdname as.strucMatrix
 ##' @export
-as.repSparse.dist <- function(x, ...) {
+as.strucMatrix.dist <- function(x, ...) {
     matSize <- attr(x, "Size")
     lowTriSize <- matSize - 1
     diagVals <- rep(0, matSize)
     offDiagInds <- triInds(rep(1:lowTriSize, 1:lowTriSize),
                            sequence(1:lowTriSize),
                            lowTriSize)
-    repSparseSymm(diagVals, x[offDiagInds])
+    strucMatrixSymm(diagVals, x[offDiagInds])
 }
 
-##' @rdname as.repSparse
+##' @rdname as.strucMatrix
 ##' @export
-as.repSparse.dCHMsimpl <- function(x, ...) {
+as.strucMatrix.dCHMsimpl <- function(x, ...) {
     matSize <- x@Dim[1]
     rowInds <- rep(1:matSize, 1:matSize)
     colInds <- sequence(1:matSize)
     valInds <- triInds(rowInds, colInds, matSize)
     vals <- as(x, "sparseMatrix")@x
-    repSparse(rowInds, colInds, valInds, vals)
+    strucMatrix(rowInds, colInds, valInds, vals)
 }
 
 
-##' @rdname as.repSparse
-##' @method as.data.frame repSparse
+##' @rdname as.strucMatrix
+##' @method as.data.frame strucMatrix
 ##' @export
-as.data.frame.repSparse <- function(x, ...) {
+as.data.frame.strucMatrix <- function(x, ...) {
     with(x, {
         data.frame(rowInds = rowInds,
                    colInds = colInds,
@@ -478,11 +478,11 @@ as.data.frame.repSparse <- function(x, ...) {
 
 
 ##' @importFrom Matrix sparseMatrix
-##' @rdname as.repSparse
+##' @rdname as.strucMatrix
 ##' @param sparse return \code{sparseMatrix}?
-##' @method as.matrix repSparse
+##' @method as.matrix strucMatrix
 ##' @export
-as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
+as.matrix.strucMatrix <- function(x, sparse = FALSE, ...) {
     ans <- with(x, {
         sparseMatrix(i = rowInds + 1L,
                      j = colInds + 1L,
@@ -493,16 +493,16 @@ as.matrix.repSparse <- function(x, sparse = FALSE, ...) {
     return(as.matrix(ans))
 }
 
-##' @rdname as.repSparse
-##' @method as.matrix repSparseChol
+##' @rdname as.strucMatrix
+##' @method as.matrix strucMatrixChol
 ##' @export
-as.matrix.repSparseChol <- function(x, sparse = FALSE, ...) {
-    ans <- as.matrix.repSparse(x, sparse = sparse, ...)
+as.matrix.strucMatrixChol <- function(x, sparse = FALSE, ...) {
+    ans <- as.matrix.strucMatrix(x, sparse = sparse, ...)
     return(as(ans, "dtCMatrix"))
 }
 
 
-repSparse2gCsparse <- function(from) {
+strucMatrix2gCsparse <- function(from) {
     ans <- new("dgCMatrix")
     ans@i <- as.integer(from$rowInds)
     ans@p <- as.integer(ind2point(from$colInds, ncol(from)))
@@ -511,7 +511,7 @@ repSparse2gCsparse <- function(from) {
     return(ans)
 }
 
-repSparse2gTsparse <- function(from) {
+strucMatrix2gTsparse <- function(from) {
     ans <- new("dgTMatrix")
     ans@i <- as.integer(from$rowInds)
     ans@j <- as.integer(from$colInds)
@@ -520,63 +520,63 @@ repSparse2gTsparse <- function(from) {
     return(ans)
 }
 
-repSparse2tCsparse <- function(from) {
+strucMatrix2tCsparse <- function(from) {
     as(as(from, "dgCMatrix"), "dtCMatrix")
 }
 
-repSparse2tTsparse <- function(from) {
+strucMatrix2tTsparse <- function(from) {
     as(as(from, "dgTMatrix"), "dtTMatrix")
 }
 
-##' as("repSparse", "sparseMatrix")
-##' @name repSparse2sparseMatrix
-##' @rdname as.repSparse
+##' as("strucMatrix", "sparseMatrix")
+##' @name strucMatrix2sparseMatrix
+##' @rdname as.strucMatrix
 ##' @importClassesFrom Matrix sparseMatrix
 ##' @importFrom methods coerce
 ##' @importFrom methods as
-setAs("repSparse",  "sparseMatrix", def = repSparse2gCsparse)
+setAs("strucMatrix",  "sparseMatrix", def = strucMatrix2gCsparse)
 
-##' as("repSparse", "CsparseMatrix")
-##' @name repSparse2gCsparseMatrix
-##' @rdname as.repSparse
+##' as("strucMatrix", "CsparseMatrix")
+##' @name strucMatrix2gCsparseMatrix
+##' @rdname as.strucMatrix
 ##' @importClassesFrom Matrix CsparseMatrix
-setAs("repSparse", "CsparseMatrix", def = repSparse2gCsparse)
+setAs("strucMatrix", "CsparseMatrix", def = strucMatrix2gCsparse)
 
-##' as("repSparse", "dgCMatrix")
-##' @name repSparse2dgCMatrix
-##' @rdname as.repSparse
+##' as("strucMatrix", "dgCMatrix")
+##' @name strucMatrix2dgCMatrix
+##' @rdname as.strucMatrix
 ##' @importClassesFrom Matrix dgCMatrix
-setAs("repSparse",     "dgCMatrix", def = repSparse2gCsparse)
+setAs("strucMatrix",     "dgCMatrix", def = strucMatrix2gCsparse)
 
-##' as("repSparse", "dtCMatrix")
-##' @name repSparse2dtCMatrix
-##' @rdname as.repSparse
+##' as("strucMatrix", "dtCMatrix")
+##' @name strucMatrix2dtCMatrix
+##' @rdname as.strucMatrix
 ##' @importClassesFrom Matrix dtCMatrix
-setAs("repSparse",     "dtCMatrix", def = repSparse2tCsparse)
+setAs("strucMatrix",     "dtCMatrix", def = strucMatrix2tCsparse)
 
-##' as("repSparse", "TsparseMatrix")
-##' @name repSparse2gTsparseMatrix
-##' @rdname as.repSparse
+##' as("strucMatrix", "TsparseMatrix")
+##' @name strucMatrix2gTsparseMatrix
+##' @rdname as.strucMatrix
 ##' @importClassesFrom Matrix TsparseMatrix
-setAs("repSparse", "TsparseMatrix", def = repSparse2gTsparse)
+setAs("strucMatrix", "TsparseMatrix", def = strucMatrix2gTsparse)
 
-##' as("repSparse", "dgTMatrix")
-##' @name repSparse2dgTMatrix
-##' @rdname as.repSparse
+##' as("strucMatrix", "dgTMatrix")
+##' @name strucMatrix2dgTMatrix
+##' @rdname as.strucMatrix
 ##' @importClassesFrom Matrix dgTMatrix
-setAs("repSparse", "dgTMatrix", def = repSparse2gTsparse)
+setAs("strucMatrix", "dgTMatrix", def = strucMatrix2gTsparse)
 
-##' as("repSparse", "dtTMatrix")
-##' @name repSparse2dtTMatrix
-##' @rdname as.repSparse
+##' as("strucMatrix", "dtTMatrix")
+##' @name strucMatrix2dtTMatrix
+##' @rdname as.strucMatrix
 ##' @importClassesFrom Matrix dtTMatrix
-setAs("repSparse",     "dtTMatrix", def = repSparse2tTsparse)
+setAs("strucMatrix",     "dtTMatrix", def = strucMatrix2tTsparse)
 
 
 
 ##' Get repetition pattern of a repeated sparse matrix
 ##'
-##' @param object a \code{\link{repSparse}} object
+##' @param object a \code{\link{strucMatrix}} object
 ##' @export
 getRepPattern <- function(object) {
     object$vals <- seq_along(object$vals)
@@ -593,7 +593,7 @@ getRepPattern <- function(object) {
 
 ##' Kronecker and Khatri-Rao products for repeated sparse matrices
 ##'
-##' @param X,Y repeated sparse matrices (\code{\link{repSparse-class}})
+##' @param X,Y repeated sparse matrices (\code{\link{strucMatrix-class}})
 ##' @param trans see argument \code{FUN} in \code{\link{outer}}
 ##' @param makedimnames ignored
 ##' @param ... ignored
@@ -601,8 +601,8 @@ getRepPattern <- function(object) {
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
-##' Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
+##' X <- strucMatrix(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+##' Y <- strucMatrix(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
 ##' (kronExample <- kron(X, Y))
 kron <- function(X, Y, trans = "*",
                  makedimnames = FALSE,  ...) {
@@ -620,12 +620,12 @@ kron <- function(X, Y, trans = "*",
                    valInds = XYvalInds,
                    vals = XYvals,
                    trans = XYtrans),
-              class = c("repSparseKron", "repSparse"),
+              class = c("strucMatrixKron", "strucMatrix"),
               Dim = dim(X) * dim(Y))
 }
 
-setOldClass(c("repSparseKron", "repSparse"))
-setIs("repSparseKron", "repSparse")
+setOldClass(c("strucMatrixKron", "strucMatrix"))
+setIs("strucMatrixKron", "strucMatrix")
 
 
 ##' @rdname kron
@@ -669,32 +669,32 @@ kr <- function(X, Y, trans = "*") {
                    valInds = newValInds,
                    vals = newVals,
                    trans = newTrans),
-              class = c("repSparseKr", "repSparse"),
+              class = c("strucMatrixKr", "strucMatrix"),
               Dim = c(dim(X)[1] * dim(Y)[1], dim(X)[2]))
 }
 
-setOldClass(c("repSparseKr", "repSparse"))
-setIs("repSparseKr", "repSparse")
+setOldClass(c("strucMatrixKr", "strucMatrix"))
+setIs("strucMatrixKr", "strucMatrix")
 
 ##' @rdname kron
 ##' @export
-setMethod("kronecker", signature(X = "repSparse", Y = "repSparse"), {
+setMethod("kronecker", signature(X = "strucMatrix", Y = "strucMatrix"), {
     function(X, Y, FUN = "*", make.dimnames = FALSE, ...) kron(X, Y)
 })
 
 ##' Repeated sparse matrix multiplication (and other binary operations)
 ##'
 ##' Because of the marginal summations involved, the results of a
-##' matrix multiplication of \code{\link{repSparse}} objects is not
-##' profitably stored as a \code{repSparse}. Therefore, the output is
+##' matrix multiplication of \code{\link{strucMatrix}} objects is not
+##' profitably stored as a \code{strucMatrix}. Therefore, the output is
 ##' a \code{\link{sparseMatrix}}.
 ##'
-##' @param e1,e2 \code{repSparse} objects
+##' @param e1,e2 \code{strucMatrix} objects
 ##' @note The \code{*} operator is matrix multiplication, not
 ##' element-wise multiplication.
-##' @rdname Ops.repSparse
+##' @rdname Ops.strucMatrix
 ##' @export
-Ops.repSparse <- function(e1, e2) {
+Ops.strucMatrix <- function(e1, e2) {
     FUN = .Generic
     if(FUN == "*") {
         return(as.matrix(e1, sparse = TRUE) %*% as.matrix(e2, sparse = TRUE))
@@ -704,40 +704,40 @@ Ops.repSparse <- function(e1, e2) {
 }
 
 
-##' @param x,y \code{\link{repSparse}} matrix objects
+##' @param x,y \code{\link{strucMatrix}} matrix objects
 ##' @param ... not used (only for consistency with generic)
-##' @rdname Ops.repSparse
+##' @rdname Ops.strucMatrix
 ##' @importFrom Matrix crossprod
 ##' @export
-setMethod("crossprod", signature(x = "repSparse", y = "missing"), {
+setMethod("crossprod", signature(x = "strucMatrix", y = "missing"), {
     function(x, y = NULL, ...) {
         crossprod(as.matrix(x, sparse = TRUE), ...)
     }
 })
 
-##' @rdname Ops.repSparse
+##' @rdname Ops.strucMatrix
 ##' @importFrom Matrix tcrossprod
 ##' @export
-setMethod("tcrossprod", signature(x = "repSparse", y = "missing"), {
+setMethod("tcrossprod", signature(x = "strucMatrix", y = "missing"), {
     function(x, y = NULL, ...) {
         tcrossprod(as.matrix(x, sparse = TRUE), ...)
     }
 })
 
-##' @rdname Ops.repSparse
+##' @rdname Ops.strucMatrix
 ##' @importFrom Matrix crossprod
 ##' @export
-setMethod("crossprod", signature(x = "repSparse", y = "repSparse"), {
+setMethod("crossprod", signature(x = "strucMatrix", y = "strucMatrix"), {
     function(x, y = NULL, ...) {
         crossprod(as.matrix(x, sparse = TRUE),
                   as.matrix(y, sparse = TRUE), ...)
     }
 })
 
-##' @rdname Ops.repSparse
+##' @rdname Ops.strucMatrix
 ##' @importFrom Matrix tcrossprod
 ##' @export
-setMethod("tcrossprod", signature(x = "repSparse", y = "repSparse"), {
+setMethod("tcrossprod", signature(x = "strucMatrix", y = "strucMatrix"), {
     function(x, y = NULL, ...) {
         tcrossprod(as.matrix(x, sparse = TRUE),
                    as.matrix(y, sparse = TRUE), ...)
@@ -877,7 +877,7 @@ mkCorMatCholTrans <- function(init) {
 }
 
 ##' @param cholObj,symmObj corresponding triangular cholesky and
-##' symmetric \code{\link{repSparse}} matrix objects
+##' symmetric \code{\link{strucMatrix}} matrix objects
 ##' @param vecDist distances as a vector
 ##' @rdname mkTrans
 ##' @export
@@ -1185,7 +1185,7 @@ scalarMult <- function(object, mult) {
         }
     })
     ans <- update(object)
-    class(ans) <- c("repSparseScalarMult", class(ans))
+    class(ans) <- c("strucMatrixScalarMult", class(ans))
     return(ans)
 }
 
@@ -1197,17 +1197,17 @@ scalarMult <- function(object, mult) {
 ##' Row, column, and block-diagonal binding for repeated sparse
 ##' matrices
 ##'
-##' @param ... list of \code{repSparse} objects (but not used for
-##' \code{rep.repSparse})
+##' @param ... list of \code{strucMatrix} objects (but not used for
+##' \code{rep.strucMatrix})
 ##' @param type type of binding
 ##' @rdname bind
 ##' @family matrixCombining
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
-##' Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
-##' Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
+##' X <- strucMatrix(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+##' Y <- strucMatrix(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
+##' Z <- strucMatrix(c(1, 2), c(1, 2), 1:2, rnorm(2))
 ##' (bindDiag <- bind(X, Y, Z, type = "diag"))
 ##' (bindRow  <- bind(X, Y, Z, type = "row"))
 ##' (bindCol  <- bind(X, Y, Z, type = "col"))
@@ -1233,22 +1233,22 @@ bind <- function(..., type = c("row", "col", "diag")) {
         }
         if((type == "row") && (type != "diag")) ncols <- ncol(mats[[1]])
         if((type == "col") && (type != "diag")) nrows <- nrow(mats[[1]])
-        ans <- repSparse(rowInds = unlist(rowInds) + rowOff + 1,
+        ans <- strucMatrix(rowInds = unlist(rowInds) + rowOff + 1,
                          colInds = unlist(colInds) + colOff + 1,
                          valInds = unlist(valInds) + valOff,
                          vals = unlist(vals),
                          trans = mkListTrans(trans),
                          Dim = c(sum(nrows), sum(ncols)))
-        class(ans) <- c("repSparseBind", class(ans))
+        class(ans) <- c("strucMatrixBind", class(ans))
         return(ans)
     })
 }
 
-setOldClass(c("repSparseBind", "repSparse"))
-setIs("repSparseBind", "repSparse")
+setOldClass(c("strucMatrixBind", "strucMatrix"))
+setIs("strucMatrixBind", "strucMatrix")
 
 
-##' @param mats list of \code{repSparse} matrix objects
+##' @param mats list of \code{strucMatrix} matrix objects
 ##' @rdname bind
 ##' @export
 .bind <- function(mats, type = c("row", "col", "diag")) {
@@ -1257,7 +1257,7 @@ setIs("repSparseBind", "repSparse")
 
 ##' Repeat repeated sparse matrix
 ##'
-##' @param x \code{repSparse} object
+##' @param x \code{strucMatrix} object
 ##' @param times like \code{rep}
 ##' @param repVals should the unique values (\code{x$vals}) be
 ##' repeated too?  in other words, do you want to have each replicate
@@ -1269,13 +1269,13 @@ setIs("repSparseBind", "repSparse")
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
-##' Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
-##' Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
+##' X <- strucMatrix(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+##' Y <- strucMatrix(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
+##' Z <- strucMatrix(c(1, 2), c(1, 2), 1:2, rnorm(2))
 ##' (repDiag <- rep(X, 3, type = "diag"))
 ##' (repRow  <- rep(X, 3, type = "row"))
 ##' (repCol  <- rep(X, 3, type = "col"))
-rep.repSparse <- function(x, times,
+rep.strucMatrix <- function(x, times,
                           type = c("row", "col", "diag"),
                           repVals = FALSE,
                           ...) {
@@ -1307,19 +1307,19 @@ rep.repSparse <- function(x, times,
         valInds <- rep(x$valInds, times = times)
         trans <- x$trans
     }
-    ans <- repSparse(rowInds = rowInds + 1,
+    ans <- strucMatrix(rowInds = rowInds + 1,
                      colInds = colInds + 1,
                      valInds = valInds,
                      vals = vals,
                      trans = trans,
                      Dim = c(rowMult, colMult) * dim(x))
-    class(ans) <- c("repSparseRep", class(ans))
+    class(ans) <- c("strucMatrixRep", class(ans))
     ans$mkNewPars <- x$mkNewPars
     return(ans)
 }
 
-setOldClass(c("repSparseRep", "repSparse"))
-setIs("repSparseRep", "repSparse")
+setOldClass(c("strucMatrixRep", "strucMatrix"))
+setIs("strucMatrixRep", "strucMatrix")
 
 
 ## ----------------------------------------------------------------------
@@ -1328,7 +1328,7 @@ setIs("repSparseRep", "repSparse")
 
 ##' Subsetting repeated sparse matices
 ##'
-##' @param x a \code{\link{repSparse-class}} object
+##' @param x a \code{\link{strucMatrix-class}} object
 ##' @param rowInds,colInds 1-based integer indices for rows and
 ##' columns
 ##' @param ... unused
@@ -1337,18 +1337,18 @@ setIs("repSparseRep", "repSparse")
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+##' X <- strucMatrix(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
 ##' (subsetExample <- subset(X, c(1, 2, 2, 2, 1, 1)))
-subset.repSparse <- function(x, rowInds = NULL, colInds = NULL, ...) {
-    if(!is.null(rowInds)) x <-   repSparseRowSubset(  x , rowInds)
-    if(!is.null(colInds)) x <- t(repSparseRowSubset(t(x), colInds))
+subset.strucMatrix <- function(x, rowInds = NULL, colInds = NULL, ...) {
+    if(!is.null(rowInds)) x <-   strucMatrixRowSubset(  x , rowInds)
+    if(!is.null(colInds)) x <- t(strucMatrixRowSubset(t(x), colInds))
     return(x)
 }
 
 
 ##' @rdname subset
 ##' @export
-repSparseRowSubset <- function(x, rowInds) {
+strucMatrixRowSubset <- function(x, rowInds) {
 
                                         # save the original indices
     ri <- x$rowInds + 1L
@@ -1377,7 +1377,7 @@ repSparseRowSubset <- function(x, rowInds) {
     ## vaNew <- va[valsToKeep]
     ## viNew <- flattenIntVec(viNew)
 
-    ## repSparse(riNew, ciNew, viNew, vaNew,
+    ## strucMatrix(riNew, ciNew, viNew, vaNew,
     ##           Dim = c(length(rowInds), ncol(x)),
     ##           trans = x$trans)
 
@@ -1429,66 +1429,66 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 
 
 ## ----------------------------------------------------------------------
-## Construct special matrices -- repSparseCompSymm, repSparseDiag,
-## repSparseIdent, rRepSparse
+## Construct special matrices -- strucMatrixCompSymm, strucMatrixDiag,
+## strucMatrixIdent, rRepSparse
 ## ----------------------------------------------------------------------
 
 ##' Blank repeated sparse matrix
 ##'
 ##' @param nrow,ncol number of rows and columns
 ##' @export
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @examples
-##' (xBlank <- repSparseBlank(5, 5))
-repSparseBlank <- function(nrow, ncol) {
+##' (xBlank <- strucMatrixBlank(5, 5))
+strucMatrixBlank <- function(nrow, ncol) {
     ## MATNAME: Blank
-    ans <- repSparse(integer(0), integer(0), integer(0), numeric(0), Dim = c(nrow, ncol))
-    class(ans) <- c("repSparseBlank", class(ans))
+    ans <- strucMatrix(integer(0), integer(0), integer(0), numeric(0), Dim = c(nrow, ncol))
+    class(ans) <- c("strucMatrixBlank", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseBlank", "repSparse"))
-setIs("repSparseBlank", "repSparse")
+setOldClass(c("strucMatrixBlank", "strucMatrix"))
+setIs("strucMatrixBlank", "strucMatrix")
 
 
 ##' Identity repeated sparse matrix
 ##'
 ##' @param matSize matrix size
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
-##' (xIdent <- repSparseIdent(5))
-repSparseIdent <- function(matSize) {
+##' (xIdent <- strucMatrixIdent(5))
+strucMatrixIdent <- function(matSize) {
     ## MATNAME: Identity
-    ans <- repSparseDiag(1, rep(1, matSize))
-    class(ans) <- c("repSparseIdent", class(ans))
+    ans <- strucMatrixDiag(1, rep(1, matSize))
+    class(ans) <- c("strucMatrixIdent", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseIdent", "repSparse"))
-setIs("repSparseIdent", "repSparse")
+setOldClass(c("strucMatrixIdent", "strucMatrix"))
+setIs("strucMatrixIdent", "strucMatrix")
 
 
 ##' Diagonal repeated sparse matrix
 ##'
 ##' @param vals vector of values
 ##' @param valInds vector of value indices
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' (xDiag <- repSparseDiag(rnorm(5)))
-repSparseDiag <- function(vals, valInds) {
+##' (xDiag <- strucMatrixDiag(rnorm(5)))
+strucMatrixDiag <- function(vals, valInds) {
     ## MATNAME: Diagonal
     if(missing(valInds)) valInds <- seq_along(vals)
     matSize <- length(valInds)
-    ans <- repSparse(1:matSize, 1:matSize, valInds, vals)
-    class(ans) <- c("repSparseDiag", class(ans))
+    ans <- strucMatrix(1:matSize, 1:matSize, valInds, vals)
+    class(ans) <- c("strucMatrixDiag", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseDiag", "repSparse"))
-setIs("repSparseDiag", "repSparse")
+setOldClass(c("strucMatrixDiag", "strucMatrix"))
+setIs("strucMatrixDiag", "strucMatrix")
 
 
 
@@ -1496,63 +1496,63 @@ setIs("repSparseDiag", "repSparse")
 ##' 
 ##' @param nrow,ncol numbers of rows and columns
 ##' @param vals vector of values
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' (xFull <- repSparseFull(5, 5, rnorm(25)))
-repSparseFull <- function(nrow, ncol, vals) {
+##' (xFull <- strucMatrixFull(5, 5, rnorm(25)))
+strucMatrixFull <- function(nrow, ncol, vals) {
     ## MATNAME: Full
-    ans <- repSparse(rep(1:nrow, ncol),
+    ans <- strucMatrix(rep(1:nrow, ncol),
                      rep(1:ncol, each = nrow),
                      1:(nrow * ncol),
                      vals)
-    class(ans) <- c("repSparseFull", class(ans))
+    class(ans) <- c("strucMatrixFull", class(ans))
     return(ans)       
 }
 
-setOldClass(c("repSparseFull", "repSparse"))
-setIs("repSparseFull", "repSparse")
+setOldClass(c("strucMatrixFull", "strucMatrix"))
+setIs("strucMatrixFull", "strucMatrix")
 
 
 ##' Column vector as repeated sparse matrix
 ##'
 ##' @param vals vector of values
 ##' @param valInds vector of value indices
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' (xCol <- repSparseCol(rnorm(5)))
-repSparseCol <- function(vals, valInds) {
+##' (xCol <- strucMatrixCol(rnorm(5)))
+strucMatrixCol <- function(vals, valInds) {
     ## MATNAME: Column vector
     if(missing(valInds)) valInds <- seq_along(vals)
     matSize <- length(valInds)
-    ans <- repSparse(1:matSize, rep(1, matSize), valInds, vals)
-    class(ans) <- c("repSparseCol", class(ans))
+    ans <- strucMatrix(1:matSize, rep(1, matSize), valInds, vals)
+    class(ans) <- c("strucMatrixCol", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseCol", "repSparse"))
-setIs("repSparseCol", "repSparse")
+setOldClass(c("strucMatrixCol", "strucMatrix"))
+setIs("strucMatrixCol", "strucMatrix")
 
 
 ##' Repeated sparse indicator matrix
 ##'
 ##' @param fac vector coercible to factor
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
-##' (xInd <- repSparseInd(rep(1:3, c(2, 2, 1))))
-repSparseInd <- function(fac) {
+##' (xInd <- strucMatrixInd(rep(1:3, c(2, 2, 1))))
+strucMatrixInd <- function(fac) {
     ## MATNAME: Indicator
-    ans <- as.repSparse(as.factor(fac))
-    class(ans) <- c("repSparseInd", class(ans))
+    ans <- as.strucMatrix(as.factor(fac))
+    class(ans) <- c("strucMatrixInd", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseInd", "repSparse"))
-setIs("repSparseInd", "repSparse")
+setOldClass(c("strucMatrixInd", "strucMatrix"))
+setIs("strucMatrixInd", "strucMatrix")
 
 
 ##' Triangular repeated sparse matrix
@@ -1560,12 +1560,12 @@ setIs("repSparseInd", "repSparse")
 ##' @param diagVals values for the diagonal
 ##' @param offDiagVals values for the off-diagonal
 ##' @param low lower triangular?
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' (xTri <- repSparseTri(rnorm(5), rnorm(choose(5, 2))))
-repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
+##' (xTri <- strucMatrixTri(rnorm(5), rnorm(choose(5, 2))))
+strucMatrixTri <- function(diagVals, offDiagVals, low = TRUE) {
     ## MATNAME: Triangular
     matSize <- length(diagVals)
     diagIndices <- 1:matSize
@@ -1575,9 +1575,9 @@ repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
     vals <- numeric(length(diagIndices))
     vals[ diagIndices] <- diagVals
     vals[!diagIndices] <- offDiagVals
-    ans <- repSparse(rowIndices, colIndices, seq_along(vals), vals)
+    ans <- strucMatrix(rowIndices, colIndices, seq_along(vals), vals)
     if(!low) ans <- t(ans)
-    class(ans) <- c("repSparseTri", class(ans))
+    class(ans) <- c("strucMatrixTri", class(ans))
     ans$mkNewPars <- local({
         diagIndices
         function(diagVals, offDiagVals) {
@@ -1590,8 +1590,8 @@ repSparseTri <- function(diagVals, offDiagVals, low = TRUE) {
     return(ans)
 }
 
-setOldClass(c("repSparseTri", "repSparse"))
-setIs("repSparseTri", "repSparse")
+setOldClass(c("strucMatrixTri", "strucMatrix"))
+setIs("strucMatrixTri", "strucMatrix")
 
 ##' General and full triangular repeated sparse matrix
 ##'
@@ -1601,54 +1601,54 @@ setIs("repSparseTri", "repSparse")
 ##' @param vals values for the nonzero values
 ##' @param diag include diagonal?
 ##' @param low lower triangular?
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' (xGenTri <- repSparseGenFullTri(5, 5, rnorm(choose(6, 2))))
-repSparseGenFullTri <- function(nrow, ncol, vals, diag = TRUE, low = TRUE) {
+##' (xGenTri <- strucMatrixGenFullTri(5, 5, rnorm(choose(6, 2))))
+strucMatrixGenFullTri <- function(nrow, ncol, vals, diag = TRUE, low = TRUE) {
     ## MATNAME: General full triangular
     rowIndices <- rev(nrow - sequence(nrow - (ncol:1) + 1)) + 1
     colIndices <- rep(0:(ncol - 1), nrow:(nrow - ncol + 1)) + 1
-    ans <- repSparse(rowIndices, colIndices, seq_along(vals), vals)
-    class(ans) <- c("repSparseGenFullTri", class(ans))
+    ans <- strucMatrix(rowIndices, colIndices, seq_along(vals), vals)
+    class(ans) <- c("strucMatrixGenFullTri", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseGenFullTri", "repSparse"))
-setIs("repSparseGenFullTri", "repSparse")
+setOldClass(c("strucMatrixGenFullTri", "strucMatrix"))
+setIs("strucMatrixGenFullTri", "strucMatrix")
 
 
 ##' Repeated sparse matrix of ones
 ##'
 ##' @param nrow,ncol numbers of rows and columns
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
-##' (xOnes <- repSparseOnes(5, 5))
-repSparseOnes <- function(nrow, ncol) {
+##' (xOnes <- strucMatrixOnes(5, 5))
+strucMatrixOnes <- function(nrow, ncol) {
     ## MATNAME: Ones
     rc <- expand.grid(seq_len(nrow), seq_len(ncol))
     vi <- rep(1, nrow(rc))
-    ans <- repSparse(rc[, 1], rc[, 2], vi, 1)
-    class(ans) <- c("repSparseOnes", class(ans))
+    ans <- strucMatrix(rc[, 1], rc[, 2], vi, 1)
+    class(ans) <- c("strucMatrixOnes", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseOnes", "repSparse"))
-setIs("repSparseOnes", "repSparse")
+setOldClass(c("strucMatrixOnes", "strucMatrix"))
+setIs("strucMatrixOnes", "strucMatrix")
 
 
 ##' Symmetric repeated sparse matrix
 ##'
 ##' @param diagVals values for the diagonal
 ##' @param offDiagVals values for the off-diagonal
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' (xSymm <- repSparseSymm(rnorm(5), rnorm(choose(5, 2))))
-repSparseSymm <- function(diagVals, offDiagVals) {
+##' (xSymm <- strucMatrixSymm(rnorm(5), rnorm(choose(5, 2))))
+strucMatrixSymm <- function(diagVals, offDiagVals) {
     ## MATNAME: Symmetric
     matSize <- length(diagVals)
     diagIndices <- 1:matSize
@@ -1666,13 +1666,13 @@ repSparseSymm <- function(diagVals, offDiagVals) {
     valIndices <- c(1:matSize,
                     matSize + (1:sum(!diagIndices)),
                     matSize + (1:sum(!diagIndices)))
-    ans <- repSparse(rowIndices, colIndices, valIndices, vals)
-    class(ans) <- c("repSparseSymm", class(ans))
+    ans <- strucMatrix(rowIndices, colIndices, valIndices, vals)
+    class(ans) <- c("strucMatrixSymm", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseSymm", "repSparse"))
-setIs("repSparseSymm", "repSparse")
+setOldClass(c("strucMatrixSymm", "strucMatrix"))
+setIs("strucMatrixSymm", "strucMatrix")
 
 
 ##' Repeated sparse matrix with compound symmetry
@@ -1680,11 +1680,11 @@ setIs("repSparseSymm", "repSparse")
 ##' @param diagVal value for the diagonal
 ##' @param offDiagVal value for the off-diagonal
 ##' @param matSize size of the resulting matrix
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
-##' (xCompSymm <- repSparseCompSymm(1, -0.2, 5))
-repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
+##' (xCompSymm <- strucMatrixCompSymm(1, -0.2, 5))
+strucMatrixCompSymm <- function(diagVal, offDiagVal, matSize) {
     ## MATNAME: Compound symmetry
     if((!(diagVal > offDiagVal)) || (!(offDiagVal > (-diagVal)/(matSize-1))))
         warning("resulting matrix not positive definite")
@@ -1695,13 +1695,13 @@ repSparseCompSymm <- function(diagVal, offDiagVal, matSize) {
     vi <- rep.int(1:2, c(matSize, 2 * choose(matSize, 2)))
     va <- setNames(c( diagVal ,  offDiagVal ),
                    c("diagVal", "offDiagVal"))
-    ans <- repSparse(ii, jj, vi, va, Dim = c(matSize, matSize))
-    class(ans) <- c("repSparseCompSymm", class(ans))
+    ans <- strucMatrix(ii, jj, vi, va, Dim = c(matSize, matSize))
+    class(ans) <- c("strucMatrixCompSymm", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseCompSymm", "repSparse"))
-setIs("repSparseCompSymm", "repSparse")
+setOldClass(c("strucMatrixCompSymm", "strucMatrix"))
+setIs("strucMatrixCompSymm", "strucMatrix")
 
 
 ##' Repeated sparse matrix with only one non-zero value off the
@@ -1711,11 +1711,11 @@ setIs("repSparseCompSymm", "repSparse")
 ##' @param offDiagVal unique value for the off-diagonal
 ##' @param offDiagInds indices for the two correlated objects
 ##' @param matSize size of the matrix
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
-##' (xOneOffDiag <- repSparseOneOffDiag(1, -0.2, c(5, 2), 5))
-repSparseOneOffDiag <- function(diagVal, offDiagVal, offDiagInds, matSize) {
+##' (xOneOffDiag <- strucMatrixOneOffDiag(1, -0.2, c(5, 2), 5))
+strucMatrixOneOffDiag <- function(diagVal, offDiagVal, offDiagInds, matSize) {
     ## MATNAME: One off diagonal
     if(length(offDiagInds) != 2L) stop("only one off diagonal element please")
     if(offDiagInds[1] == offDiagInds[2]) stop("off diagonal must be off the diagonal")
@@ -1725,13 +1725,13 @@ repSparseOneOffDiag <- function(diagVal, offDiagVal, offDiagInds, matSize) {
     vi <- c(rep(1, matSize), rep(2, 2))
     va <- setNames(c( diagVal ,  offDiagVal ),
                    c("diagVal", "offDiagVal"))
-    ans <- repSparse(ii, jj, vi, va, Dim = c(matSize, matSize))
-    class(ans) <- c("repSparseOneOffDiag", class(ans))
+    ans <- strucMatrix(ii, jj, vi, va, Dim = c(matSize, matSize))
+    class(ans) <- c("strucMatrixOneOffDiag", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseOneOffDiag", "repSparse"))
-setIs("repSparseOneOffDiag", "repSparse")
+setOldClass(c("strucMatrixOneOffDiag", "strucMatrix"))
+setIs("strucMatrixOneOffDiag", "strucMatrix")
 
 
 ##' Repeated sparse Cholesky factor leading to constant variance
@@ -1739,12 +1739,12 @@ setIs("repSparseOneOffDiag", "repSparse")
 ##' @param sdVal standard deviation of crossproduct of the result
 ##' factor
 ##' @param offDiagVals off diagonal values of the Cholesky factor
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' (xConstVarChol <- repSparseConstVarChol(3, rnorm(choose(5, 2))))
-repSparseConstVarChol <- function(sdVal, offDiagVals) {
+##' (xConstVarChol <- strucMatrixConstVarChol(3, rnorm(choose(5, 2))))
+strucMatrixConstVarChol <- function(sdVal, offDiagVals) {
     ## MATNAME: Constant variance Cholesky
     matSize <- nChoose2Inv(length(offDiagVals))
     diagIndices <- 1:matSize
@@ -1759,27 +1759,27 @@ repSparseConstVarChol <- function(sdVal, offDiagVals) {
     vals[ diagIndices] <- diagVals
     vals[!diagIndices] <- offDiagVals
 
-    ans <- repSparse(rowIndices, colIndices,
+    ans <- strucMatrix(rowIndices, colIndices,
                      seq_along(vals), vals,
                      mkConstVarCholTrans(c(sdVal, offDiagVals)))
-    class(ans) <- c("repSparseConstVarChol", class(ans))
+    class(ans) <- c("strucMatrixConstVarChol", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseConstVarChol", "repSparse"))
-setIs("repSparseConstVarChol", "repSparse")
+setOldClass(c("strucMatrixConstVarChol", "strucMatrix"))
+setIs("strucMatrixConstVarChol", "strucMatrix")
 
 
 ##' Repeated sparse Cholesky factor of a correlation matrix
 ##'
 ##' @param offDiagPars parameters determining the off-diagonal of the
 ##' Cholesky factor
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' (xCorMatChol <- repSparseCorMatChol(rnorm(choose(5, 2))))
-repSparseCorMatChol <- function(offDiagPars) {
+##' (xCorMatChol <- strucMatrixCorMatChol(rnorm(choose(5, 2))))
+strucMatrixCorMatChol <- function(offDiagPars) {
     ## MATNAME: Correlation matrix Cholesky
     matSize <- nChoose2Inv(length(offDiagPars))
     diagIndices <- 1:matSize
@@ -1799,15 +1799,15 @@ repSparseCorMatChol <- function(offDiagPars) {
     vals[ diagIndices] <- diagVals
     vals[!diagIndices] <- sign(offDiagPars) * unlist(offDiagValsList)
 
-    ans <- repSparse(rowIndices, colIndices,
+    ans <- strucMatrix(rowIndices, colIndices,
                      seq_along(vals), vals,
                      mkCorMatCholTrans(offDiagPars))
-    class(ans) <- c("repSparseCorMatChol", class(ans))
+    class(ans) <- c("strucMatrixCorMatChol", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseCorMatChol", "repSparse"))
-setIs("repSparseCorMatChol", "repSparse")
+setOldClass(c("strucMatrixCorMatChol", "strucMatrix"))
+setIs("strucMatrixCorMatChol", "strucMatrix")
 
 
 ##' Repeated sparse diagonal covariance matrix with a covariate
@@ -1823,11 +1823,11 @@ setIs("repSparseCorMatChol", "repSparse")
 ##' \code{covariate}, and \code{grpFac} for constructing a
 ##' \code{trans} function (see \code{\link{mkVarExpTrans}} for an
 ##' example).
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
-##' (xVarWithCovariate <- repSparseVarWithCovariate(rep(1, 5), 0.05*(4:0)))
-repSparseVarWithCovariate <- function(varPars, covariate, grpFac,
+##' (xVarWithCovariate <- strucMatrixVarWithCovariate(rep(1, 5), 0.05*(4:0)))
+strucMatrixVarWithCovariate <- function(varPars, covariate, grpFac,
                                       mkTransFunc = mkVarExpTrans) {
     ## MATNAME: Structured covariance matrix
     if(missing(grpFac)) grpFac <- factor(seq_along(covariate))
@@ -1835,14 +1835,14 @@ repSparseVarWithCovariate <- function(varPars, covariate, grpFac,
     trans <- mkTransFunc(varPars, covariate, grpFac)
     matSize <- length(grpFac)
     vals <- trans(varPars)
-    ans <- repSparse(1:matSize, 1:matSize, 1:matSize, vals,
+    ans <- strucMatrix(1:matSize, 1:matSize, 1:matSize, vals,
                      trans = trans, Dim = c(matSize, matSize))
-    class(ans) <- c("repSparseVarWithCovariate", class(ans))
+    class(ans) <- c("strucMatrixVarWithCovariate", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseVarWithCovariate", "repSparse"))
-setIs("repSparseVarWithCovariate", "repSparse")
+setOldClass(c("strucMatrixVarWithCovariate", "strucMatrix"))
+setIs("strucMatrixVarWithCovariate", "strucMatrix")
 
 
 
@@ -1852,11 +1852,11 @@ setIs("repSparseVarWithCovariate", "repSparse")
 ##' @importFrom Matrix Cholesky
 ##' @param distObj distance matrix object
 ##' @param cutOffDist maximum distance with nonzero correlations
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
-##' (xExpChol <- repSparseExpChol(dist(matrix(rnorm(10), 5, 2))))
-repSparseExpChol <- function(distObj, cutOffDist = Inf) {
+##' (xExpChol <- strucMatrixExpChol(dist(matrix(rnorm(10), 5, 2))))
+strucMatrixExpChol <- function(distObj, cutOffDist = Inf) {
     ## MATNAME: Exponential distance Cholesky
     matSize <- as.integer(attr(distObj, "Size"))
     ri <- c(0:(matSize - 1L), matSize - rev(sequence(1:(matSize - 1))))
@@ -1879,17 +1879,17 @@ repSparseExpChol <- function(distObj, cutOffDist = Inf) {
     cholObj <- Cholesky(symmObj)
 
     cholMat <- as(cholObj, "sparseMatrix")
-    ans <- repSparse(rowInds = cholMat@i + 1L,
+    ans <- strucMatrix(rowInds = cholMat@i + 1L,
                      colInds = point2ind(cholMat@p),
                      valInds = seq_along(vecDist),
                      vals = cholMat@x,
                      trans = mkExpCholTrans(1, cholMat, symmObj, vecDist))
-    class(ans) <- c("repSparseExpChol", class(ans))
+    class(ans) <- c("strucMatrixExpChol", class(ans))
     return(ans)
 }
 
-setOldClass(c("repSparseExpChol", "repSparse"))
-setIs("repSparseExpChol", "repSparse")
+setOldClass(c("strucMatrixExpChol", "strucMatrix"))
+setIs("strucMatrixExpChol", "strucMatrix")
 
 ##' Construct a repeated sparse upper Cholesky factor from an
 ##' \code{nlme}-style \code{corStruct} object
@@ -1898,15 +1898,15 @@ setIs("repSparseExpChol", "repSparse")
 ##' @importFrom nlme "coef<-"
 ##' @param object a \code{corStruct} object
 ##' @param sig initial standard deviation
-##' @family repSparseSpecial
+##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
 ##' if(require("nlme")) {
 ##'     corObj <- Initialize(corAR1(0.5, form = ~ 1 | Subject),
 ##'                          data = Orthodont)
 ##' }
-##' (xCorFactor <- repSparseCorFactor(corObj))
-repSparseCorFactor <- function(object, sig = 1) {
+##' (xCorFactor <- strucMatrixCorFactor(corObj))
+strucMatrixCorFactor <- function(object, sig = 1) {
     ## MATNAME: Cholesky from corStruct object
 
     
@@ -1922,11 +1922,11 @@ repSparseCorFactor <- function(object, sig = 1) {
     upperInds <- lapply(invList, upper.tri)
 
     oneBlock <- length(invList) == 1L
-        ## ans <- repSparseTri(diagVals = diag(invList[[1]]),
+        ## ans <- strucMatrixTri(diagVals = diag(invList[[1]]),
         ##                     offDiagVals = invList[[1]][upperInds[[1]]],
         ##                     low = FALSE))
 
-    ans <- .bind(mapply(repSparseTri,
+    ans <- .bind(mapply(strucMatrixTri,
                         lapply(invList, diag),
                         mapply("[", invList, upperInds, SIMPLIFY = FALSE),
                         MoreArgs = list(low = FALSE),
@@ -1936,7 +1936,7 @@ repSparseCorFactor <- function(object, sig = 1) {
         ans <- resetTransConst(ans)
         if(!sigExists) {
             assign("object", object, envir = environment(ans$trans))
-            class(ans) <- c("repSparseCorFactor", class(ans))
+            class(ans) <- c("strucMatrixCorFactor", class(ans))
             return(ans)
         }
     }
@@ -1975,15 +1975,15 @@ repSparseCorFactor <- function(object, sig = 1) {
     }
 
     if(sigExists) ans <- scalarMult(ans, sig)
-    class(ans) <- c("repSparseCorFactor", class(ans))
+    class(ans) <- c("strucMatrixCorFactor", class(ans))
     assign( "sigExists",  sigExists, envir = environment(ans$trans))
     assign("coefExists", coefExists, envir = environment(ans$trans))
     assign("object",     object,     envir = environment(ans$trans))
     return(ans)
 }
 
-setOldClass(c("repSparseCorFactor", "repSparse"))
-setIs("repSparseCorFactor", "repSparse")
+setOldClass(c("strucMatrixCorFactor", "strucMatrix"))
+setIs("strucMatrixCorFactor", "strucMatrix")
 
 ## ----------------------------------------------------------------------
 ## Random repeated sparse matrices
@@ -2007,7 +2007,7 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
     indChoose <- sample(nrows * ncols, length(valInds))
     inds <- expand.grid(1:nrows, 1:ncols)[indChoose, ]
     vals <- rfunc(max(valInds), ...)
-    repSparse(rowInds = inds$Var1,
+    strucMatrix(rowInds = inds$Var1,
               colInds = inds$Var2,
               valInds = valInds, vals = vals,
               Dim = c(nrows, ncols))
@@ -2023,24 +2023,24 @@ rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
 ##' Cholesky decomposition of repeated sparse matrices
 ##'
 ##' @note These are often just bailout methods, but some special
-##' \code{repSparse} matrices have exploitable structure, which can be
+##' \code{strucMatrix} matrices have exploitable structure, which can be
 ##' used to keep the number of repeated values down.
 ##' @param x an object that inherits from class
-##' \code{\link{repSparse}}
+##' \code{\link{strucMatrix}}
 ##' @param ... passed to subsequent functions
 ##' @rdname chol
 ##' @export
-setMethod("chol", signature(x = "repSparse"), {
+setMethod("chol", signature(x = "strucMatrix"), {
     function(x, ...) {
-        ans <- as.repSparse(as(chol(as.matrix(x, sparse = TRUE)), "dgCMatrix"))
-        class(ans) <- c("repSparseChol", class(x))
+        ans <- as.strucMatrix(as(chol(as.matrix(x, sparse = TRUE)), "dgCMatrix"))
+        class(ans) <- c("strucMatrixChol", class(x))
         return(ans)
     }
 })
 
 ##' @rdname chol
 ##' @export
-setMethod("chol", signature(x = "repSparseOneOffDiag"), {
+setMethod("chol", signature(x = "strucMatrixOneOffDiag"), {
     function(x, ...) {
         offRow <- sort(x$rowInds[c(0, -1) + length(x$valInds)]) + 1L
         va <- c(sqrt(x$vals[1]),
@@ -2052,10 +2052,10 @@ setMethod("chol", signature(x = "repSparseOneOffDiag"), {
         ci <- x$colInds[-ni] + 1L
         vi[offRow[2]] <- 3
         vi[length(vi)] <- 2
-        ans <- repSparse(ri, ci, vi, va,
+        ans <- strucMatrix(ri, ci, vi, va,
                          trans = mkCholOneOffDiagTrans(x$vals),
                          Dim = dim(x))
-        class(ans) <- c("repSparseChol", class(x))
+        class(ans) <- c("strucMatrixChol", class(x))
         return(ans)
     }
 })
@@ -2063,10 +2063,10 @@ setMethod("chol", signature(x = "repSparseOneOffDiag"), {
 ##' @rdname chol
 ##' @export
 ##' @examples
-##' x <- repSparseCompSymm(1.2, -0.11, 4)
+##' x <- strucMatrixCompSymm(1.2, -0.11, 4)
 ##' as.matrix(chol(x))
 ##' t(chol(as.matrix(x)))
-setMethod("chol", signature(x = "repSparseCompSymm"), {
+setMethod("chol", signature(x = "strucMatrixCompSymm"), {
     function(x, ...) {
         n <- nrow(x)
         trans <- mkCholCompSymmTrans(x$vals, n)
@@ -2075,10 +2075,10 @@ setMethod("chol", signature(x = "repSparseCompSymm"), {
         ri <- c(sa, unlist(lapply(2:n, ":", n)))
         ci <- c(sa, ii)
         vi <- c(sa, ii + n)
-        ans <- repSparse(ri, ci, vi,
+        ans <- strucMatrix(ri, ci, vi,
                          trans(x$vals), trans = trans,
                          Dim = dim(x))
-        class(ans) <- c("repSparseChol", class(x))
+        class(ans) <- c("strucMatrixChol", class(x))
         return(ans)
     }
 })
