@@ -15,6 +15,6 @@ zero).
 }
 \seealso{
 Other modifications: \code{\link{scalarMult}};
-  \code{\link{simplifyRepSparse}}
+  \code{\link{simplifyStrucMatrix}}
 }
 

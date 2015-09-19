@@ -17,6 +17,6 @@ the parameter vector.
 }
 \seealso{
 Other modifications: \code{\link{resetTransConst}};
-  \code{\link{simplifyRepSparse}}
+  \code{\link{simplifyStrucMatrix}}
 }
 

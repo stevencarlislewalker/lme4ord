@@ -15,7 +15,7 @@ sparse matrix
 }
 \examples{
 set.seed(1)
-X <- rRepSparse(3, 7, 2, 12)
+X <- rStrucMatrix(3, 7, 2, 12)
 (Xsparse <- as.matrix(X, sparse = TRUE))
 Xtrans <- mkSparseTrans(X)
 slot(Xsparse, "x") <- Xtrans(rnorm(2))
