@@ -22,7 +22,7 @@ Beware there appear to be bugs here.
 }
 \examples{
 set.seed(1)
-(xGenTri <- strucMatrixGenFullTri(5, 5, rnorm(choose(6, 2))))
+(xGenFullTri <- strucMatrixGenFullTri(5, 5, rnorm(choose(6, 2))))
 }
 \seealso{
 Other strucMatrixSpecial: \code{\link{strucMatrixBlank}};

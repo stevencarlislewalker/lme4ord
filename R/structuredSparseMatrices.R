@@ -1605,7 +1605,7 @@ setIs("strucMatrixTri", "strucMatrix")
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' (xGenTri <- strucMatrixGenFullTri(5, 5, rnorm(choose(6, 2))))
+##' (xGenFullTri <- strucMatrixGenFullTri(5, 5, rnorm(choose(6, 2))))
 strucMatrixGenFullTri <- function(nrow, ncol, vals, diag = TRUE, low = TRUE) {
     ## MATNAME: General full triangular
     rowIndices <- rev(nrow - sequence(nrow - (ncol:1) + 1)) + 1
@@ -1922,9 +1922,6 @@ strucMatrixCorFactor <- function(object, sig = 1) {
     upperInds <- lapply(invList, upper.tri)
 
     oneBlock <- length(invList) == 1L
-        ## ans <- strucMatrixTri(diagVals = diag(invList[[1]]),
-        ##                     offDiagVals = invList[[1]][upperInds[[1]]],
-        ##                     low = FALSE))
 
     ans <- .bind(mapply(strucMatrixTri,
                         lapply(invList, diag),
