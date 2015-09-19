@@ -581,7 +581,7 @@ getReTrm <- function(object, name, drop = TRUE) {
 ##' This redundancy makes the output module code easier to maintain,
 ##' while retaining a fast optimization module. In partiular, the
 ##' \code{\link{repSparse}} objects in the parsed formula make it
-##' easier to write consistent and resuseable code, whereas the
+##' easier to write consistent and reuseable code, whereas the
 ##' \code{Matrix}/\code{C++} objects in the environment of the
 ##' deviance function facilitate relatively fast linear algebra.
 ##'
@@ -592,6 +592,7 @@ getReTrm <- function(object, name, drop = TRUE) {
 ##' @export
 compressStrucGlmer <- function(object, components, ...) {
     stop("Compression not yet written.\n",
-         "Please see ?compressStrucGlmer for more info.")
+         "Please see ?compressStrucGlmer\n",
+         "for more info on future plans.")
 }
 

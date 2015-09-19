@@ -2,7 +2,7 @@ library(lme4ord)
 loon <- read.csv(system.file("extraData", "loon.csv", package = "lme4ord"))
 
 loon <- within(loon, prop <- round(lakes * (percent/100)) / lakes)
-with(loon, plot(year, prop, type = "o"))
+with(loon, plot(year, prop, type = "o", las = 1))
 summary(m <- glm(prop ~ year, binomial, loon, lakes))
 
 corObj <- nlme:::Initialize(nlme:::corAR1(0, form = ~ year), loon)

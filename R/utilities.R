@@ -1315,3 +1315,70 @@ devCritFun <- function(object, REML = NULL) {
         }
     }
 }
+
+##' Tools for constructing formula terms
+##'
+##' @param arg1,arg2,arg a language object or length-one character
+##' vector
+##' @param args list of language objects and/or length-one character
+##' objects
+##' @param Op name of an operator (as language or character)
+##' @export
+##' @name langOps
+##' @examples
+##' (oneTerm <- binaryLangOp("a", "b", "|"))
+##' (parenTerm <- unaryLangOp(oneTerm, "("))
+##' (manyTerms <- mapply(binaryLangOp, "x", letters[1:5], "|", USE.NAMES = FALSE))
+##' (manyParenTerms <- lapply(manyTerms, unaryLangOp, "("))
+##' listLangOp(manyParenTerms, "+")
+binaryLangOp <- function(arg1, arg2, Op) {
+    if(is.character(Op)) Op <- as.name(Op[1])
+    if(is.character(arg1)) arg1 <- as.name(arg1[1])
+    if(is.character(arg2)) arg2 <- as.name(arg2[1])
+    as.call(list(Op, arg1, arg2))
+}
+
+##' @rdname langOps
+##' @export
+unaryLangOp <- function(arg, Op) {
+    if(is.character(Op)) Op <- as.name(Op)
+    if(is.character(arg)) arg <- as.name(arg)
+    as.call(list(Op, arg))
+}
+
+##' @rdname langOps
+##' @export
+listLangOp <- function(args, Op) Reduce(mkBinaryLangOp(Op), args)
+
+##' @rdname langOps
+##' @export
+mkBinaryLangOp <- function(Op) {
+    local({
+        Op <- Op
+        function(arg1, arg2) binaryLangOp(arg1, arg2, Op)
+    })
+}
+
+
+##' List of subscripting calls with a list of indices
+##'
+##' Suppose one has an atomic vector and a named list of indices for
+##' the vector. Now suppose one wants a list of calls subscripting the
+##' vector with each element of the index list. This function does
+##' that.
+##' 
+##' @param vecName length-one character vector giving the name of the
+##' vector to be subscripted
+##' @param indsListName length-one character vector giving the name of
+##' the index list
+##' @param indTypeNames character vector giving the names of the index types
+##' @export
+##' @examples
+##' listOfSubscriptingCallsWithListOfIndices("pars", "parInds", c("covar", "fixef"))
+listOfSubscriptingCallsWithListOfIndices <- function(vecName, indsListName, indTypeNames) {
+    indsCharList <- lapply(lapply(tolower(indTypeNames), c, list("$", indsListName)),
+                           "[", c(2, 3, 1))
+    lapply(lapply(rapply(indsCharList, as.name, how = "list"), as.call),
+           function(inds) {
+               as.call(list(as.name("["), as.name(vecName), inds))})
+}
