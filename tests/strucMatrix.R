@@ -10,7 +10,7 @@ as.matrix(X, TRUE)
 as.matrix(Xrep, TRUE)
 
 set.seed(1)
-Y <- rRepSparse(2, 7, 5, 9)
+Y <- rStrucMatrix(2, 7, 5, 9)
 
 
 # ------------------------------------------------------------

@@ -1118,7 +1118,7 @@ resetTransConst <- function(object) {
             return(baseline)
         }
     })
-    ## FIXME: return(simplifyRepSparse(object)) ???
+    ## FIXME: return(simplifyStrucMatrix(object)) ???
     return(object)
 }
 
@@ -1137,7 +1137,7 @@ resetTransConst <- function(object) {
 ##' @param ... not yet used
 ##' @family modifications
 ##' @export
-simplifyRepSparse <- function(object,
+simplifyStrucMatrix <- function(object,
                               force = TRUE,
                               eliminate = TRUE,
                               reset = TRUE, ...) {
@@ -1430,7 +1430,7 @@ ind2point <- function(ind, maxInd, fillNA = TRUE) {
 
 ## ----------------------------------------------------------------------
 ## Construct special matrices -- strucMatrixCompSymm, strucMatrixDiag,
-## strucMatrixIdent, rRepSparse
+## strucMatrixIdent, rStrucMatrix
 ## ----------------------------------------------------------------------
 
 ##' Blank structured sparse matrix
@@ -1997,7 +1997,7 @@ setIs("strucMatrixCorFactor", "strucMatrix")
 ##' @param rfunc random number function
 ##' @param ... dots
 ##' @export
-rRepSparse <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
+rStrucMatrix <- function(nrows, ncols, nvals, nnonzeros, rfunc = rnorm, ...) {
     ## Random structured sparse matrix
     if(nnonzeros < nvals)
         stop("number of nonzeros must be at least the number of values")

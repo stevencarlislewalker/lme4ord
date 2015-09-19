@@ -240,7 +240,7 @@ setReTrm.factAnal <- function(object, addArgsList,
     loadMat <- update(loadMat)
     
     Zt <- kr(t(subset(loadMat, as.numeric(varFac))),
-             t(resetTransConst(simplifyRepSparse(as.strucMatrix(obsMat)))))
+             t(resetTransConst(simplifyStrucMatrix(as.strucMatrix(obsMat)))))
 
     ## check equivalence of subset versus matrix multiplication
     ## plot(t(t(as.matrix(loadMat)) %*% as.matrix(as.strucMatrix(obsMat))),
@@ -277,7 +277,7 @@ setReTrm.sem <- function(object, addArgsList,
     nl <- nlevels(grpFac <- object$grpFac)
     nc <- addArgs$nAxes
     set.seed(addArgs$seed)
-    ## loadMat <- rRepSparse(nl, nc, nl * nc, nl * nc)
+    ## loadMat <- rStrucMatrix(nl, nc, nl * nc, nl * nc)
     modMat <- subset(loadMat, as.numeric(grpFac))
     indMat <- resetTransConst(as.strucMatrix(addArgs$obsFac))
 
@@ -910,7 +910,7 @@ sortedBind <- function(mats, type = c("row", "col", "diag")) {
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' X <- rRepSparse(3, 7, 2, 12)
+##' X <- rStrucMatrix(3, 7, 2, 12)
 ##' (Xsparse <- as.matrix(X, sparse = TRUE))
 ##' Xtrans <- mkSparseTrans(X)
 ##' slot(Xsparse, "x") <- Xtrans(rnorm(2))
