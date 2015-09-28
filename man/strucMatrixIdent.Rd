@@ -3,10 +3,13 @@
 \alias{strucMatrixIdent}
 \title{Identity structured sparse matrix}
 \usage{
-strucMatrixIdent(matSize)
+strucMatrixIdent(matSize, val)
 }
 \arguments{
 \item{matSize}{matrix size}
+
+\item{val}{value to be repeated on the diagonal (defaults to
+\code{1})}
 }
 \description{
 Identity structured sparse matrix

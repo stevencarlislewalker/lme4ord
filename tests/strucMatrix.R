@@ -47,19 +47,20 @@ as.matrix(update(X, c(1, 1, -0.2)), TRUE)
 as.matrix(update(X, diagVals = c(1.2, 1.5), offDiagVals = 10), TRUE)
 as.matrix(update(Xrep, diagVals = c(1.2, 1.5), offDiagVals = 10), TRUE)
 
-update(XkronY, c(rnorm(5), rnorm(3)))
+set.seed(1)
+image(update(XkronY, c(rnorm(5), rnorm(3))))
 
 
 # ------------------------------------------------------------
 # specials
 # ------------------------------------------------------------
 
-X <- strucMatrixVarWithCovariate(rnorm(5), rnorm(20), gl(5, 4),
-                               mkVarPowerTrans)
+(X <- strucMatrixVarWithCovariate(rnorm(5), rnorm(20), gl(5, 4),
+                                  mkVarPowerTrans))
 
 
                                         # compound symmetry
-X <- strucMatrixCompSymm(1, -0.2, 5)
+(X <- strucMatrixCompSymm(1, -0.2, 5))
                                         # check that cholesky follows
                                         # as.matrix is equivalent to
                                         # as.matrix follows cholesky

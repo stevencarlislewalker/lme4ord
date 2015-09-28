@@ -14,7 +14,7 @@
 \usage{
 \method{print}{strucMatrix}(x, n = 6L, ...)
 
-\method{update}{strucMatrix}(object, newPars, ...)
+\method{update}{strucMatrix}(object, newPars, newTrans, ...)
 
 \method{image}{strucMatrix}(x, plain = FALSE, ...)
 
@@ -37,7 +37,9 @@
 
 \item{object}{\code{strucMatrix} object}
 
-\item{newPars}{new parameter values}
+\item{newPars}{optional new parameter values}
+
+\item{newTrans}{optional new transformation function}
 
 \item{plain}{should a completely plain plot be used? (try and see)}
 
