@@ -147,19 +147,18 @@ print.strucMatrix <- function(x, n = 6L, ...) {
     reportTruncVals <- length(x$vals) > n
     reportTruncInds <- nrow(inds) > n
     reportTruncPars <- length(init) > n
+    reportNumUnique <- any(duplicated(x$valInds))
 
     cat("Structured sparse matrix\n")
     cat("------------------------\n")
     cat("dimensions:\n")
-    cat("", nrow(x), "rows and", ncol(x), "columns\n",
-        nrow(inds), "nonzero values\n",
-        length(x$vals), "repeated values\n")
-    if(!parsEqualRepVals) {
-        cat("", length(init), "parameters\n")
-    }
+    cat(nrow(x), "rows and", ncol(x), "columns\n")
+    cat(nrow(inds), "structural nonzero values\n")
+    if(reportNumUnique) cat(length(x$vals), "structural unique values\n")
+    if(!parsEqualRepVals) cat(length(init), "parameters\n")
     cat("\n")
     if(reportTruncVals) cat("first", n, "")
-    cat("repeated values:\n")
+    cat("structural unique values:\n")
     print(headVals)
     if(!parsEqualRepVals) {
         cat("\n")
@@ -173,18 +172,24 @@ print.strucMatrix <- function(x, n = 6L, ...) {
     print(headInds)
     if(length(class(x)) > 1L) {
         cat("\nspecial structured sparse matrix, inheriting from:\n")
-        print(class(x))
+        cat(class(x), "n")
     }
     cat("\n")
 }
 
 ##' @param object \code{strucMatrix} object
-##' @param newPars new parameter values
+##' @param newPars optional new parameter values
+##' @param newTrans optional new transformation function
 ##' @importFrom stats update
 ##' @rdname strucMatrix-class
 ##' @method update strucMatrix
 ##' @export
-update.strucMatrix <- function(object, newPars, ...) {
+update.strucMatrix <- function(object, newPars, newTrans, ...) {
+    if(!missing(newTrans)) {
+        stop("not working yet ... FIXME ... see mkTrans")
+        object$trans <- newTrans
+        if(!missing(newPars)) environment(newTrans)$init <- newPars
+    }
     l... <- list(...)
     if(length(l...) > 0L) {
         mkNewPars <- object$mkNewPars
@@ -759,17 +764,48 @@ setMethod("tcrossprod", signature(x = "strucMatrix", y = "strucMatrix"), {
 ##' vector called \code{init}, which contains the initial values (aka,
 ##' the prototype) of \code{matPars}.
 ##'
+##' @param trans transformation function (without an environment) that
+##' takes parameter values and returns a vector containing the
+##' structural non-zero unique values of a structured sparse matrix
+##' @param init initial parameter values
+##' @param env a named list or environment containing objects required
+##' by \code{trans}
+##' @param .safe should an error be thrown if \code{trans} has an
+##' environment? if \code{FALSE} then \code{mkTrans} will delete any
+##' such environment, and you might not like this so be careful.
+##' @rdname mkTrans
+##' @aliases mkTrans
+##' @export
+mkTrans <- function(init, trans, env = new.env(), .safe = TRUE) {
+    ## if(!is.null(environment(trans)) && .safe) stop("\ntrans cannot have an environment.",
+    ##                                                "\nif you really want to do this,",
+    ##                                                "\nuse .safe = FALSE and the environment",
+    ##                                                "\nwill be removed for you.")
+    ## if(!.safe) environment(trans) <- NULL
+    if(!is.environment(env)) env <- list2env(env)
+    env$init <- init
+    env$trans <- trans
+    environment(trans) <- env
+    return(trans)
+    local(function(matPars) {
+        stopifnot(length(init) == length(matPars)) ## FIXME: add
+                                                   ## switch to turn
+                                                   ## off this check
+        trans(matPars)
+    }, env)
+}
+
 ##' @rdname mkTrans
 ##' @aliases mkTrans
 ##' @export
 mkIdentityTrans <- function(init) {
+    ## mkTrans(init, I)
     local({
         init <- init
         function(matPars) matPars
     })
 }
 
-##' @param init initial parameter values
 ##' @rdname mkTrans
 ##' @export
 mkCholOneOffDiagTrans <- function(init) {
@@ -1454,14 +1490,17 @@ setIs("strucMatrixBlank", "strucMatrix")
 ##' Identity structured sparse matrix
 ##'
 ##' @param matSize matrix size
+##' @param val value to be repeated on the diagonal (defaults to
+##' \code{1})
 ##' @family strucMatrixSpecial
 ##' @export
 ##' @examples
 ##' (xIdent <- strucMatrixIdent(5))
-strucMatrixIdent <- function(matSize) {
+strucMatrixIdent <- function(matSize, val) {
     ## MATNAME: Identity
     ans <- strucMatrixDiag(1, rep(1, matSize))
     class(ans) <- c("strucMatrixIdent", class(ans))
+    if(!missing(val)) ans <- update(ans, val)
     return(ans)
 }
 
