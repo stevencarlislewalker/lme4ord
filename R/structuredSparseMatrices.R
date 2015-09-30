@@ -172,7 +172,7 @@ print.strucMatrix <- function(x, n = 6L, ...) {
     print(headInds)
     if(length(class(x)) > 1L) {
         cat("\nspecial structured sparse matrix, inheriting from:\n")
-        cat(class(x), "n")
+        cat(class(x), "\n")
     }
     cat("\n")
 }
@@ -213,12 +213,15 @@ update.strucMatrix <- function(object, newPars, newTrans, ...) {
 
 .removeLatticeWhitespace <- function() {
     lh <- lattice::trellis.par.get("layout.heights")
-    lw <- lattice::trellis.par.get("layout.widths")
-    lh[grep("padding", names(lh))] <- lw[grep("padding", names(lw))] <- 0
+    lw <- lattice::trellis.par.get("layout.widths" )
+    lh[grep("padding", names(lh))] <-
+    lw[grep("padding", names(lw))] <- 0
+    lh$axis.bottom <- 0 ## huh? alright i guess? whatever...
     ac <- lattice::trellis.par.get("axis.components")
     for(i in 1:4) ac[[i]][c("pad1", "pad2")] <- 0
-    lattice::trellis.par.set(layout.heights = lh, layout.widths = lw,
-                              axis.components = ac)
+    lattice::trellis.par.set(layout.heights  = lh,
+                             layout.widths   = lw,
+                             axis.components = ac)
 }
 
 .xscaleComponents <- function(...) {
@@ -250,8 +253,8 @@ image.strucMatrix <- function(x, plain = FALSE, ...) {
     blank <- length(x$vals) == 0
     x <- as.matrix(x, sparse = TRUE)
     if(plain) {
-        if(blank) { # hack to give something useful for
-                                  # image(strucMatrixBlank(...))
+        if(blank) { # hack to give something sensible for
+                    # image(strucMatrixBlank(...))
             grid::pushViewport(grid::viewport())
             bx <- grid::unit(0.99, "npc")
             grid::grid.rect(width = bx, height = bx)
