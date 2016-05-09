@@ -2,26 +2,26 @@
 \name{bind}
 \alias{.bind}
 \alias{bind}
-\alias{rep.repSparse}
-\title{Row, column, and block-diagonal binding for repeated sparse
+\alias{rep.strucMatrix}
+\title{Row, column, and block-diagonal binding for structured sparse
 matrices}
 \usage{
 bind(..., type = c("row", "col", "diag"))
 
 .bind(mats, type = c("row", "col", "diag"))
 
-\method{rep}{repSparse}(x, times, type = c("row", "col", "diag"),
+\method{rep}{strucMatrix}(x, times, type = c("row", "col", "diag"),
   repVals = FALSE, ...)
 }
 \arguments{
-\item{...}{list of \code{repSparse} objects (but not used for
-\code{rep.repSparse})}
+\item{...}{list of \code{strucMatrix} objects (but not used for
+\code{rep.strucMatrix})}
 
 \item{type}{type of binding}
 
-\item{mats}{list of \code{repSparse} matrix objects}
+\item{mats}{list of \code{strucMatrix} matrix objects}
 
-\item{x}{\code{repSparse} object}
+\item{x}{\code{strucMatrix} object}
 
 \item{times}{like \code{rep}}
 
@@ -32,23 +32,23 @@ or do you want each replicate to be settable to it's own values
 (\code{TRUE})?}
 }
 \description{
-Row, column, and block-diagonal binding for repeated sparse
+Row, column, and block-diagonal binding for structured sparse
 matrices
 
-Repeat repeated sparse matrix
+Repeat structured sparse matrix
 }
 \examples{
 set.seed(1)
-X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
-Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
-Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
+X <- strucMatrix(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+Y <- strucMatrix(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
+Z <- strucMatrix(c(1, 2), c(1, 2), 1:2, rnorm(2))
 (bindDiag <- bind(X, Y, Z, type = "diag"))
 (bindRow  <- bind(X, Y, Z, type = "row"))
 (bindCol  <- bind(X, Y, Z, type = "col"))
 set.seed(1)
-X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
-Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
-Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
+X <- strucMatrix(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+Y <- strucMatrix(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
+Z <- strucMatrix(c(1, 2), c(1, 2), 1:2, rnorm(2))
 (repDiag <- rep(X, 3, type = "diag"))
 (repRow  <- rep(X, 3, type = "row"))
 (repCol  <- rep(X, 3, type = "col"))
@@ -56,14 +56,14 @@ Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
 \seealso{
 Other matrixCombining: \code{\link{kr}},
   \code{\link{kron}},
-  \code{\link{kronecker,repSparse,repSparse-method}};
-  \code{\link{repSparseRowSubset}},
-  \code{\link{subset.repSparse}}
+  \code{\link{kronecker,strucMatrix,strucMatrix-method}};
+  \code{\link{strucMatrixRowSubset}},
+  \code{\link{subset.strucMatrix}}
 
 Other matrixCombining: \code{\link{kr}},
   \code{\link{kron}},
-  \code{\link{kronecker,repSparse,repSparse-method}};
-  \code{\link{repSparseRowSubset}},
-  \code{\link{subset.repSparse}}
+  \code{\link{kronecker,strucMatrix,strucMatrix-method}};
+  \code{\link{strucMatrixRowSubset}},
+  \code{\link{subset.strucMatrix}}
 }
 

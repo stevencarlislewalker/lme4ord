@@ -116,8 +116,8 @@
 ##' \code{\link{setLowerDefault}}; \code{\link{simReTrm}};
 ##' \code{\link{mkSparseTrans}}.}
 ##'
-##' \item{repeated sparse matrices}{Many contemporary mixed models and
-##' latent variable models involve large matrices, which at each
+##' \item{Structured sparse matrices}{Many contemporary mixed models
+##' and latent variable models involve large matrices, which at each
 ##' iteration of an optimization algorithm need to (1) have their
 ##' values updated and (2) be involved in matrix algebra. Fortunately
 ##' these large matrices have structure that can be exploited for
@@ -131,8 +131,8 @@
 ##' efficient matrix operations involved in the fitting
 ##' proceedure. There is quite alot of machinery in the \code{Matrix}
 ##' package for exploiting sparsity. There is less machinery for
-##' exploiting the building-block property of mixed-model
-##' matrices. The \code{\link{repSparse}} objects in the
+##' exploiting the building-block structure of mixed-model
+##' matrices. The \code{\link{strucMatrix}} objects in the
 ##' \code{lme4ord} package provide such machinery.}
 ##'
 ##' \item{utilities}{A utility is a function that does _not_ make use

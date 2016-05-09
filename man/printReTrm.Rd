@@ -18,7 +18,7 @@ printReTrm(object, forSummary = FALSE, ...)
 \method{printReTrm}{nlmeCorStruct}(object, forSummary = FALSE, ...)
 }
 \arguments{
-\item{object}{\code{\link{repSparse}} object}
+\item{object}{\code{\link{strucMatrix}} object}
 
 \item{forSummary}{print for \code{\link{summary}} instead of
 \code{\link{print}}?}

@@ -1,7 +1,7 @@
 ## ----------------------------------------------------------------------
 ## Deviance function construction
 ##
-## used by:  strucGlmer.R
+## used by:  structuredGLMM.R
 ## ----------------------------------------------------------------------
 
 
@@ -168,15 +168,163 @@ mkGeneralGlmerDevfun <- function(y, X, Zt, Lambdat,
     return(devfun)
 }
 
+mkGeneralLmerDevfun <- function(y, X, Zt, Lambdat,
+                                weights = NULL, offset = NULL,
+                                devfunEnv,
+                                initPars, parInds,
+                                mapToCovFact = NULL,
+                                mapToModMat = NULL,
+                                mapToWeights = NULL,
+                                penCovar = NULL,
+                                penLoads = NULL,
+                                tolPwrss = 1e-6,
+                                maxit = 30,
+                                verbose = 0L,
+                                Lind = NULL) {
+
+    stop("still converting from mkGeneralGlmerDevfun")
+
+    ## silence no visible binding for global variable notes
+    resp <- baseOffset <- lp0 <- setCovar <- pp <- setLoads <- setWeigh <-
+        GQmat <- compDev <- fac <- NULL
+
+    if(isLind <- !is.null(Lind)) {
+        theta <- environment(mapToCovFact)$trans(initPars[parInds$covar])
+    } else {
+        theta <- Lambdat@x
+        Lind <- seq_along(Lambdat@x)
+    }
+
+    initializeEnv <- initializeResp(y, etastart = NULL, mustart = NULL,
+                                    offset, weights, family)
+
+                                        # handle potential missing
+                                        # arguments
+    if(missing(parInds)) {
+        if(is.recursive(initPars)) {
+            parInds <- mkParInds(initPars)
+        } else if(is.relistable(initPars)) {
+            parInds <- mkParInds(relist(initPars))
+        } else {
+            stop("can't make parInds, please supply it")
+        }
+    }
+    initPars <- unlist(initPars)
+
+    if(missing(devfunEnv)) devfunEnv <- new.env()
+    if(is.null(weights))   weights   <- rep(1, length(y))
+    if(is.null(offset))    offset    <- rep(0, length(y))
+    if(is.null(etastart))  etastart  <- family$linkfun(initializeEnv$mustart)
+
+    devfunList <- list(Lind = Lind,
+                       pp = lme4::merPredD$new(
+                           X = X, Zt = Zt,
+                           Lambdat = Lambdat,
+                           Lind = Lind,
+                           theta = as.double(theta),
+                           n = nrow(X)),
+                       resp = lme4::glmResp$new(
+                           y = y, family = family,
+                           weights = weights),
+                       lp0 = etastart,
+                       baseOffset = offset,
+                       tolPwrss = tolPwrss,
+                       maxit = maxit,
+                       GQmat = GHrule(1), ## always Laplace approx
+                       compDev = TRUE,
+                       fac = NULL,
+                       verbose = verbose,
+                       setCovar = !is.null(parInds$covar),
+                       setLoads = !is.null(parInds$loads),
+                       setWeigh = !is.null(parInds$weigh),
+                       setFixef = !is.null(parInds$fixef),
+                       isLind = isLind,
+                       mapToCovFact = mapToCovFact,
+                       mapToModMat  = mapToModMat,
+                       mapToWeights = mapToWeights,
+                       parInds = parInds)
+
+
+    devfun <- function(pars) {
+        resp$setOffset(baseOffset)
+        resp$updateMu(lp0)
+        if(setCovar) {
+            if(isLind) {
+                pp$setTheta(as.double(environment(mapToCovFact)$trans(pars[parInds$covar])))
+            } else {
+                pp$setTheta(as.double(mapToCovFact(pars[parInds$covar])))
+            }
+        }
+        if(setLoads) pp$setZt(as.double(mapToModMat(pars[parInds$loads])))
+        if(setWeigh) resp$setWeights(as.double(mapToWeights(pars[parInds$weigh])))
+        spars <- as.numeric(pars[parInds$fixef])
+        offset <- if (length(spars)==0) baseOffset else baseOffset + pp$X %*% spars
+        resp$setOffset(offset)
+        ## pp, resp, nAGQ, tol, maxit, verbose
+        p <- lme4::glmerLaplaceHandle(pp$ptr(), resp$ptr(), 1, tolPwrss, maxit, verbose)
+        ##p <- lme4:::glmerPwrssUpdate(pp, resp, tolPwrss, GQmat,
+        ##                             compDev, fac, maxit, verbose)
+        resp$updateWts()
+        p
+    }
+
+    penFun <- mkPenaltyFun(penCovar, penFixef = NULL, penLoads, devfunEnv) # can't
+                                                                           # penalize
+                                                                           # fixed
+                                                                           # effects
+                                                                           # because
+                                                                           # the
+                                                                           # are
+                                                                           # profiled
+                                                                           # out
+    if(!is.null(penFun)) {
+        devfunList$penFun <- penFun
+                                        # 12 means line 12 of the
+                                        # devfun
+        body(devfun)[[12]] <- quote(p + penFun(pars, parInds)) 
+    }
+    environment(devfun) <- list2env(devfunList, envir = devfunEnv)
+
+                                        # initialize weights etc ...
+    devfunEnv$resp$updateMu(etastart)
+    devfunEnv$resp$updateWts()
+    devfun(initPars)
+    environment(devfun)$lp0 <- environment(devfun)$pp$linPred(1)
+
+    return(devfun)
+}
+
+##' Make a (Laplace) glmer deviance function from a parsed formula
+##'
+##' @param parsedForm results of \code{\link{strucParseFormula}}
+##' @param family,weights,offset,etastart see \code{\link{mkGeneralGlmerDevfun}}
+##' @param ... not used
+##' @export
+strucMkDevfun <- function(parsedForm, family,
+                          weights = NULL, offset = NULL,
+                          etastart = NULL, ...) {
+    mkGeneralGlmerDevfun(y = response(parsedForm),
+                         X       = fixefModMat(parsedForm),
+                         Zt      = ranefModMat(parsedForm),
+                         Lambdat =  relCovFact(parsedForm),
+                         weights   = weights,
+                         offset    = offset,
+                         etastart  = etastart,
+                         initPars  = pars(parsedForm),
+                         parInds   = getParInds(parsedForm),
+                         mapToCovFact = parsedForm$mapToCovFact,
+                         mapToModMat  = parsedForm$mapToModMat,
+                         devfunEnv = parsedForm$devfunEnv,
+                         family = family,
+                         Lind = parsedForm$Lambdat$valInds,
+                         ...)
+}
+
 initializeResp <- function(y, etastart = NULL, mustart = NULL,
                            offset = NULL, weights = NULL,
                            family){
     # taken mostly from mkRespMod
     
-    ## y <- model.response(fr)
-### Why consider there here?  They are handled in plsform.
-    # offset <- model.offset(fr)
-    # weights <- model.weights(fr)
     n <- length(y)
     etastart_update <- etastart
     if(length(dim(y)) == 1) {
@@ -240,22 +388,50 @@ fixFamily <- function(family) {
 ##' penLoads <- function(gg) abs(gg) + 10
 ##' mkPenaltyFun(penCovar, penFixef, penLoads)(1:10, list(covar = 1:5, loads = 6:10))
 mkPenaltyFun <- function(penCovar, penFixef, penLoads, env = environment()) {
+                                        # list of possible penalty
+                                        # functions ...
     penFuncs <- list(penCovar, penFixef, penLoads)
+                                        # ... but only keep those that
+                                        # get passed through the
+                                        # arguments
     keepers <- !sapply(penFuncs, is.null)
+                                        # don't bother if nothing to
+                                        # keep
     if(!any(keepers)) return(NULL)
+
+                                        # make the penalty names
     parTypes <- c("Covar", "Fixef", "Loads")
     parTypesName <- paste("pen", parTypes, sep = "")
-    indsChar <- lapply(lapply(tolower(parTypes), c, list("$", "parInds")),
-                       "[", c(2, 3, 1))
-    parTypeCall <- lapply(lapply(rapply(indsChar, as.name, how = "list"), as.call),
-                          function(inds) {
-                              as.call(list(as.name("["), as.name("pars"), inds))})
+
+    # ----------------------------------------
+    # the rest constructs a call for summing
+    # up the penalties that are kept,
+    # and evaluating that sum in the
+    # specified environment
+    # ----------------------------------------
+                                        # 'clever' way to construct a
+                                        # list (parTypeCall) of
+                                        # expressions:
+                                        # pars[parInds$covar],
+                                        # pars[parInds$fixef],
+                                        # pars[parInds$loads]
+    parTypeCall <- listOfSubscriptingCallsWithListOfIndices("pars", "parInds", parTypes)
+    
+                                        # name this list and add a
+                                        # quote(sum) sum to it
     penSumCall <- c(list(quote(sum)),
                     mapply(call, parTypesName[keepers], parTypeCall[keepers]))
+                                        # put these language objects
+                                        # in an environment (probably
+                                        # the environment of a
+                                        # deviance function)
     env <- list2env(setNames(penFuncs, parTypesName), env)
+                                        # and finally the sum of these
+                                        # penalties in the environment
     eval(call("function", as.pairlist(alist(pars = , parInds = )),
               as.call(unname(penSumCall))), env)
 }
+
 
 ##' @param p exponent of the L-p norm
 ##' @param lambda multiplier for the penalty term

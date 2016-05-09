@@ -1,8 +1,8 @@
 ## ----------------------------------------------------------------------
 ## Output module
 ##
-## used by:  strucGlmer.R
-## uses:  reTrmStructs.R, repSparse.R
+## used by:  structuredGLMM.R
+## uses:  randomEffectsStructures.R, structuredSparseMatrices.R
 ## ----------------------------------------------------------------------
 
 
@@ -35,7 +35,7 @@ mkStrucGlmer <- function(opt, parsedForm, dfun, mc) {
     if(!optSuccess) return(ans)
 
                                         # update the initialized
-                                        # parameters in the repeated
+                                        # parameters in the structured
                                         # sparse matrices to optimized
                                         # values
     trash <- mapply(setInit, parsedForm$random,
@@ -138,7 +138,7 @@ print.summary.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3)
                                      correlation = NULL, 
                                      signif.stars = getOption("show.signif.stars"),
                                      show.resids = TRUE, ...) {
-    ## basically just stolen from lme4
+    ## basically just stolen from lme4, but with tweaks
     
     .prt.methTit(x$methTitle, x$objClass)
     .prt.family(x)
@@ -187,137 +187,7 @@ print.summary.strucGlmer <- function(x, digits = max(3, getOption("digits") - 3)
     }               
 }
 
-## ----------------------------------------------------------------------
-## parameter extraction
-## ----------------------------------------------------------------------
 
-##' @rdname pars
-##' @export
-pars <- function(object, ...) UseMethod("pars")
-
-##' Parameter retrieval for structured generalized linear mixed models
-##'
-##' @param object a \code{strucGlmer} fitted model object
-##' @param ... additional arguments to pass on
-##' @rdname pars
-##' @export
-pars.strucGlmer <- function(object, ...) object$opt$par
-
-##' @importFrom lme4 getME
-##' @rdname pars
-##' @export
-pars.glmerMod <- function(object, ...) unlist(getME(object, c("theta", "beta")))
-
-##' @rdname pars
-##' @export
-covar <- function(object, ...) UseMethod("covar")
-
-##' @rdname pars
-##' @export
-covar.strucGlmer <- function(object, ...) {
-    unname(getStrucGlmerPar(object, "covar"))
-}
-
-##' @rdname pars
-##' @export
-loads <- function(object, ...) UseMethod("loads")
-
-##' @rdname pars
-##' @export
-loads.default <- function(object, ...) loadings(object)
-
-##' @rdname pars
-##' @export
-loads.strucGlmer <- function(object, ...) {
-    getStrucGlmerPar(object, "loads")
-}
-
-##' @importFrom nlme fixef 
-##' @rdname pars
-##' @export
-fixef.strucGlmer <- function(object, ...) {
-    setNames(getStrucGlmerPar(object, "fixef"),
-             colnames(object$parsedForm$fixed))
-}
-
-##' @importFrom nlme ranef
-##' @rdname pars
-##' @export
-ranef.strucGlmer <- function(object, type = c("u", "Lu", "ZLu"), ...) {
-    type <- type[1]
-    pp <- object$parsedForm$devfunEnv$pp
-    structs <- object$parsedForm$random
-    nms <- names(nRePerTrm <- environment(object$dfun)$nRePerTrm)
-    if(type ==   "u") {
-        re <- pp$u(1)
-    } else {
-        re <- pp$b(1)
-        if(type == "ZLu") {
-            b <- subRagByLens(re, nRePerTrm)
-            multFn <- function(struc, re) {
-                as.numeric(as.matrix(t(struc$Zt), sparse = TRUE) %*% re)
-            }
-            return(setNames(mapply(multFn, structs, b, SIMPLIFY = FALSE), nms))
-        }
-    }
-    setNames(subRagByLens(re, nRePerTrm), nms)
-}
-
-##' @param type character string giving the type of parameter
-##' (e.g. \code{"fixef", "covar"})
-##' @rdname pars
-##' @export
-getStrucGlmerPar <- function(object, type, ...) {
-    parInds <- environment(object$dfun)$parInds
-    optPar <- object$opt$par
-    optPar[unlist(parInds[type])]
-}
-
-##' @param nParPerTrm vector of the number of parameters per term
-##' @param pars parameter vector (e.g. result of \code{covar} or
-##' \code{loads}
-##' @rdname pars
-##' @export
-parPerTerm <- function(nParPerTrm, pars) {
-    if(is.null(pars)) pars <- numeric(0)
-    whichThere <- (nParPerTrm > 0) & (!is.na(nParPerTrm))
-    ans <- vector("list", length(whichThere))
-    ans[whichThere] <- subRagByLens(pars, nParPerTrm[whichThere])
-    names(ans) <- names(nParPerTrm)
-    return(ans)
-}
-
-##' @rdname pars
-##' @export
-covarPerTerm <- function(object) {
-    parPerTerm(environment(object$dfun)$nLambdatParPerTrm,
-               covar(object))
-}
-
-##' @rdname pars
-##' @export
-loadsPerTerm <- function(object) {
-    parPerTerm(environment(object$dfun)$nZtParPerTrm,
-               loads(object))
-}
-
-##' @rdname pars
-##' @export
-nRePerTrm <- function(object) {
-    object$parsedForm$devfunEnv$nRePerTrm
-}
-
-##' @rdname pars
-##' @export
-reIndsPerTrm <- function(object) {
-    nrpt <- nRePerTrm(object)
-    setNames(subRagByLens(1:sum(nrpt), nrpt), names(nrpt))
-}
-
-##' @importFrom stats nobs
-##' @rdname strucGlmer-class
-##' @export
-nobs.strucGlmer <- function(object, ...) nrow(object$parsedForm$fixed)
 
 
 ## ----------------------------------------------------------------------
@@ -474,10 +344,6 @@ logLik.strucGlmer <- function(object, ...) {
 ##' @export
 formula.strucGlmer <- function(x, ...) x$parsedForm$formula
 
-##' @importFrom stats family
-##' @rdname strucGlmer-class
-##' @export
-family.strucGlmer <- function(object, ...) object$parsedForm$devfunEnv$resp$family
 
 ##' @importFrom stats weights
 ##' @rdname strucGlmer-class
@@ -541,7 +407,7 @@ simStrucParsedForm <- function(parsedForm, family = binomial,
 
 ##' Print random effects term
 ##' 
-##' @param object \code{\link{repSparse}} object
+##' @param object \code{\link{strucMatrix}} object
 ##' @param forSummary print for \code{\link{summary}} instead of
 ##' \code{\link{print}}?
 ##' @param ... additional arguments
@@ -633,7 +499,7 @@ printReTrm.nlmeCorStruct <- function(object, forSummary = FALSE, ...) {
     vcd <- "  variance-correlation:  "
     print(corObj)
     if(transEnv$sigExists) {
-        cat("  Standard deviation multiplier: ", getInit(object$Lambdat), "\n")
+        cat("  Standard deviation multiplier: ", sigma(object), "\n")
     }
     .printVC(vcd, vc)
 }
@@ -684,6 +550,8 @@ getReTrm <- function(object, name, drop = TRUE) {
 }
 
 
+
+
 ## ----------------------------------------------------------------------
 ## Compression
 ## ----------------------------------------------------------------------
@@ -705,18 +573,17 @@ getReTrm <- function(object, name, drop = TRUE) {
 ##' function. The environment of this deviance function contains many
 ##' objects, some of which are essentially replicated in the parsed
 ##' formula object. In particular, the matrices in the parsed formula
-##' are \code{\link{repSparse}} objects whereas the matrices in the
+##' are \code{\link{strucMatrix}} objects whereas the matrices in the
 ##' environment of the deviance function are \code{Matrix} package
 ##' objects linked to \code{C++} objects through external pointers.
 ##' 
 ##' @section Why do we want redundancy?:
 ##' This redundancy makes the output module code easier to maintain,
 ##' while retaining a fast optimization module. In partiular, the
-##' \code{\link{repSparse}} objects in the parsed formula make it
-##' easier to write consistent and resuseable code, whereas the
+##' \code{\link{strucMatrix}} objects in the parsed formula make it
+##' easier to write consistent and reuseable code, whereas the
 ##' \code{Matrix}/\code{C++} objects in the environment of the
-##' deviance function facilitate relatively faster linear
-##' algebra.
+##' deviance function facilitate relatively fast linear algebra.
 ##'
 ##' @param object a \code{\link{strucGlmer}} object.
 ##' @param components components to compress.
@@ -725,6 +592,7 @@ getReTrm <- function(object, name, drop = TRUE) {
 ##' @export
 compressStrucGlmer <- function(object, components, ...) {
     stop("Compression not yet written.\n",
-         "Please see ?compressStrucGlmer for more info.")
+         "Please see ?compressStrucGlmer\n",
+         "for more info on future plans.")
 }
 

@@ -7,7 +7,7 @@ compatible with column-compressed sparse matrices}
 sortedBind(mats, type = c("row", "col", "diag"))
 }
 \arguments{
-\item{mats}{list of \code{repSparse} matrix objects}
+\item{mats}{list of \code{strucMatrix} matrix objects}
 
 \item{type}{type of bind}
 }

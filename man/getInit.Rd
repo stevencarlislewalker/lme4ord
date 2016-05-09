@@ -4,21 +4,21 @@
 \alias{getInit.default}
 \alias{getInit.function}
 \alias{getInit.reTrmStruct}
-\alias{getInit.repSparse}
+\alias{getInit.strucMatrix}
 \alias{getInit.strucParseFormula}
 \alias{setInit}
 \alias{setInit.default}
 \alias{setInit.function}
 \alias{setInit.reTrmStruct}
-\alias{setInit.repSparse}
+\alias{setInit.strucMatrix}
 \alias{setInit.strucParseFormula}
-\title{Get and set initial parameter values for repeated sparse matrices}
+\title{Get and set initial parameter values for structured sparse matrices}
 \usage{
 getInit(x, ...)
 
 \method{getInit}{default}(x, ...)
 
-\method{getInit}{repSparse}(x, ...)
+\method{getInit}{strucMatrix}(x, ...)
 
 \method{getInit}{function}(x, ...)
 
@@ -30,7 +30,7 @@ setInit(x, ...)
 
 \method{setInit}{default}(x, init, ...)
 
-\method{setInit}{repSparse}(x, init, ...)
+\method{setInit}{strucMatrix}(x, init, ...)
 
 \method{setInit}{function}(x, init, ...)
 
@@ -59,23 +59,23 @@ random effects term, and \code{"loads.trmName"} if loadings are
 present.}
 }
 \description{
-The initial values for a repeated sparse matrix are stored in the
+The initial values for a structured sparse matrix are stored in the
 environment of its transformation function, where they have the
 name \code{init}.  Random effects term structures
-(\code{\link{reTrmStruct}}) contain two repeated sparse matrices:
+(\code{\link{reTrmStruct}}) contain two structured sparse matrices:
 the transposed relative covariance factor, \code{Lambdat}, and the
 transposed random effects model matrix, \code{Zt}. There are
 \code{getReTrm.reTrmStruct} and \code{setReTrm.reTrmStruct}
 methods for getting and setting the initial values of these
 matrices directly.  Setting initial values does not change the
 values themselves, only the initial values. Use the
-\code{\link{update.repSparse}} methods to actually update the
+\code{\link{update.strucMatrix}} methods to actually update the
 values to the initial values.
 }
 \examples{
 set.seed(1)
-m1 <- as.repSparse(matrix(rnorm(6), 2, 3))
-m2 <- repSparseCompSymm(1.2, -0.2, 5)
+m1 <- as.strucMatrix(matrix(rnorm(6), 2, 3))
+m2 <- strucMatrixCompSymm(1.2, -0.2, 5)
 getInit(m1)
 getInit(m2)
 setInit(m2, c(10, 0))

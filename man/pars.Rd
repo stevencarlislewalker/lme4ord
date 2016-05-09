@@ -2,20 +2,48 @@
 \name{pars}
 \alias{covar}
 \alias{covar.strucGlmer}
+\alias{covar.strucParseFormula}
 \alias{covarPerTerm}
 \alias{fixef.strucGlmer}
+\alias{fixef.strucParseFormula}
+\alias{fixefModMat}
+\alias{fixefModMat.strucGlmer}
+\alias{fixefModMat.strucParseFormula}
+\alias{getParInds}
+\alias{getParInds.strucGlmer}
+\alias{getParInds.strucParseFormula}
 \alias{getStrucGlmerPar}
 \alias{loads}
 \alias{loads.default}
 \alias{loads.strucGlmer}
+\alias{loads.strucParseFormula}
 \alias{loadsPerTerm}
 \alias{nRePerTrm}
+\alias{nobs.strucGlmer}
+\alias{nobs.strucParseFormula}
 \alias{parPerTerm}
 \alias{pars}
 \alias{pars.glmerMod}
 \alias{pars.strucGlmer}
+\alias{pars.strucParseFormula}
 \alias{ranef.strucGlmer}
+\alias{ranefModMat}
+\alias{ranefModMat.reTrmStruct}
+\alias{ranefModMat.strucGlmer}
+\alias{ranefModMat.strucParseFormula}
 \alias{reIndsPerTrm}
+\alias{relCovFact}
+\alias{relCovFact.reTrmStruct}
+\alias{relCovFact.strucGlmer}
+\alias{relCovFact.strucParseFormula}
+\alias{response}
+\alias{response.strucGlmer}
+\alias{response.strucParseFormula}
+\alias{sigma.nlmeCorStruct}
+\alias{sigma.reTrmStruct}
+\alias{sigma.strucGlmer}
+\alias{sigma.strucParseFormula}
+\alias{strucDims}
 \title{Parameter retrieval for structured generalized linear mixed models}
 \usage{
 pars(object, ...)
@@ -24,9 +52,13 @@ pars(object, ...)
 
 \method{pars}{glmerMod}(object, ...)
 
+\method{pars}{strucParseFormula}(object, ...)
+
 covar(object, ...)
 
 \method{covar}{strucGlmer}(object, ...)
+
+\method{covar}{strucParseFormula}(object, ...)
 
 loads(object, ...)
 
@@ -34,7 +66,11 @@ loads(object, ...)
 
 \method{loads}{strucGlmer}(object, ...)
 
+\method{loads}{strucParseFormula}(object, ...)
+
 \method{fixef}{strucGlmer}(object, ...)
+
+\method{fixef}{strucParseFormula}(object, ...)
 
 \method{ranef}{strucGlmer}(object, type = c("u", "Lu", "ZLu"), ...)
 
@@ -49,6 +85,60 @@ loadsPerTerm(object)
 nRePerTrm(object)
 
 reIndsPerTrm(object)
+
+getParInds(object, ...)
+
+\method{getParInds}{strucParseFormula}(object, ...)
+
+\method{getParInds}{strucGlmer}(object, ...)
+
+strucDims(object)
+
+response(object, ...)
+
+\method{response}{strucGlmer}(object, ...)
+
+\method{response}{strucParseFormula}(object, ...)
+
+fixefModMat(object, ...)
+
+\method{fixefModMat}{strucParseFormula}(object, ...)
+
+\method{fixefModMat}{strucGlmer}(object, ...)
+
+ranefModMat(object, ...)
+
+\method{ranefModMat}{strucParseFormula}(object, transposed = TRUE,
+  strucMatrix = FALSE, ...)
+
+\method{ranefModMat}{reTrmStruct}(object, transposed = TRUE,
+  strucMatrix = FALSE, ...)
+
+\method{ranefModMat}{strucGlmer}(object, transposed = TRUE,
+  strucMatrix = FALSE, ...)
+
+relCovFact(object, ...)
+
+\method{relCovFact}{strucParseFormula}(object, transposed = TRUE,
+  strucMatrix = FALSE, ...)
+
+\method{relCovFact}{reTrmStruct}(object, transposed = TRUE,
+  strucMatrix = FALSE, ...)
+
+\method{relCovFact}{strucGlmer}(object, transposed = TRUE,
+  strucMatrix = FALSE, ...)
+
+\method{nobs}{strucGlmer}(object, ...)
+
+\method{nobs}{strucParseFormula}(object, ...)
+
+\method{sigma}{reTrmStruct}(object, ...)
+
+\method{sigma}{nlmeCorStruct}(object, ...)
+
+\method{sigma}{strucParseFormula}(object, ...)
+
+\method{sigma}{strucGlmer}(object, ...)
 }
 \arguments{
 \item{object}{a \code{strucGlmer} fitted model object}
@@ -62,6 +152,11 @@ reIndsPerTrm(object)
 
 \item{pars}{parameter vector (e.g. result of \code{covar} or
 \code{loads}}
+
+\item{transposed}{Return transposed model matrix?}
+
+\item{strucMatrix}{Return as \code{\link{strucMatrix}} or
+\code{dgCMatrix} object?}
 }
 \description{
 Parameter retrieval for structured generalized linear mixed models

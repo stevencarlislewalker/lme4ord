@@ -3,7 +3,6 @@
 \alias{VarCorr.strucGlmer}
 \alias{deviance.strucGlmer}
 \alias{df.residual.strucGlmer}
-\alias{family.strucGlmer}
 \alias{fitted.strucGlmer}
 \alias{formula.strucGlmer}
 \alias{getOffset}
@@ -11,7 +10,6 @@
 \alias{logLik.strucGlmer}
 \alias{mkStrucGlmer}
 \alias{model.matrix.strucGlmer}
-\alias{nobs.strucGlmer}
 \alias{print.strucGlmer}
 \alias{print.summary.strucGlmer}
 \alias{residuals.strucGlmer}
@@ -32,8 +30,6 @@ mkStrucGlmer(opt, parsedForm, dfun, mc)
   3), correlation = NULL, signif.stars = getOption("show.signif.stars"),
   show.resids = TRUE, ...)
 
-\method{nobs}{strucGlmer}(object, ...)
-
 \method{residuals}{strucGlmer}(object, ...)
 
 \method{fitted}{strucGlmer}(object, ranefTrms, fixef = TRUE, ...)
@@ -52,8 +48,6 @@ mkStrucGlmer(opt, parsedForm, dfun, mc)
 \method{logLik}{strucGlmer}(object, ...)
 
 \method{formula}{strucGlmer}(x, ...)
-
-\method{family}{strucGlmer}(object, ...)
 
 \method{weights}{strucGlmer}(object, ...)
 

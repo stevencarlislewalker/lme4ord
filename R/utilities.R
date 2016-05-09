@@ -69,23 +69,320 @@ mkParInds <- function(parList) {
 }
 
 ## ----------------------------------------------------------------------
-## Initial values -- get and set init parameter vectors for repeated
+## parameter extraction
+## ----------------------------------------------------------------------
+
+##' @rdname pars
+##' @export
+pars <- function(object, ...) UseMethod("pars")
+
+##' Parameter retrieval for structured generalized linear mixed models
+##'
+##' @param object a \code{strucGlmer} fitted model object
+##' @param ... additional arguments to pass on
+##' @rdname pars
+##' @export
+pars.strucGlmer <- function(object, ...) object$opt$par
+
+##' @importFrom lme4 getME
+##' @rdname pars
+##' @export
+pars.glmerMod <- function(object, ...) unlist(getME(object, c("theta", "beta")))
+
+##' @rdname pars
+##' @export
+pars.strucParseFormula <- function(object, ...) getInit(object) # or object$initPars ??
+
+##' @rdname pars
+##' @export
+covar <- function(object, ...) UseMethod("covar")
+
+##' @rdname pars
+##' @export
+covar.strucGlmer <- function(object, ...) {
+    unname(getStrucGlmerPar(object, "covar"))
+}
+
+##' @rdname pars
+##' @export
+covar.strucParseFormula <- function(object, ...) {
+    with(object, initPars[parInds$covar])
+}
+
+
+##' @rdname pars
+##' @export
+loads <- function(object, ...) UseMethod("loads")
+
+##' @rdname pars
+##' @export
+loads.default <- function(object, ...) loadings(object)
+
+##' @rdname pars
+##' @export
+loads.strucGlmer <- function(object, ...) {
+    getStrucGlmerPar(object, "loads")
+}
+
+##' @rdname pars
+##' @export
+loads.strucParseFormula <- function(object, ...) {
+    with(object, initPars[parInds$loads])
+}
+
+##' @importFrom nlme fixef 
+##' @rdname pars
+##' @export
+fixef.strucGlmer <- function(object, ...) {
+    setNames(getStrucGlmerPar(object, "fixef"),
+             colnames(object$parsedForm$fixed))
+}
+
+##' @rdname pars
+##' @export
+fixef.strucParseFormula <- function(object, ...) {
+    with(object, initPars[parInds$fixef])
+}
+
+##' @importFrom nlme ranef
+##' @rdname pars
+##' @export
+ranef.strucGlmer <- function(object, type = c("u", "Lu", "ZLu"), ...) {
+    type <- type[1]
+    pp <- object$parsedForm$devfunEnv$pp
+    structs <- object$parsedForm$random
+    nms <- names(nRePerTrm <- environment(object$dfun)$nRePerTrm)
+    if(type ==   "u") {
+        re <- pp$u(1)
+    } else {
+        re <- pp$b(1)
+        if(type == "ZLu") {
+            b <- subRagByLens(re, nRePerTrm)
+            multFn <- function(struc, re) {
+                as.numeric(as.matrix(t(struc$Zt), sparse = TRUE) %*% re)
+            }
+            return(setNames(mapply(multFn, structs, b, SIMPLIFY = FALSE), nms))
+        }
+    }
+    setNames(subRagByLens(re, nRePerTrm), nms)
+}
+
+##' @param type character string giving the type of parameter
+##' (e.g. \code{"fixef", "covar"})
+##' @rdname pars
+##' @export
+getStrucGlmerPar <- function(object, type, ...) {
+    parInds <- environment(object$dfun)$parInds
+    optPar <- object$opt$par
+    optPar[unlist(parInds[type])]
+}
+
+##' @param nParPerTrm vector of the number of parameters per term
+##' @param pars parameter vector (e.g. result of \code{covar} or
+##' \code{loads}
+##' @rdname pars
+##' @export
+parPerTerm <- function(nParPerTrm, pars) {
+    if(is.null(pars)) pars <- numeric(0)
+    whichThere <- (nParPerTrm > 0) & (!is.na(nParPerTrm))
+    ans <- vector("list", length(whichThere))
+    ans[whichThere] <- subRagByLens(pars, nParPerTrm[whichThere])
+    names(ans) <- names(nParPerTrm)
+    return(ans)
+}
+
+##' @rdname pars
+##' @export
+covarPerTerm <- function(object) {
+    parPerTerm(environment(object$dfun)$nLambdatParPerTrm,
+               covar(object))
+}
+
+##' @rdname pars
+##' @export
+loadsPerTerm <- function(object) {
+    parPerTerm(environment(object$dfun)$nZtParPerTrm,
+               loads(object))
+}
+
+##' @rdname pars
+##' @export
+nRePerTrm <- function(object) {
+    object$parsedForm$devfunEnv$nRePerTrm
+}
+
+##' @rdname pars
+##' @export
+reIndsPerTrm <- function(object) {
+    nrpt <- nRePerTrm(object)
+    setNames(subRagByLens(1:sum(nrpt), nrpt), names(nrpt))
+}
+
+##' @rdname pars
+##' @export
+getParInds <- function(object, ...) {
+    UseMethod("getParInds")
+}
+
+##' @rdname pars
+##' @export
+getParInds.strucParseFormula <- function(object, ...) object$parInds
+
+##' @rdname pars
+##' @export
+getParInds.strucGlmer <- function(object, ...) getParInds(object$parsedForm)
+
+##' @rdname pars
+##' @export
+strucDims <- function(object) {
+    list(nObs = nobs(object),
+         nFixef = ncol(object$parsedForm$fixed),
+         nRanef = nrow(object$parsedForm$Zt),
+         nRanefPerTrm = nRePerTrm(object),
+         nCovar = length(covar(object)),
+         nLoads = length(loads(object)),
+         nCovarPerTrm = sapply(covarPerTerm(object), length),
+         nLoadsPerTrm = sapply(loadsPerTerm(object), length))
+}
+
+##' @rdname pars
+##' @export
+response <- function(object, ...) {
+    UseMethod("response")
+}
+
+##' @rdname pars
+##' @export
+response.strucGlmer <- function(object, ...) response(object$parsedForm)
+
+##' @rdname pars
+##' @export
+response.strucParseFormula <- function(object, ...) object$response
+
+##' @rdname pars
+##' @export
+fixefModMat <- function(object, ...) {
+    UseMethod("fixefModMat")
+}
+
+##' @rdname pars
+##' @export
+fixefModMat.strucParseFormula <- function(object, ...) object$fixed
+
+##' @rdname pars
+##' @export
+fixefModMat.strucGlmer <- function(object, ...) fixefModMat(object$parsedForm)
+
+##' @rdname pars
+##' @export
+ranefModMat <- function(object, ...) {
+    UseMethod("ranefModMat")
+}
+
+##' @param transposed Return transposed model matrix?
+##' @param strucMatrix Return as \code{\link{strucMatrix}} or
+##' \code{dgCMatrix} object?
+##' @rdname pars
+##' @export
+ranefModMat.strucParseFormula <- function(object, transposed = TRUE, strucMatrix = FALSE, ...) {
+    ans <- object$Zt
+    if(!transposed) ans <- t(ans)
+    if(!strucMatrix) ans <- as(ans, "dgCMatrix")
+    return(ans)
+}
+
+##' @rdname pars
+##' @export
+ranefModMat.reTrmStruct <- ranefModMat.strucParseFormula
+
+
+##' @rdname pars
+##' @export
+ranefModMat.strucGlmer <- function(object, transposed = TRUE, strucMatrix = FALSE, ...) {
+    ranefModMat(object$parsedForm, transposed, strucMatrix, ...)
+}
+
+
+##' @rdname pars
+##' @export
+relCovFact <- function(object, ...) {
+    UseMethod("relCovFact")
+}
+
+##' @rdname pars
+##' @export
+relCovFact.strucParseFormula <- function(object, transposed = TRUE, strucMatrix = FALSE, ...) {
+    ans <- object$Lambdat
+    if(!transposed) ans <- t(ans)
+    if(!strucMatrix) ans <- as(ans, "dgCMatrix")
+    return(ans)
+}
+
+##' @rdname pars
+##' @export
+relCovFact.reTrmStruct <- relCovFact.strucParseFormula
+
+##' @rdname pars
+##' @export
+relCovFact.strucGlmer <- function(object, transposed = TRUE, strucMatrix = FALSE, ...) {
+    relCovFact(object$parsedForm, transposed, strucMatrix, ...)
+}
+
+##' @importFrom stats nobs
+##' @rdname pars
+##' @export
+nobs.strucGlmer <- function(object, ...) nrow(object$parsedForm$fixed)
+
+##' @rdname pars
+##' @export
+nobs.strucParseFormula <- function(object, ...) nrow(object$fixed)
+
+##' @importFrom lme4 sigma
+##' @rdname pars
+##' @export
+sigma.reTrmStruct <- function(object, ...) return(NA)
+
+##' @rdname pars
+##' @export
+sigma.nlmeCorStruct <- function(object, ...) {
+    sigExists <- environment(Lambdat <- object$Lambdat$trans)$sigExists
+    if(sigExists) {
+        return(getInit(Lambdat)[1])
+    } else {
+        return(1)
+    }
+}
+
+##' @rdname pars
+##' @export
+sigma.strucParseFormula <- function(object, ...) lapply(object$random, sigma)
+
+##' @rdname pars
+##' @export
+sigma.strucGlmer <- function(object, ...) {
+    random <- object$parsedForm$random
+    setNames(lapply(random, sigma), names(random))
+}
+
+
+## ----------------------------------------------------------------------
+## Initial values -- get and set init parameter vectors for structured
 ## sparse matrices
 ## ----------------------------------------------------------------------
 
-##' Get and set initial parameter values for repeated sparse matrices
+##' Get and set initial parameter values for structured sparse matrices
 ##'
-##' The initial values for a repeated sparse matrix are stored in the
+##' The initial values for a structured sparse matrix are stored in the
 ##' environment of its transformation function, where they have the
 ##' name \code{init}.  Random effects term structures
-##' (\code{\link{reTrmStruct}}) contain two repeated sparse matrices:
+##' (\code{\link{reTrmStruct}}) contain two structured sparse matrices:
 ##' the transposed relative covariance factor, \code{Lambdat}, and the
 ##' transposed random effects model matrix, \code{Zt}. There are
 ##' \code{getReTrm.reTrmStruct} and \code{setReTrm.reTrmStruct}
 ##' methods for getting and setting the initial values of these
 ##' matrices directly.  Setting initial values does not change the
 ##' values themselves, only the initial values. Use the
-##' \code{\link{update.repSparse}} methods to actually update the
+##' \code{\link{update.strucMatrix}} methods to actually update the
 ##' values to the initial values.
 ##'
 ##' @param x object
@@ -94,8 +391,8 @@ mkParInds <- function(parList) {
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' m1 <- as.repSparse(matrix(rnorm(6), 2, 3))
-##' m2 <- repSparseCompSymm(1.2, -0.2, 5)
+##' m1 <- as.strucMatrix(matrix(rnorm(6), 2, 3))
+##' m2 <- strucMatrixCompSymm(1.2, -0.2, 5)
 ##' getInit(m1)
 ##' getInit(m2)
 ##' setInit(m2, c(10, 0))
@@ -107,7 +404,7 @@ getInit.default <- function(x, ...) x$init
 
 ##' @rdname getInit
 ##' @export
-getInit.repSparse <- function(x, ...) getInit(x$trans)
+getInit.strucMatrix <- function(x, ...) getInit(x$trans)
 
 ##' @rdname getInit
 ##' @export
@@ -138,7 +435,7 @@ setInit.default <- function(x, init, ...) {
 
 ##' @rdname getInit
 ##' @export
-setInit.repSparse <- function(x, init, ...) {
+setInit.strucMatrix <- function(x, init, ...) {
     assign("init", init, envir = environment(x$trans))
 }
 
@@ -198,7 +495,7 @@ parLength <- function(object, ...) {
 
 ##' @rdname parLength
 ##' @export
-parLength.repSparse <- function(object, ...) {
+parLength.strucMatrix <- function(object, ...) {
     initObject <- getInit(object)
     if(is.null(initObject) || all(is.na(initObject))) return(0L)
     return(length(initObject))
@@ -231,6 +528,11 @@ parLength.strucParseFormula <- function(object, ...) {
     }
     return(setNames(out, parType))
 }
+
+##' @rdname parLength
+##' @export
+parLength.strucGlmer <- function(object, ...) parLength(object$parsedForm)
+
 
 ##' Extract factors
 ##'
@@ -380,6 +682,26 @@ gamma.shape.merMod <- function(object, ...) {
 ## 		   Gamma    = Gamma_simfun,
 ## 		   negative.binomial = negative.binomial_simfun)
 
+## ----------------------------------------------------------------------
+## family methods
+## ----------------------------------------------------------------------
+
+##' Extract family object
+##'
+##' @param object \code{\link{strucGlmer}} or
+##' \code{\link{strucParseFormula}} object
+##' @param ... not used
+##' @importFrom stats family
+##' @export
+family.strucGlmer <- function(object, ...) family(object$parsedForm)
+
+##' @rdname family.strucGlmer
+##' @export
+family.strucParseFormula <- function(object, ...) {
+    resp <- object$devfunEnv$resp
+    if(is.null(resp)) stop("a family is not (yet) present in this object")
+    return(resp$family)
+}
 
 ##' Convert row and column indices to vector indices, for a triangular
 ##' matrix
@@ -509,9 +831,9 @@ showSkeleton <- function(whichSkel, package = "lme4ord") {
 ##' @export
 ##' @examples
 ##' set.seed(1)
-##' X <- repSparse(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
-##' Y <- repSparse(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
-##' Z <- repSparse(c(1, 2), c(1, 2), 1:2, rnorm(2))
+##' X <- strucMatrix(c(1, 2, 1, 2), c(1, 1, 2, 2), 1:4, rnorm(4))
+##' Y <- strucMatrix(c(1, 2, 1), c(1, 1, 2), 1:3, rnorm(3))
+##' Z <- strucMatrix(c(1, 2), c(1, 2), 1:2, rnorm(2))
 ##' listTranspose(list(X = X, Y = Y, Z = Z))
 listTranspose <- function(lst) {
     lstExtract <- function(i) lapply(lst, "[[", i)
@@ -993,4 +1315,71 @@ devCritFun <- function(object, REML = NULL) {
             - ldW + cmp[["ldL2"]] + n*(1 + lnum - log(n))
         }
     }
+}
+
+##' Tools for constructing formula terms
+##'
+##' @param arg1,arg2,arg a language object or length-one character
+##' vector
+##' @param args list of language objects and/or length-one character
+##' objects
+##' @param Op name of an operator (as language or character)
+##' @export
+##' @name langOps
+##' @examples
+##' (oneTerm <- binaryLangOp("a", "b", "|"))
+##' (parenTerm <- unaryLangOp(oneTerm, "("))
+##' (manyTerms <- mapply(binaryLangOp, "x", letters[1:5], "|", USE.NAMES = FALSE))
+##' (manyParenTerms <- lapply(manyTerms, unaryLangOp, "("))
+##' listLangOp(manyParenTerms, "+")
+binaryLangOp <- function(arg1, arg2, Op) {
+    if(is.character(Op)) Op <- as.name(Op[1])
+    if(is.character(arg1)) arg1 <- as.name(arg1[1])
+    if(is.character(arg2)) arg2 <- as.name(arg2[1])
+    as.call(list(Op, arg1, arg2))
+}
+
+##' @rdname langOps
+##' @export
+unaryLangOp <- function(arg, Op) {
+    if(is.character(Op)) Op <- as.name(Op)
+    if(is.character(arg)) arg <- as.name(arg)
+    as.call(list(Op, arg))
+}
+
+##' @rdname langOps
+##' @export
+listLangOp <- function(args, Op) Reduce(mkBinaryLangOp(Op), args)
+
+##' @rdname langOps
+##' @export
+mkBinaryLangOp <- function(Op) {
+    local({
+        Op <- Op
+        function(arg1, arg2) binaryLangOp(arg1, arg2, Op)
+    })
+}
+
+
+##' List of subscripting calls with a list of indices
+##'
+##' Suppose one has an atomic vector and a named list of indices for
+##' the vector. Now suppose one wants a list of calls subscripting the
+##' vector with each element of the index list. This function does
+##' that.
+##' 
+##' @param vecName length-one character vector giving the name of the
+##' vector to be subscripted
+##' @param indsListName length-one character vector giving the name of
+##' the index list
+##' @param indTypeNames character vector giving the names of the index types
+##' @export
+##' @examples
+##' listOfSubscriptingCallsWithListOfIndices("pars", "parInds", c("covar", "fixef"))
+listOfSubscriptingCallsWithListOfIndices <- function(vecName, indsListName, indTypeNames) {
+    indsCharList <- lapply(lapply(tolower(indTypeNames), c, list("$", indsListName)),
+                           "[", c(2, 3, 1))
+    lapply(lapply(rapply(indsCharList, as.name, how = "list"), as.call),
+           function(inds) {
+               as.call(list(as.name("["), as.name(vecName), inds))})
 }
